@@ -45,6 +45,7 @@ char* JsonRPC::process(Value &method, Value &params, Value &id, string* identity
 	//lookup the function !
 	printf("Funktionaufruf: %s ", method.GetString());
 
+	/*
 	//identify hw, for aardvark we can identify the device by it s port_number (first parameter)
 	if(params.IsArray())
 	{
@@ -57,8 +58,9 @@ char* JsonRPC::process(Value &method, Value &params, Value &id, string* identity
 	if(strcmp(method.GetString(), "aa_open") == 0)
 		currentDevice = deviceList[devicePort];
 	else
-		currentDevice = deviceList[devicePort-1];
+		currentDevice = deviceList[devicePort-1];*/
 
+	currentDevice = deviceList[0];
 	//process the function and create result
 	deviceIdentity = currentDevice->getIdentity();
 
@@ -70,18 +72,22 @@ char* JsonRPC::process(Value &method, Value &params, Value &id, string* identity
 			currentDevice->setIdentity(identity);
 
 
-		lockFlag = currentDevice->executeFunction(method, params, result);
+		lockFlag = currentDevice->executeFunction(method, params, result, &error);
 
 
 		if(!lockFlag)
 			currentDevice->setIdentity(NULL);
 		//send the result back to RSD
-		return response(id);
+
+		if(error != NULL)
+			return responseError(id, -32000, &error);
+		else
+			return response(id);
 	}
 	else
 	{
 		printf("Hardware locked, Usage restrictedt.\n");
-		return responseError(id, 0, "Hardware gesperrt");
+		return("Hardware locked, Usage restrictedt.\n");
 	}
 }
 
@@ -107,11 +113,14 @@ char* JsonRPC::response(Value &id)
 }
 
 
-char* JsonRPC::responseError(Value &id, int code, char* msg)
+char* JsonRPC::responseError(Value &id, int code, char** msg)
 {
 	Value data;
 
-	data.SetString(msg, errorDOM.GetAllocator());
+	data.SetString(*msg, errorDOM.GetAllocator());
+
+	delete[] *msg;
+	msg = NULL;
 
 	sBuffer.Clear();
 	jsonWriter->Reset(sBuffer);
@@ -143,8 +152,8 @@ void JsonRPC::generateResponseDOM(Document &dom)
 
 void JsonRPC::generateErrorDOM(Document &dom)
 {
-	Value error;
 	Value id;
+	Value error;
 
 	//An error msg is a response with error value but without result value, where error is an object
 	dom.SetObject();
@@ -159,6 +168,7 @@ void JsonRPC::generateErrorDOM(Document &dom)
 
 	id.SetInt(0);
 	dom.AddMember("id", id, dom.GetAllocator());
+
 }
 
 

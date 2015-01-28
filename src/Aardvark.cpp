@@ -53,6 +53,7 @@
  ========================================================================*/
 /* This #include can be customized to conform to the user's build paths. */
 #include <Aardvark.hpp>
+#include <Plugin_Error.h>
 
 
 /*=========================================================================
@@ -363,12 +364,16 @@ bool RemoteAardvark::aa_open(rapidjson::Value &params , rapidjson::Value &result
 
 		}
 		else
-			throw -1;
+			throw_PluginError("Value params is no array or object.");
 
 	}
-	catch(int e)
+	catch(PluginError &e)
 	{
-		printf(" Exception occured within Method \"aa_open_remote\": %d\n", e);
+		string* msg = e.get();
+		printf("Fehler: %s  \n\n", msg->c_str());
+		*error = new char[msg->size()+1];
+		strncpy(*error, msg->c_str(), msg->size()+1);
+
 		return false;
 	}
 

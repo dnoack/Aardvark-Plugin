@@ -28,12 +28,14 @@ class PluginInterface{
 		{
 			driver = derivedClass;
 			currentIdentity = NULL;
+			error = NULL;
 		};
 
 		~PluginInterface(){};
 
-		bool executeFunction(Value &method, Value &params, Value &result)
+		bool executeFunction(Value &method, Value &params, Value &result, char** error)
 		{
+			this->error = error;
 			funcP = funcMap[(char*)method.GetString()];
 			return (driver->*funcP)(params, result);
 		}
@@ -47,8 +49,7 @@ class PluginInterface{
 			//parameter not null
 			if(identity != FREE_IDENTITY)
 			{
-				currentIdentity = new string();
-				currentIdentity = identity;
+				currentIdentity = new string(*identity);
 			}
 			//parameter null -> free memory, set pointer null
 			else
@@ -77,7 +78,7 @@ class PluginInterface{
 		TPointer funcP;
 		TDriver driver;
 		string* currentIdentity;
-
+		char** error;
 
 
 };

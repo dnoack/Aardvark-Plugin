@@ -81,6 +81,7 @@ class JsonRPC {
 		//result from the processed function
 		Value result;
 		char* responseMsg;
+		char* error;
 
 
 		//lookup for function
@@ -88,7 +89,7 @@ class JsonRPC {
 
 		char* response(Value &id);
 
-		char* responseError(Value &id, int code, char* msg);
+		char* responseError(Value &id, int code, char** msg);
 
 		void generateResponseDOM(Document &dom);
 
