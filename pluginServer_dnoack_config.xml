@@ -3,12 +3,14 @@
 <section name="org.eclipse.cdt.internal.ui.wizards.settingswizards.IncludePaths">
 <language name="C++ Source File">
 <includepath>/home/dnoack/libs/rapidjson/include/rapidjson</includepath>
+<includepath>/home/dnoack/cpputest/include/CppUTest</includepath>
 <includepath>/home/dnoack/libs/zeromq-4.0.5/include</includepath>
 <includepath workspace_path="true">/${ProjName}/include</includepath>
 
 </language>
 <language name="C Source File">
 <includepath workspace_path="true">/${ProjName}/include</includepath>
+<includepath>/home/dnoack/cpputest/include/CppUTest</includepath>
 <includepath>/home/dnoack/libs/zeromq-4.0.5/include</includepath>
 <includepath>/home/dnoack/libs/rapidjson/include/rapidjson</includepath>
 
