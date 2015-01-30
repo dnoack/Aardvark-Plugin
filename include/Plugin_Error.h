@@ -8,45 +8,43 @@
 #ifndef INCLUDE_PLUGIN_ERROR_H_
 #define INCLUDE_PLUGIN_ERROR_H_
 
-#include <stdexcept>
+#include <exception>
 #include <string>
 #include <sstream>
 
 using namespace std;
 
-class PluginError : public runtime_error{
+class PluginError : exception{
 
 
 	public:
-		PluginError(const string &msg, char* file, int line) : runtime_error(msg)
+		PluginError(const char* msg, char* file, int line)
 		{
-			this->msg = &msg;
+			this->msg = msg;
 			this->file = file;
 			this->line = line;
-			msgOut = new string();
+			oStream = new ostringstream();
 		}
 
 
 		~PluginError() throw()
 		{
-			delete(msgOut);
+			delete(oStream);
 		}
 
 
-		string* get() const throw()
+		char* get() const throw()
 		{
-			ostringstream oStream;
-			oStream << "An error was thrown in file: " << file << " at line: " << line << " ### " << *msg ;
-			*msgOut = oStream.str();
-			return msgOut;
+			*oStream << "An error was thrown in file: " << file << " at line: " << line << " ### " << msg ;
+			return strdup((char*)(oStream->str().c_str()));
 		}
 
 
 	private:
-		const string* msg;
+		const char* msg;
 		char* file;
 		int line;
-		string* msgOut;
+		ostringstream* oStream;
 
 
 
@@ -54,7 +52,7 @@ class PluginError : public runtime_error{
 
 //string PluginError::msgOut;
 
-#define throw_PluginError(msg) throw PluginError(msg, __FILE__, __LINE__);
+//#define throw_PluginError(msg) throw PluginError(msg , __FILE__, __LINE__);
 
 
 

@@ -16,20 +16,65 @@ using namespace Plugin;
 
 char* JsonRPC::handle(string* request, string* identity)
 {
-	requestDOM.Parse(request->c_str());
+
+	requestDOM->Parse(request->c_str());
 
 
-	if(!requestDOM.HasParseError())
+	if(!requestDOM->HasParseError())
 	{
-		currentValue = requestDOM["jsonrpc"];
-		if(strcmp(currentValue.GetString(), "2.0") == 0)
+		try
 		{
-			return process(requestDOM["method"], requestDOM["params"], requestDOM["id"], identity);
+			if(checkJsonRpcFormat(requestDOM))
+			{
+				if(requestDOM->HasMember("id")) //request
+					return process((*requestDOM)["method"], (*requestDOM)["params"], (*requestDOM)["id"], identity);
+				else
+					return NULL; //TODO: notification
+			}
 		}
-		else return NULL;
+		catch(char* e)
+		{
+			return e;
+		}
 	}
 	else
-		return NULL;//TODO: error handling
+		return "Parsing error";
+
+}
+
+
+bool JsonRPC::checkJsonRpcFormat(Document* dom)
+{
+	if(!requestDOM->HasMember("jsonrpc"))
+	{
+		throw "Inccoret Json RPC, member \"jsonrpc\" is missing.";
+	}
+	else
+	{
+		checkJsonRpcVersion(dom);
+		if(!requestDOM->HasMember("method"))
+			throw "Inccoret Json RPC, member \"method\" is missing.";
+		else
+			if(!requestDOM->HasMember("params"))
+				throw "Inccoret Json RPC, member \"params\" is missing.";
+	}
+	return true;
+}
+
+
+bool JsonRPC::checkJsonRpcVersion(Document* dom)
+{
+
+
+	if((*dom)["jsonrpc"].IsString())
+	{
+		if(strcmp((*dom)["jsonrpc"].GetString(), "2.0") != 0)
+			throw "Inccorect jsonrpc version. Used version is 2.0";
+	}
+	else
+		throw "Member \"jsonrpc\" has to be a string.";
+
+	return true;
 }
 
 
@@ -37,10 +82,11 @@ char* JsonRPC::handle(string* request, string* identity)
 
 char* JsonRPC::process(Value &method, Value &params, Value &id, string* identity)
 {
-	string* deviceIdentity;
-	RemoteAardvark* currentDevice;
+	string* deviceIdentity = NULL;
+	RemoteAardvark* currentDevice = NULL;
+	char* responseMsg = NULL;
 	bool lockFlag= false;
-	int devicePort;
+	int devicePort = 0;
 
 	//lookup the function !
 	printf("Funktionaufruf: %s ", method.GetString());
@@ -71,24 +117,27 @@ char* JsonRPC::process(Value &method, Value &params, Value &id, string* identity
 		if(deviceIdentity == NULL)
 			currentDevice->setIdentity(identity);
 
+		try{
 
-		lockFlag = currentDevice->executeFunction(method, params, result, &error);
+			lockFlag = currentDevice->executeFunction(method, params, result);
 
+			if(!lockFlag)
+				currentDevice->setIdentity(NULL);
 
-		if(!lockFlag)
-			currentDevice->setIdentity(NULL);
-		//send the result back to RSD
+			//generate a normal responsemsg with result
+			responseMsg = response(id);
 
-		if(error != NULL)
-			return responseError(id, -32000, &error);
-		else
-			return response(id);
+		}
+		catch(const PluginError &e)
+		{
+			responseMsg = responseError(id, -32000, e.get());
+		}
 	}
 	else
 	{
-		printf("Hardware locked, Usage restrictedt.\n");
-		return("Hardware locked, Usage restrictedt.\n");
+		responseMsg = responseError(id, -32000, "Hardware locked, Usage restrictedt.\n");
 	}
+	return responseMsg;
 }
 
 
@@ -101,36 +150,34 @@ char* JsonRPC::response(Value &id)
 	jsonWriter->Reset(sBuffer);
 
 	//swap current result value with the old one and get the corresponding id
-	oldResult = &(responseDOM["result"]);
+	oldResult = &((*responseDOM)["result"]);
 	oldResult->Swap(result);
-	responseDOM["id"] = id.GetInt();
+	(*responseDOM)["id"] = id.GetInt();
 
 	//write DOM to sBuffer
-	responseDOM.Accept(*jsonWriter);
+	responseDOM->Accept(*jsonWriter);
 	printf("ResponseMsg: %s\n", sBuffer.GetString());
 
 	return (char*)sBuffer.GetString();
 }
 
 
-char* JsonRPC::responseError(Value &id, int code, char** msg)
+char* JsonRPC::responseError(Value &id, int code, char* msg)
 {
 	Value data;
 
-	data.SetString(*msg, errorDOM.GetAllocator());
-
-	delete[] *msg;
-	msg = NULL;
+	data.SetString(msg, errorDOM->GetAllocator());
+	delete[] msg;
 
 	sBuffer.Clear();
 	jsonWriter->Reset(sBuffer);
 
-	errorDOM["id"] = id.GetInt();
-	errorDOM["error"]["code"] = -32000;
-	errorDOM["error"]["message"] = "Server error";
-	errorDOM["error"]["data"].Swap(data);
+	(*errorDOM)["id"] = id.GetInt();
+	(*errorDOM)["error"]["code"] = -32000;
+	(*errorDOM)["error"]["message"] = "Server error";
+	(*errorDOM)["error"]["data"].Swap(data);
 
-	errorDOM.Accept(*jsonWriter);
+	errorDOM->Accept(*jsonWriter);
 	printf("ErrorMsg: %s\n", sBuffer.GetString());
 
 	return (char*)sBuffer.GetString();
@@ -185,7 +232,7 @@ void JsonRPC::detectDevices()
 	{
 		if(unique_ids[i] != 0)
 		{
-			printf("Device found: Index: %u UniqueID: %u\n", (unsigned int)devices[i], (unsigned int)unique_ids[i]);
+			//printf("Device found: Index: %u UniqueID: %u\n", (unsigned int)devices[i], (unsigned int)unique_ids[i]);
 			deviceList.push_back(new RemoteAardvark());
 		}
 	}

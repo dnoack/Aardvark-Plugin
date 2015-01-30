@@ -13,6 +13,7 @@
 #include <cstring>
 #include "document.h"
 #include "writer.h"
+#include "Plugin_Error.h"
 
 using namespace std;
 using namespace rapidjson;
@@ -33,11 +34,20 @@ class PluginInterface{
 
 		~PluginInterface(){};
 
-		bool executeFunction(Value &method, Value &params, Value &result, char** error)
+		bool executeFunction(Value &method, Value &params, Value &result)
 		{
 			this->error = error;
-			funcP = funcMap[(char*)method.GetString()];
-			return (driver->*funcP)(params, result);
+			try{
+				funcP = funcMap[(char*)method.GetString()];
+				if(funcP == NULL)
+					throw PluginError("Function not found.",  __FILE__, __LINE__);
+				else
+					return (driver->*funcP)(params, result);
+			}
+			catch(const PluginError &e)
+			{
+				throw;
+			}
 		}
 
 
@@ -60,6 +70,26 @@ class PluginInterface{
 					currentIdentity = NULL;
 				}
 			}
+		}
+
+		bool findParamsMember(Value &object, char* memberName)
+		{
+			Type paramsType;
+
+			paramsType = object.GetType();
+			if(paramsType == kObjectType)
+			{
+				if(object.HasMember(memberName))
+				{
+					return true;
+				}
+				else
+					throw PluginError("Needed member not found.",  __FILE__, __LINE__);
+			}
+			else
+				throw PluginError("Params is not an Object.",  __FILE__, __LINE__);
+
+			return false;
 		}
 
 	protected:

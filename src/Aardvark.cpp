@@ -346,37 +346,25 @@ bool RemoteAardvark::aa_open(rapidjson::Value &params , rapidjson::Value &result
 {
 	int port_number = 0;
 	int fail = 0;
+	Type paramsType;
+	Value member;
 
-	try{
-		if(params.GetType() == rapidjson::kNumberType)
+		if(findParamsMember(params, "port"))
 		{
-			port_number = params.GetInt();
-			if (!(c_aa_open = reinterpret_cast<Aardvark(*)(int)>(_loadFunction("c_aa_open", &fail))))
+			if(params["port"].IsInt())
 			{
-				return false;
+				port_number = params["port"].GetInt();
+				if (!(c_aa_open = reinterpret_cast<Aardvark(*)(int)>(_loadFunction("c_aa_open", &fail))))
+				{
+					throw PluginError("Could not find symbol in shared library.",  __FILE__, __LINE__);
+				}
+				else
+				{
+					result.SetInt(c_aa_open(port_number));
+				}
 			}
-			else
-			{
-				result.SetInt(c_aa_open(port_number));
-				printf("Deskriptor: %d zurueck bekommen.", result.GetInt());
-				//Test mit ipc_send.py und aufruf mit aa_open 0 hat geklappt 19.01.15 (descriptor =1)
-			}
-
+			else throw PluginError("Member \"port\" has to be an integer type.",  __FILE__, __LINE__);
 		}
-		else
-			throw_PluginError("Value params is no array or object.");
-
-	}
-	catch(PluginError &e)
-	{
-		string* msg = e.get();
-		printf("Fehler: %s  \n\n", msg->c_str());
-		*error = new char[msg->size()+1];
-		strncpy(*error, msg->c_str(), msg->size()+1);
-
-		return false;
-	}
-
 	return true;
 }
 
@@ -401,36 +389,24 @@ bool RemoteAardvark::aa_close(rapidjson::Value &params , rapidjson::Value &resul
 	Aardvark aardvark;
 	int res = 0;
 
-	try{
-		if(params.GetType() == rapidjson::kNumberType)
+	if(findParamsMember(params, "handle"))
+	{
+		if(params["handle"].IsInt())
 		{
-			aardvark = params.GetInt();
+			aardvark = params["handle"].GetInt();
 			if (!(c_aa_close = reinterpret_cast<int(*)(Aardvark)>(_loadFunction("c_aa_close", &res))))
 			{
-				return false;
+				throw PluginError("Could not find symbol in shared library.",  __FILE__, __LINE__);
 			}
 			else
 			{
 				result.SetInt(c_aa_close(aardvark));
-				printf("Aardvark geschlossen\n");
 			}
 		}
-		else
-			throw -1;
-
+		else throw PluginError("Member \"handle\" has to be an integer type.",  __FILE__, __LINE__);
 	}
-	catch(int e)
-	{
-		printf(" Exception occured within Method \"aa_open_remote\": %d\n", e);
-		return false;
-	}
-
 	return false;
-
-
 }
-
-
 
 
 static u32 (*c_aa_unique_id) (Aardvark) = 0;
@@ -453,13 +429,14 @@ bool RemoteAardvark::aa_unique_id(rapidjson::Value &params , rapidjson::Value &r
 	u32 id;
 	int res = 0;
 
-	try{
-		if(params.GetType() == rapidjson::kNumberType)
+	if(findParamsMember(params, "handle"))
+	{
+		if(params["handle"].IsInt())
 		{
-			aardvark = params.GetInt();
+			aardvark = params["handle"].GetInt();
 			if (!(c_aa_unique_id = reinterpret_cast<u32(*)(Aardvark)>(_loadFunction("c_aa_unique_id", &res))))
 			{
-				return false;
+				throw PluginError("Could not find symbol in shared library.",  __FILE__, __LINE__);
 			}
 			else
 			{
@@ -468,17 +445,11 @@ bool RemoteAardvark::aa_unique_id(rapidjson::Value &params , rapidjson::Value &r
 			}
 		}
 		else
-			throw -1;
-
+			throw PluginError("Member \"handle\" has to be an integer type.",  __FILE__, __LINE__);
 	}
-	catch(int e)
-	{
-		printf(" Exception occured within Method \"aa_open_remote\": %d\n", e);
-		return false;
-	}
-
 	return true;
 }
+
 
 static int (*c_aa_target_power) (Aardvark, u08) = 0;
 int aa_target_power (
@@ -499,25 +470,34 @@ bool RemoteAardvark::aa_target_power(rapidjson::Value &params , rapidjson::Value
 {
 	Aardvark aardvark;
 	u08 power_mask;
+	int res = 0;
 
-	if(params.IsArray())
+
+	if(findParamsMember(params, "handle") && findParamsMember(params, "powerMask"))
 	{
-		aardvark = params[0].GetInt();
-		power_mask = (u08)params[1].GetUint();
-	}
+		if(params["handle"].IsInt() )
+		{
+			if(params["powerMask"].IsUint())
+			{
+				aardvark = params["handle"].GetInt();
+				power_mask = params["powerMask"].GetInt();
 
-	if (c_aa_target_power == 0)
-	{
-		int res = 0;
-		if (!(c_aa_target_power = reinterpret_cast<int(*)(Aardvark, u08)>(_loadFunction("c_aa_target_power", &res))))
-			return false;
+				if (!(c_aa_target_power = reinterpret_cast<int(*)(Aardvark, u08)>(_loadFunction("c_aa_target_power", &res))))
+				{
+					throw PluginError("Could not find symbol in shared library.",  __FILE__, __LINE__);
+				}
+				else
+				{
+					c_aa_target_power(aardvark, power_mask);
+					result.SetUint(5);
+				}
+			}
+			else
+				throw PluginError("Member \"powerMask\" has to be an unsigned integer.",  __FILE__, __LINE__);
+		}
+		else
+			throw PluginError("Member \"handle\" has to be an integer.",  __FILE__, __LINE__);
 	}
-	c_aa_target_power(aardvark, power_mask);
-	result.SetUint(5);
-
 	return true;
-
 }
-
-
 

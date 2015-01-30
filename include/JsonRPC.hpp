@@ -36,23 +36,35 @@ class JsonRPC {
 		{
 			this->currentValue = NULL;
 			this->result = NULL;
-			detectDevices();
+
 
 			jsonWriter = new Writer<StringBuffer>(sBuffer);
-			generateResponseDOM(responseDOM);
-			generateErrorDOM(errorDOM);
+			responseDOM = new Document();
+			errorDOM = new Document();
+
+			generateResponseDOM(*responseDOM);
+			generateErrorDOM(*errorDOM);
+			detectDevices();
 		};
+
 
 
 		~JsonRPC()
 		{
-			delete(jsonWriter);
-
+			delete &sBuffer;
+			delete jsonWriter;
+			delete responseDOM;
+			delete errorDOM;
+			deviceList.clear();
 		};
 
 
 		//receive json-rpc msg, check if it is a request, process
 		char* handle(string* request, string* identity);
+
+		bool checkJsonRpcFormat(Document* dom);
+
+		bool checkJsonRpcVersion(Document* dom);
 
 
 	private:
@@ -71,9 +83,9 @@ class JsonRPC {
 		vector<RemoteAardvark*> deviceList;
 
 		//represents the current jsonrpc msg as dom (document object model)
-		Document requestDOM;
-		Document responseDOM;
-		Document errorDOM;
+		Document* requestDOM;
+		Document* responseDOM;
+		Document* errorDOM;
 
 		//Value from dom which is currently examined
 		Value currentValue;
@@ -89,7 +101,7 @@ class JsonRPC {
 
 		char* response(Value &id);
 
-		char* responseError(Value &id, int code, char** msg);
+		char* responseError(Value &id, int code, char* msg);
 
 		void generateResponseDOM(Document &dom);
 
