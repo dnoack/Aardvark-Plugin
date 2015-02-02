@@ -5,6 +5,8 @@
  *      Author: dnoack
  */
 
+
+
 #include "Aardvark.hpp"
 #include "TestHarness.h"
 
@@ -94,5 +96,4 @@ TEST(RemoteAardvark, aa_target_power_powerMask_FAIL)
 	params.AddMember("powerMask", "NotAnUInteger", dom->GetAllocator());
 	CHECK_THROWS(PluginError, testInterface->aa_target_power(params, result));
 }
-
 

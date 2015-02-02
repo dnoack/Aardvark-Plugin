@@ -27,6 +27,15 @@ class PluginError : exception{
 		}
 
 
+		PluginError(const char* msg)
+		{
+			this->msg = msg;
+			this->file = NULL;
+			this->line = line;
+			oStream = new ostringstream();
+		}
+
+
 		~PluginError() throw()
 		{
 			delete(oStream);
@@ -35,8 +44,12 @@ class PluginError : exception{
 
 		char* get() const throw()
 		{
-			*oStream << "An error was thrown in file: " << file << " at line: " << line << " ### " << msg ;
-			return strdup((char*)(oStream->str().c_str()));
+			if(file != NULL && line != NULL)
+				*oStream << "An error was thrown in file: " << file << " at line: " << line << " ### " << msg ;
+			else
+				*oStream << msg ;
+
+			return (char*)(oStream->str().c_str());
 		}
 
 

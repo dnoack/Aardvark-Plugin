@@ -5,19 +5,13 @@
  *  Author: David Noack
  */
 
+
+
+
 #include "CommandLineTestRunner.h"
 #include "TestHarness.h"
 
 
-
-//##########TEST_GROUPS###################
-
-
-#include "test_PluginInterface.hpp"
-#include "test_RemoteAardvark.hpp"
-#include "test_JsonRPC.hpp"
-
-//########################################
 
 
 int main(int argc, char** argv)

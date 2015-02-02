@@ -39,6 +39,7 @@ class JsonRPC {
 
 
 			jsonWriter = new Writer<StringBuffer>(sBuffer);
+			requestDOM = new Document();
 			responseDOM = new Document();
 			errorDOM = new Document();
 
@@ -51,23 +52,40 @@ class JsonRPC {
 
 		~JsonRPC()
 		{
-			delete &sBuffer;
 			delete jsonWriter;
+			delete requestDOM;
 			delete responseDOM;
 			delete errorDOM;
-			deviceList.clear();
+			for(unsigned int i = 0; i < deviceList.size(); i++)
+				delete deviceList[i];
 		};
 
 
 		//receive json-rpc msg, check if it is a request, process
 		char* handle(string* request, string* identity);
 
-		bool checkJsonRpcFormat(Document* dom);
+		/**
+		 * Checks if the json rpc msg has the mandatory members (jsonrpc and method).
+		 * It also calls checkJsonRpcVersion.
+		 */
+		bool checkJsonRpc_RequestFormat(Document &dom);
 
-		bool checkJsonRpcVersion(Document* dom);
+
+		/**
+		 * Checks if the json rpc msg member "jsonrpc" has the correct protocol version.
+		 */
+		bool checkJsonRpcVersion(Document &dom);
+
 
 
 	private:
+
+		/**
+		 * Checks if there is a member named "id". If not the msg is assumed to be
+		 * a notification. If "id" is existing, the msg is a request. For checking the other
+		 * mandatory request fields, you need to call checkJsonRpc_RequestFormat().
+		 */
+		bool isRequest(Document &dom);
 
 		//compare functor handels char* compare for the map
 		struct cmp_keys
@@ -97,7 +115,7 @@ class JsonRPC {
 
 
 		//lookup for function
-		char* process(Value &method, Value &params, Value &id, string* identity);
+		char* processRequest(Value &method, Value &params, Value &id, string* identity);
 
 		char* response(Value &id);
 
@@ -109,7 +127,9 @@ class JsonRPC {
 
 		void detectDevices();
 
+
 };
+
 
 }; //namespace Plugin
 

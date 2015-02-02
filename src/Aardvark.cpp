@@ -346,7 +346,6 @@ bool RemoteAardvark::aa_open(rapidjson::Value &params , rapidjson::Value &result
 {
 	int port_number = 0;
 	int fail = 0;
-	Type paramsType;
 	Value member;
 
 		if(findParamsMember(params, "port"))
@@ -383,6 +382,7 @@ int aa_close (
     }
     return c_aa_close(aardvark);
 }
+
 
 bool RemoteAardvark::aa_close(rapidjson::Value &params , rapidjson::Value &result)
 {

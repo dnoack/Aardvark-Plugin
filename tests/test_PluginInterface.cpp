@@ -5,6 +5,7 @@
  *      Author: dnoack
  */
 
+
 #include "Plugin_Interface.h"
 #include "Aardvark.hpp"
 #include "TestHarness.h"
@@ -87,5 +88,4 @@ TEST(Plugin_Interface, executeFunction_FunctionNOTfound)
 
 	CHECK_THROWS(PluginError, testInterface->executeFunction(method, params, result));
 }
-
 
