@@ -18,27 +18,29 @@ char* JsonRPC::handle(string* request, string* identity)
 {
 	char* responseMsg;
 
-	requestDOM->Parse(request->c_str());
-
-	if(!requestDOM->HasParseError())
+	try
 	{
-		try
+		requestDOM->Parse(request->c_str());
+
+		if(!requestDOM->HasParseError())
 		{
+
 			if(checkJsonRpc_RequestFormat(*requestDOM))
 			{
 				if(isRequest(*requestDOM)) //request
 					responseMsg =  processRequest((*requestDOM)["method"], (*requestDOM)["params"], (*requestDOM)["id"], identity);
 				else
-					responseMsg = NULL; //TODO: notification
+					responseMsg = NULL; //TODO: processNotification
 			}
 		}
-		catch(char* e)
-		{
-			responseMsg = e;
-		}
+		else
+			throw PluginError("Error while parsing json rpc.");
 	}
-	else
-		responseMsg = "Parsing Error.";
+	catch(PluginError &errorMsg)
+	{
+		Value nullId;
+		responseMsg = generateResponseError(nullId, -32700, errorMsg.get());
+	}
 
 	return responseMsg;
 }
@@ -48,13 +50,13 @@ bool JsonRPC::checkJsonRpc_RequestFormat(Document &dom)
 {
 	if(!dom.HasMember("jsonrpc"))
 	{
-		throw "Inccorect Json RPC, member \"jsonrpc\" is missing.";
+		throw PluginError("Inccorect Json RPC, member \"jsonrpc\" is missing.");
 	}
 	else
 	{
 		checkJsonRpcVersion(dom);
 		if(!dom.HasMember("method"))
-			throw "Inccorect Json RPC, member \"method\" is missing.";
+			throw PluginError("Inccorect Json RPC, member \"method\" is missing.");
 	}
 	return true;
 }
@@ -65,10 +67,10 @@ bool JsonRPC::checkJsonRpcVersion(Document &dom)
 	if(dom["jsonrpc"].IsString())
 	{
 		if(strcmp(dom["jsonrpc"].GetString(), JSON_PROTOCOL_VERSION) != 0)
-			throw "Inccorect jsonrpc version. Used version is 2.0";
+			throw PluginError("Inccorect jsonrpc version. Used version is 2.0");
 	}
 	else
-		throw "Member \"jsonrpc\" has to be a string.";
+		throw PluginError("Member \"jsonrpc\" has to be a string.");
 
 	return true;
 }
@@ -134,7 +136,7 @@ char* JsonRPC::processRequest(Value &method, Value &params, Value &id, string* i
 					currentDevice->setIdentity(NULL);
 
 				//generate a normal responsemsg with result
-				responseMsg = response(id);
+				responseMsg = generateResponse(id);
 
 
 		}
@@ -145,7 +147,8 @@ char* JsonRPC::processRequest(Value &method, Value &params, Value &id, string* i
 	}
 	catch(const PluginError &e)
 	{
-		responseMsg = responseError(id, -32000, e.get());
+		lockFlag = false;
+		responseMsg = generateResponseError(id, -32000, e.get());
 	}
 
 	return responseMsg;
@@ -153,7 +156,7 @@ char* JsonRPC::processRequest(Value &method, Value &params, Value &id, string* i
 
 
 
-char* JsonRPC::response(Value &id)
+char* JsonRPC::generateResponse(Value &id)
 {
 	//clear buffer
 	Value* oldResult;
@@ -173,16 +176,20 @@ char* JsonRPC::response(Value &id)
 }
 
 
-char* JsonRPC::responseError(Value &id, int code, char* msg)
+char* JsonRPC::generateResponseError(Value &id, int code, char* msg)
 {
 	Value data;
 
 	data.SetString(msg, errorDOM->GetAllocator());
-
 	sBuffer.Clear();
 	jsonWriter->Reset(sBuffer);
 
-	(*errorDOM)["id"] = id.GetInt();
+	//e.g. parsing error, we have no id value.
+	if(id.IsInt())
+		(*errorDOM)["id"] = id.GetInt();
+	else
+		(*errorDOM)["id"] = 0;
+
 	(*errorDOM)["error"]["code"] = code;
 	(*errorDOM)["error"]["message"] = "Server error";
 	(*errorDOM)["error"]["data"].Swap(data);

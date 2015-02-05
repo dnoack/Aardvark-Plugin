@@ -48,7 +48,7 @@ TEST_GROUP(Plugin_JsonRPC)
 TEST(Plugin_JsonRPC, checkJsonRpcVersion_FAIL)
 {
 	dom->AddMember("jsonrpc", "3.2", dom->GetAllocator());
-	CHECK_THROWS(char*, json->checkJsonRpcVersion(*dom));
+	CHECK_THROWS(PluginError, json->checkJsonRpcVersion(*dom));
 }
 
 
@@ -72,7 +72,7 @@ TEST(Plugin_JsonRPC, checkJsonRpc_RequestFormat_FAIL)
 {
 	dom->AddMember("jsonrpc", "2.0", dom->GetAllocator());
 	dom->AddMember("NOTaMethod", "foo", dom->GetAllocator());
-	CHECK_THROWS(char*, json->checkJsonRpc_RequestFormat(*dom));
+	CHECK_THROWS(PluginError, json->checkJsonRpc_RequestFormat(*dom));
 }
 
 
@@ -94,7 +94,7 @@ TEST(Plugin_JsonRPC, responseDOM_ok)
 
 	temp = (json->requestDOM);
 	id = &(*temp)["id"];
-	json->response(*id);
+	json->generateResponse(*id);
 
 	CHECK(json->responseDOM->HasMember("jsonrpc"));
 	CHECK(json->responseDOM->HasMember("result"));
@@ -117,7 +117,7 @@ TEST(Plugin_JsonRPC, responseError_ok)
 	tempRequest = (json->requestDOM);
 	id = &(*tempRequest)["id"];
 
-	json->responseError(*id, -32000, message);
+	json->generateResponseError(*id, -32000, message);
 
 	tempResponse = json->errorDOM;
 	CHECK(tempResponse->HasMember("jsonrpc"));
@@ -131,6 +131,18 @@ TEST(Plugin_JsonRPC, responseError_ok)
 
 	LONGS_EQUAL((*json->errorDOM)["id"].GetInt(), 1234);
 
+}
+
+
+TEST(Plugin_JsonRPC, errorWhileParsing)
+{
+	string* wrongRequest = new string("{\"jsonrpc\": \"2.0\", \"params\": { \"port\": 0 , \"method\": \"aa_open\", \"id\": 1}");
+	string* emptyIdentity = new string();
+
+	CHECK_THROWS(PluginError, json->handle(wrongRequest, emptyIdentity));
+
+	delete wrongRequest;
+	delete emptyIdentity;
 }
 
 

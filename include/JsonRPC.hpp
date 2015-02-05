@@ -117,9 +117,9 @@ class JsonRPC {
 		//lookup for function
 		char* processRequest(Value &method, Value &params, Value &id, string* identity);
 
-		char* response(Value &id);
+		char* generateResponse(Value &id);
 
-		char* responseError(Value &id, int code, char* msg);
+		char* generateResponseError(Value &id, int code, char* msg);
 
 		void generateResponseDOM(Document &dom);
 

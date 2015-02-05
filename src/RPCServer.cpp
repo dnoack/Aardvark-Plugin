@@ -22,14 +22,16 @@ RPC_Server::~RPC_Server()
 
 void RPC_Server::init()
 {
-	int option = 1;
+	int option = 0;
 
 
 	json = new JsonRPC();
 	context = zmq_ctx_new();
 	socketToRCD = zmq_socket(context, ZMQ_ROUTER);
-	zmq_setsockopt(socketToRCD, ZMQ_ROUTER_MANDATORY,&option,4);
+	//zmq_setsockopt(socketToRCD, ZMQ_ROUTER_MANDATORY,&option,4);
 	zmq_bind(socketToRCD, "ipc:///tmp/feeds/aardvark1");
+
+
 }
 
 
