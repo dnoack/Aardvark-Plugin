@@ -6,17 +6,20 @@
 CPP_SRCS += \
 ../src/Aardvark.cpp \
 ../src/JsonRPC.cpp \
-../src/RPCServer.cpp 
+../src/RPCServer.cpp \
+../src/Uds.cpp 
 
 OBJS += \
 ./src/Aardvark.o \
 ./src/JsonRPC.o \
-./src/RPCServer.o 
+./src/RPCServer.o \
+./src/Uds.o 
 
 CPP_DEPS += \
 ./src/Aardvark.d \
 ./src/JsonRPC.d \
-./src/RPCServer.d 
+./src/RPCServer.d \
+./src/Uds.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes
