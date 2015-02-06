@@ -47,7 +47,7 @@
 							<tool id="cdt.managedbuild.tool.gnu.c.linker.exe.debug.564149777" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.exe.debug"/>
 							<tool id="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug.1785844853" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug">
 								<option id="gnu.cpp.link.option.libs.472816727" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" valueType="libs">
-									<listOptionValue builtIn="false" value="zmq"/>
+									<listOptionValue builtIn="false" value="pthread"/>
 									<listOptionValue builtIn="false" value="aardvark"/>
 									<listOptionValue builtIn="false" value="dl"/>
 								</option>
@@ -99,6 +99,11 @@
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.c.linker.exe.release.2137561438" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.exe.release"/>
 							<tool id="cdt.managedbuild.tool.gnu.cpp.linker.exe.release.1758773319" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.exe.release">
+								<option id="gnu.cpp.link.option.libs.1605979710" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" valueType="libs">
+									<listOptionValue builtIn="false" value="pthread"/>
+									<listOptionValue builtIn="false" value="aardvark"/>
+									<listOptionValue builtIn="false" value="dl"/>
+								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.1874920526" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
 									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
@@ -142,7 +147,6 @@
 									<listOptionValue builtIn="false" value="/home/dnoack/libs/rapidjson/include/rapidjson"/>
 									<listOptionValue builtIn="false" value="/home/dnoack/cpputest/include/CppUTest"/>
 									<listOptionValue builtIn="false" value="/home/dnoack/cpputest/include/CppUTestExt"/>
-									<listOptionValue builtIn="false" value="/home/dnoack/libs/zeromq-4.0.5/include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/include}&quot;"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.other.other.557232989" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" value="-c -fmessage-length=0 -Wno-write-strings" valueType="string"/>
@@ -155,7 +159,6 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/include}&quot;"/>
 									<listOptionValue builtIn="false" value="/home/dnoack/cpputest/include/CppUTest"/>
 									<listOptionValue builtIn="false" value="/home/dnoack/cpputest/include/CppUTestExt"/>
-									<listOptionValue builtIn="false" value="/home/dnoack/libs/zeromq-4.0.5/include"/>
 									<listOptionValue builtIn="false" value="/home/dnoack/libs/rapidjson/include/rapidjson"/>
 								</option>
 								<option id="gnu.c.compiler.option.misc.other.126240665" name="Other flags" superClass="gnu.c.compiler.option.misc.other" value="-c -fmessage-length=0 -Wno-write-strings" valueType="string"/>
@@ -164,7 +167,7 @@
 							<tool id="cdt.managedbuild.tool.gnu.c.linker.exe.debug.24245126" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.exe.debug"/>
 							<tool id="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug.2104972740" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug">
 								<option id="gnu.cpp.link.option.libs.368544110" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" valueType="libs">
-									<listOptionValue builtIn="false" value="zmq"/>
+									<listOptionValue builtIn="false" value="pthread"/>
 									<listOptionValue builtIn="false" value="CppUTest"/>
 									<listOptionValue builtIn="false" value="CppUTestExt"/>
 									<listOptionValue builtIn="false" value="aardvark"/>
@@ -184,7 +187,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="src/RPCServer.cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="src/PluginAardvark.cpp|src/RPCServer.cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -216,7 +219,6 @@
 									<listOptionValue builtIn="false" value="/home/dnoack/libs/rapidjson/include/rapidjson"/>
 									<listOptionValue builtIn="false" value="/home/dnoack/cpputest/include/CppUTest"/>
 									<listOptionValue builtIn="false" value="/home/dnoack/cpputest/include/CppUTest"/>
-									<listOptionValue builtIn="false" value="/home/dnoack/libs/zeromq-4.0.5/include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/include}&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.454512979" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
@@ -228,7 +230,6 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/include}&quot;"/>
 									<listOptionValue builtIn="false" value="/home/dnoack/cpputest/include/CppUTest"/>
 									<listOptionValue builtIn="false" value="/home/dnoack/cpputest/include/CppUTest"/>
-									<listOptionValue builtIn="false" value="/home/dnoack/libs/zeromq-4.0.5/include"/>
 									<listOptionValue builtIn="false" value="/home/dnoack/libs/rapidjson/include/rapidjson"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.2135506885" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
@@ -236,11 +237,9 @@
 							<tool id="cdt.managedbuild.tool.gnu.c.linker.exe.debug.425836707" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.exe.debug"/>
 							<tool id="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug.1031768333" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug">
 								<option id="gnu.cpp.link.option.libs.551645970" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" valueType="libs">
-									<listOptionValue builtIn="false" value="zmq"/>
 									<listOptionValue builtIn="false" value="pthread"/>
 									<listOptionValue builtIn="false" value="aardvark"/>
 									<listOptionValue builtIn="false" value="dl"/>
-									<listOptionValue builtIn="false" value="protobuf"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.1431522186" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>

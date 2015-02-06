@@ -54,7 +54,7 @@ void PluginAardvark::detectDevices()
 int main(int argc, char** argv)
 {
 	PluginAardvark* test = new PluginAardvark();
-	//test->registerToRSD();
+
 	while(1)
 		sleep(3);
 	delete test;

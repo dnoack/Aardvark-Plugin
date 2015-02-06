@@ -18,6 +18,7 @@ char* JsonRPC::handle(string* request, string* identity)
 {
 	char* responseMsg;
 
+
 	try
 	{
 		requestDOM->Parse(request->c_str());
@@ -40,6 +41,7 @@ char* JsonRPC::handle(string* request, string* identity)
 	{
 		Value nullId;
 		responseMsg = generateResponseError(nullId, -32700, errorMsg.get());
+
 	}
 
 	return responseMsg;
@@ -255,9 +257,6 @@ void JsonRPC::detectDevices()
 		}
 	}
 }
-
-
-
 
 
 

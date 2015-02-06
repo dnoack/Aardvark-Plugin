@@ -139,7 +139,7 @@ TEST(Plugin_JsonRPC, errorWhileParsing)
 	string* wrongRequest = new string("{\"jsonrpc\": \"2.0\", \"params\": { \"port\": 0 , \"method\": \"aa_open\", \"id\": 1}");
 	string* emptyIdentity = new string();
 
-	CHECK_THROWS(PluginError, json->handle(wrongRequest, emptyIdentity));
+	STRCMP_EQUAL("{\"jsonrpc\":\"2.0\",\"error\":{\"code\":-32700,\"message\":\"Server error\",\"data\":\"\"},\"id\":0}", json->handle(wrongRequest, emptyIdentity));
 
 	delete wrongRequest;
 	delete emptyIdentity;

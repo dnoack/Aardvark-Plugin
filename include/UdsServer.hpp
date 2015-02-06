@@ -70,7 +70,7 @@ class UdsServer : public MyThreadClass{
 		struct sigaction pipehandler;
 
 
-		virtual void thread_listen(pthread_t partent_th, int socket, char* workerBuffer);
+		virtual void thread_listen(pthread_t partent_th, int socket, char* workerBuffer, bool* workerBusy);
 
 
 		virtual void thread_work(int socket);

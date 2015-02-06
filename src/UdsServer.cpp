@@ -55,12 +55,12 @@ int UdsServer::call()
 
 
 
-void UdsServer::thread_listen(pthread_t parent_th, int socket, char* workerBuffer)
+void UdsServer::thread_listen(pthread_t parent_th, int socket, char* workerBuffer, bool* workerBusy)
 {
 	char buffer[BUFFER_SIZE];
 	int recvSize = 0;
 	bool listen_thread_active = true;
-	bool workerBusy = false;
+	*workerBusy = false;
 	memset(buffer, '\0', BUFFER_SIZE);
 
 
@@ -70,8 +70,9 @@ void UdsServer::thread_listen(pthread_t parent_th, int socket, char* workerBuffe
 		recvSize = recv( socket , buffer, BUFFER_SIZE, 0);
 		if(recvSize > 0)
 		{
-			if(!workerBusy)
+			if(!*workerBusy)
 			{
+				*workerBusy = true;
 				//copy buffer / add copy off buffer to a queue
 				strncpy(workerBuffer, buffer, BUFFER_SIZE);
 				//signal the worker
@@ -81,6 +82,7 @@ void UdsServer::thread_listen(pthread_t parent_th, int socket, char* workerBuffe
 			else
 			{
 				//queue data
+				printf("\n#####Nachricht verworfen, zuviele Nachrichten.####\n");
 			}
 		}
 		else
@@ -123,14 +125,16 @@ void UdsServer::thread_work(int socket)
 	char* bufferOut;
 	string* jsonInput;
 	string* identity = new string("fake");
+	string* jsonReturn;
 	int currentsocket = socket;
 	bool worker_thread_active = true;
 	int currentSig = 0;
+	bool workerBusy = false;
 
 	memset(buffer, '\0', BUFFER_SIZE);
 
 	//start the listenerthread and remember the theadId of it
-	lthread = StartListenerThread(pthread_self(), currentsocket, buffer);
+	lthread = StartListenerThread(pthread_self(), currentsocket, buffer, &workerBusy);
 
 
 	while(worker_thread_active)
@@ -141,15 +145,17 @@ void UdsServer::thread_work(int socket)
 		switch(currentSig)
 		{
 			case SIGUSR1:
+
 				//sigusr1 = there is data for work e.g. parsing json rpc
 				printf("We received something and the worker got a signal.\n");
 				jsonInput = new string(buffer, BUFFER_SIZE);
 				bufferOut = json.handle(jsonInput, identity);
-				send(currentsocket, bufferOut, 30, 0);
+				jsonReturn = new string(bufferOut);
+				send(currentsocket, jsonReturn->c_str(), jsonReturn->size(), 0);
 
 				delete jsonInput;
 				memset(buffer, '\0', BUFFER_SIZE);
-
+				delete jsonReturn;
 				break;
 
 			case SIGUSR2:
@@ -163,6 +169,7 @@ void UdsServer::thread_work(int socket)
 				worker_thread_active = false;
 				break;
 		}
+		workerBusy = false;
 	}
 	editWorkerList(pthread_self(), DELETE_WORKER);
 	close(currentsocket);
