@@ -24,7 +24,6 @@ class PluginAardvark{
 		PluginAardvark();
 		~PluginAardvark();
 
-		bool registerToRSD();
 		void startListening();
 
 	private:
