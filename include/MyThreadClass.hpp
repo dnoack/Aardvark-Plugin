@@ -15,10 +15,13 @@
 
 class MyThreadClass;
 
-struct argStruct{
+struct argStruct
+{
 	MyThreadClass* th_id;
 	int socket;
+	char* buffer;
 };
+
 
 
 /**
@@ -64,10 +67,11 @@ public:
    /**
    Starts the listen thread, which start executing the thread_listen() function.
    \return True if the thread was successfully started, false if there was an error starting the thread.*/
-   pthread_t StartListenerThread(pthread_t parent_th, int socket)
+   pthread_t StartListenerThread(pthread_t parent_th, int socket, char* buffer)
    {
 	   tempStruct.socket = socket;
 	   tempStruct.th_id = this;
+	   tempStruct.buffer = buffer;
 
 	   pthread_create(&_listener, NULL, thread_listenerEntryFunc, &tempStruct);
 	   return _listener;
@@ -102,7 +106,7 @@ protected:
 	/** This method has to be responsible for the connection setup and execution tasks like prngd computation.*/
    virtual void thread_work(int) = 0;
    /**This method has to be responsible for listening to incomming data and signaling the worker.*/
-   virtual void thread_listen(pthread_t, int)= 0;
+   virtual void thread_listen(pthread_t, int, char*)= 0;
 
    virtual void thread_accept()= 0;
 
@@ -121,8 +125,9 @@ private:
    {
 	   MyThreadClass* mtc = ((argStruct*)This)->th_id;
 	   int socket =  ((argStruct*)This)->socket;
+	   char* buffer = ((argStruct*)This)->buffer;
 
-	   mtc->thread_listen(mtc->_worker, socket);
+	   mtc->thread_listen(mtc->_worker, socket, buffer);
 	   //((MyThreadClass*)This)->thread_listen(((MyThreadClass*)This)->_worker, socket);
 	   return NULL;
    }

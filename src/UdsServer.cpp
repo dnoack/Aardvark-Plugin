@@ -19,6 +19,9 @@ UdsServer::UdsServer(int mode, const char* udsFile, int nameSize)
 	strncpy(address.sun_path, udsFile, nameSize);
 	addrlen = sizeof(address);
 
+	pthread_mutex_init(&wLmutex, NULL);
+	configSignals();
+
 	switch(mode)
 	{
 		case SERVER_MODE:
@@ -35,6 +38,7 @@ UdsServer::UdsServer(int mode, const char* udsFile, int nameSize)
 
 UdsServer::~UdsServer()
 {
+	pthread_mutex_destroy(&wLmutex);
 	close(connection_socket);
 	delete json;
 }
@@ -44,41 +48,46 @@ UdsServer::~UdsServer()
 int UdsServer::call()
 {
 	connect(connection_socket, (struct sockaddr*) &address, addrlen);
+	return 0;
 }
 
 
 
-int UdsServer::ud_send(char* msg, int msgSize)
-{
-	send(connection_socket, msg, msgSize, 0);
-}
 
 
-
-int UdsServer::ud_receive(char* buffer, int bufferSize)
-{
-	int recvSize = 0;
-	while(recvSize == 0)
-		recvSize = recv(connection_socket, buffer, bufferSize, 0);
-
-	return recvSize;
-}
-
-
-
-void UdsServer::thread_listen(pthread_t parent_th, int socket)
+void UdsServer::thread_listen(pthread_t parent_th, int socket, char* workerBuffer)
 {
 	char buffer[BUFFER_SIZE];
 	int recvSize = 0;
-
+	bool listen_thread_active = true;
+	bool workerBusy = false;
 	memset(buffer, '\0', BUFFER_SIZE);
+
 
 	while(listen_thread_active)
 	{
 
 		recvSize = recv( socket , buffer, BUFFER_SIZE, 0);
+		if(recvSize > 0)
+		{
+			if(!workerBusy)
+			{
+				//copy buffer / add copy off buffer to a queue
+				strncpy(workerBuffer, buffer, BUFFER_SIZE);
+				//signal the worker
+				pthread_kill(parent_th, SIGUSR1);
+				memset(buffer, '\0', BUFFER_SIZE);
+			}
+			else
+			{
+				//queue data
+			}
+		}
+		else
+			listen_thread_active = false;
 
 	}
+	printf("Listener beendet.\n");
 	pthread_kill(parent_th, SIGPOLL);
 
 }
@@ -89,7 +98,7 @@ void UdsServer::thread_accept()
 {
 	int new_socket = 0;
 	pthread_t th_id;
-	accept_thread_active = true;
+	bool accept_thread_active = true;
 	listen(connection_socket, 5);
 
 	while(accept_thread_active)
@@ -98,17 +107,66 @@ void UdsServer::thread_accept()
 		if(new_socket >= 0)
 		{
 			th_id = StartWorkerThread(new_socket);
-			workerList.push_back(th_id);
+			editWorkerList(th_id, ADD_WORKER);
 			printf("Client verbunden.\n");
 		}
+
 	}
 }
 
 
 void UdsServer::thread_work(int socket)
 {
-	sleep(3);
-	printf("Client verbunden, worker thread %d",  pthread_self());
+	Plugin::JsonRPC json;
+	pthread_t lthread = 0;
+	char buffer[BUFFER_SIZE];
+	char* bufferOut;
+	string* jsonInput;
+	string* identity = new string("fake");
+	int currentsocket = socket;
+	bool worker_thread_active = true;
+	int currentSig = 0;
+
+	memset(buffer, '\0', BUFFER_SIZE);
+
+	//start the listenerthread and remember the theadId of it
+	lthread = StartListenerThread(pthread_self(), currentsocket, buffer);
+
+
+	while(worker_thread_active)
+	{
+		//wait for signals from listenerthread
+
+		sigwait(&sigmask, &currentSig);
+		switch(currentSig)
+		{
+			case SIGUSR1:
+				//sigusr1 = there is data for work e.g. parsing json rpc
+				printf("We received something and the worker got a signal.\n");
+				jsonInput = new string(buffer, BUFFER_SIZE);
+				bufferOut = json.handle(jsonInput, identity);
+				send(currentsocket, bufferOut, 30, 0);
+
+				delete jsonInput;
+				memset(buffer, '\0', BUFFER_SIZE);
+
+				break;
+
+			case SIGUSR2:
+				//sigusr2 = time to exit
+				worker_thread_active = false;
+				break;
+
+			case SIGPIPE:
+				break;
+			default:
+				worker_thread_active = false;
+				break;
+		}
+	}
+	editWorkerList(pthread_self(), DELETE_WORKER);
+	close(currentsocket);
+	printf("Worker Thread beendet.\n");
 }
 
 

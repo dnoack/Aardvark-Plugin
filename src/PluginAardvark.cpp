@@ -25,13 +25,6 @@ PluginAardvark::~PluginAardvark()
 
 
 
-bool PluginAardvark::registerToRSD()
-{
-	uds_reg->ud_send("Registermessage", 15);
-	uds_reg->ud_receive(buffer, BUFFER_SIZE);
-	printf("Received: %s \n", buffer);
-	return true;
-}
 
 void PluginAardvark::startListening()
 {
