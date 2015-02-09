@@ -41,7 +41,6 @@ char* JsonRPC::handle(string* request, string* identity)
 	{
 		Value nullId;
 		responseMsg = generateResponseError(nullId, -32700, errorMsg.get());
-
 	}
 
 	return responseMsg;
@@ -100,7 +99,7 @@ char* JsonRPC::processRequest(Value &method, Value &params, Value &id, string* i
 	//int devicePort = 0;
 
 	//lookup the function !
-	printf("Funktionaufruf: %s ", method.GetString());
+	//printf("Funktionaufruf: %s ", method.GetString());
 
 	/*
 	//identify hw, for aardvark we can identify the device by it s port_number (first parameter)
@@ -172,7 +171,7 @@ char* JsonRPC::generateResponse(Value &id)
 
 	//write DOM to sBuffer
 	responseDOM->Accept(*jsonWriter);
-	printf("\nResponseMsg: %s\n", sBuffer.GetString());
+	//printf("\nResponseMsg: %s\n", sBuffer.GetString());
 
 	return (char*)sBuffer.GetString();
 }
@@ -197,7 +196,7 @@ char* JsonRPC::generateResponseError(Value &id, int code, char* msg)
 	(*errorDOM)["error"]["data"].Swap(data);
 
 	errorDOM->Accept(*jsonWriter);
-	printf("\nErrorMsg: %s\n", sBuffer.GetString());
+	//printf("\nErrorMsg: %s\n", sBuffer.GetString());
 
 	return (char*)sBuffer.GetString();
 }
@@ -212,7 +211,6 @@ void JsonRPC::generateResponseDOM(Document &dom)
 	dom.AddMember("jsonrpc", JSON_PROTOCOL_VERSION, dom.GetAllocator());
 	dom.AddMember("result", "", dom.GetAllocator());
 	dom.AddMember("id", id, dom.GetAllocator());
-
 }
 
 

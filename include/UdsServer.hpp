@@ -15,25 +15,23 @@
 #include <netinet/in.h>
 #include <unistd.h>
 #include <cstdio>
+#include <list>
+#include <pthread.h>
 
-
-
+#include "signal.h"
 #include "JsonRPC.hpp"
 #include "Aardvark.hpp"
-#include <pthread.h>
-#include "MyThreadClass.hpp"
-#include "signal.h"
+
+class UdsWorker;
 
 
-#define BUFFER_SIZE 1024
 #define CLIENT_MODE 1
 #define SERVER_MODE 2
-#define ADD_WORKER true
-#define DELETE_WORKER false
 
 
 
-class UdsServer : public MyThreadClass{
+
+class UdsServer {
 
 	public:
 		UdsServer(int mode, const char* udsFile, int nameSize);
@@ -44,80 +42,30 @@ class UdsServer : public MyThreadClass{
 
 		int call();
 
-
 		void startCom();
 
-
+		//add=true -> add the worker, add=false->delete worker
+		static void editWorkerList(UdsWorker* newWorker, bool add);
 
 	private:
 
-		int connection_socket;
-		int worker_socket;
+		static int connection_socket;
+
 
 		//list of pthread ids with all the active worker. push and pop must be protected by mutex
-		vector<pthread_t> workerList;
-		pthread_mutex_t wLmutex;
+		static vector<UdsWorker*> workerList;
+		static pthread_mutex_t wLmutex;
 
-		int optionflag = 1;
+		static struct sockaddr_un address;
+		static socklen_t addrlen;
 
-		struct sockaddr_un address;
-		socklen_t addrlen;
+		//Plugin::JsonRPC* json;
 
-		Plugin::JsonRPC* json; //json rpc parser for main server thread
+		int optionflag;
 
-		sigset_t sigmask;
-		struct sigaction action;
-		struct sigaction pipehandler;
+		static void* uds_accept(void*);
 
 
-		virtual void thread_listen(pthread_t partent_th, int socket, char* workerBuffer, bool* workerBusy);
-
-
-		virtual void thread_work(int socket);
-
-		virtual void thread_accept();
-
-
-		static void dummy_handler(int){};
-
-
-		//add=true -> add the worker, add=false->delete worker
-		void editWorkerList(pthread_t newWorker, bool add)
-		{
-			pthread_mutex_lock(&wLmutex);
-			if(add)
-			{
-				workerList.push_back(newWorker);
-			}
-			else
-			{
-				//find worker
-				for(int i = 0; i < workerList.size() ; i++)
-				{
-					if(workerList[i] == newWorker)
-					{
-						workerList.erase(workerList.begin()+i);
-						break;
-					}
-				}
-			}
-			pthread_mutex_unlock(&wLmutex);
-		}
-
-
-
-		void configSignals()
-		{
-			sigfillset(&sigmask);
-			pthread_sigmask(SIG_UNBLOCK, &sigmask, (sigset_t*)0);
-
-			action.sa_flags = 0;
-			action.sa_handler = dummy_handler;
-			sigaction(SIGUSR1, &action, (struct sigaction*)0);
-			sigaction(SIGUSR2, &action, (struct sigaction*)0);
-			sigaction(SIGPOLL, &action, (struct sigaction*)0);
-			sigaction(SIGPIPE, &action, (struct sigaction*)0);
-		}
 
 
 

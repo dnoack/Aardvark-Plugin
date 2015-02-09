@@ -20,7 +20,6 @@ struct argStruct
 	MyThreadClass* th_id;
 	int socket;
 	char* buffer;
-	bool* busy;
 };
 
 
@@ -48,7 +47,7 @@ public:
    {
 	   _worker = 0;
 	   _listener = 0;
-	   _accepter = 0;
+
    }
    /**Destructor*/
    virtual ~MyThreadClass() {/* empty */}
@@ -68,22 +67,18 @@ public:
    /**
    Starts the listen thread, which start executing the thread_listen() function.
    \return True if the thread was successfully started, false if there was an error starting the thread.*/
-   pthread_t StartListenerThread(pthread_t parent_th, int socket, char* buffer, bool* workerBusy)
+   pthread_t StartListenerThread(pthread_t parent_th, int socket, char* buffer)
    {
 	   tempStruct.socket = socket;
 	   tempStruct.th_id = this;
 	   tempStruct.buffer = buffer;
-	   tempStruct.busy = workerBusy;
 
 	   pthread_create(&_listener, NULL, thread_listenerEntryFunc, &tempStruct);
 	   return _listener;
    }
 
 
-   int StartAcceptThread()
-   {
-	   return(pthread_create(&_accepter, NULL, thread_acceptEntryFunc, this) == 0);
-   }
+
 
 
    /** Will not return until the internal worker thread has exited. */
@@ -98,19 +93,16 @@ public:
 	   (void) pthread_join(_listener, NULL);
    }
 
-   void WaitForAcceptThreadToExit()
-   {
-	   (void) pthread_join(_accepter, NULL);
-   }
+
 
 protected:
 
 	/** This method has to be responsible for the connection setup and execution tasks like prngd computation.*/
    virtual void thread_work(int) = 0;
    /**This method has to be responsible for listening to incomming data and signaling the worker.*/
-   virtual void thread_listen(pthread_t, int, char*, bool*)= 0;
+   virtual void thread_listen(pthread_t, int, char*)= 0;
 
-   virtual void thread_accept()= 0;
+
 
 private:
 	/** Creates a new worker thread and starts executing thread_work within it.*/
@@ -128,21 +120,16 @@ private:
 	   MyThreadClass* mtc = ((argStruct*)This)->th_id;
 	   int socket =  ((argStruct*)This)->socket;
 	   char* buffer = ((argStruct*)This)->buffer;
-	   bool* busy = ((argStruct*)This)->busy;
 
-	   mtc->thread_listen(mtc->_worker, socket, buffer, busy);
+	   mtc->thread_listen(mtc->_worker, socket, buffer);
 	   //((MyThreadClass*)This)->thread_listen(((MyThreadClass*)This)->_worker, socket);
 	   return NULL;
    }
-
-   static void* thread_acceptEntryFunc(void* This) {((MyThreadClass*)This)->thread_accept(); return NULL;}
 
    /** Id of the internal worker thread.*/
    pthread_t _worker;
    /** ID of the internal listener thread.*/
    pthread_t _listener;
-
-   pthread_t _accepter;
 
    argStruct tempStruct;
 };

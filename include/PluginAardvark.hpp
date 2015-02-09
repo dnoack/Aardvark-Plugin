@@ -17,6 +17,8 @@
 #include "UdsServer.hpp"
 #include "Aardvark.hpp"
 
+#define BUFFER_SIZE 1024
+
 
 class PluginAardvark{
 
@@ -24,7 +26,6 @@ class PluginAardvark{
 		PluginAardvark();
 		~PluginAardvark();
 
-		void startListening();
 
 	private:
 		UdsServer* uds_reg;
