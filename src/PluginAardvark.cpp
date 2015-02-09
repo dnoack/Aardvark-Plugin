@@ -26,13 +26,6 @@ PluginAardvark::~PluginAardvark()
 
 
 
-void PluginAardvark::startListening()
-{
-	uds_com = new UdsServer(SERVER_MODE, UDS_COM_PATH, sizeof(UDS_COM_PATH));
-}
-
-
-
 void PluginAardvark::detectDevices()
 {
 	u16 devices[EXPECTED_NUM_OF_DEVICES];
