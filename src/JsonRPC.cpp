@@ -11,44 +11,36 @@
 #include "stdio.h"
 
 
-using namespace Plugin;
 
 
-char* JsonRPC::handle(string* request, string* identity)
+Document* JsonRPC::parse(string* msg)
 {
-	char* responseMsg;
-
+	Document* result;
 
 	try
 	{
-		requestDOM->Parse(request->c_str());
-
+		requestDOM->Parse(msg->c_str());
 		if(!requestDOM->HasParseError())
-		{
-
-			if(checkJsonRpc_RequestFormat(*requestDOM))
-			{
-				if(isRequest(*requestDOM)) //request
-					responseMsg =  processRequest((*requestDOM)["method"], (*requestDOM)["params"], (*requestDOM)["id"], identity);
-				else
-					responseMsg = NULL; //TODO: processNotification
-			}
-		}
+			result = requestDOM;
 		else
 			throw PluginError("Error while parsing json rpc.");
 	}
 	catch(PluginError &errorMsg)
 	{
 		Value nullId;
-		responseMsg = generateResponseError(nullId, -32700, errorMsg.get());
+		error = generateResponseError(nullId, -32700, errorMsg.get());
+		result = NULL;
+		throw;
 	}
-
-	return responseMsg;
+	return result;
 }
 
 
-bool JsonRPC::checkJsonRpc_RequestFormat(Document &dom)
+
+bool JsonRPC::checkJsonRpc_RequestFormat()
 {
+	Document &dom = *requestDOM;
+
 	if(!dom.HasMember("jsonrpc"))
 	{
 		throw PluginError("Inccorect Json RPC, member \"jsonrpc\" is missing.");
@@ -77,8 +69,10 @@ bool JsonRPC::checkJsonRpcVersion(Document &dom)
 }
 
 
-bool JsonRPC::isRequest(Document &dom)
+bool JsonRPC::isRequest()
 {
+	Document &dom = *requestDOM;
+
 	if(dom.HasMember("id"))
 	{
 		//TODO: check: normally not NULL, no fractional pars
@@ -90,74 +84,8 @@ bool JsonRPC::isRequest(Document &dom)
 
 
 
-char* JsonRPC::processRequest(Value &method, Value &params, Value &id, string* identity)
-{
-	string* deviceIdentity = NULL;
-	RemoteAardvark* currentDevice = NULL;
-	char* responseMsg = NULL;
-	bool lockFlag= false;
-	//int devicePort = 0;
 
-	//lookup the function !
-	//printf("Funktionaufruf: %s ", method.GetString());
-
-	/*
-	//identify hw, for aardvark we can identify the device by it s port_number (first parameter)
-	if(params.IsArray())
-	{
-		devicePort = params[0].GetInt();
-	}
-	else
-		devicePort = params.GetInt();
-
-	//TODO: we need a better way to distinguish hw port and hw handle
-	if(strcmp(method.GetString(), "aa_open") == 0)
-		currentDevice = deviceList[devicePort];
-	else
-		currentDevice = deviceList[devicePort-1];*/
-
-	currentDevice = deviceList[0];
-	//process the function and create result
-	deviceIdentity = currentDevice->getIdentity();
-
-	//Hardware is free or it s the same user
-	try
-	{
-		if(deviceIdentity == NULL || deviceIdentity->compare(*identity) == 0)
-		{
-
-			if(deviceIdentity == NULL)
-				currentDevice->setIdentity(identity);
-
-
-
-				lockFlag = currentDevice->executeFunction(method, params, result);
-
-				if(!lockFlag)
-					currentDevice->setIdentity(NULL);
-
-				//generate a normal responsemsg with result
-				responseMsg = generateResponse(id);
-
-
-		}
-		else
-		{
-			throw PluginError("Hardware locked, Usage restricted.");
-		}
-	}
-	catch(const PluginError &e)
-	{
-		lockFlag = false;
-		responseMsg = generateResponseError(id, -32000, e.get());
-	}
-
-	return responseMsg;
-}
-
-
-
-char* JsonRPC::generateResponse(Value &id)
+char* JsonRPC::generateResponse(Value &id, Value &response)
 {
 	//clear buffer
 	Value* oldResult;
@@ -166,7 +94,7 @@ char* JsonRPC::generateResponse(Value &id)
 
 	//swap current result value with the old one and get the corresponding id
 	oldResult = &((*responseDOM)["result"]);
-	oldResult->Swap(result);
+	oldResult->Swap(response);
 	(*responseDOM)["id"] = id.GetInt();
 
 	//write DOM to sBuffer
@@ -236,25 +164,6 @@ void JsonRPC::generateErrorDOM(Document &dom)
 }
 
 
-
-void JsonRPC::detectDevices()
-{
-	int num_devices = 1;
-	u16 devices[num_devices];
-	int num_ids = num_devices;
-	u32 unique_ids[num_devices];
-
-	aa_find_devices_ext(num_devices, devices, num_ids, unique_ids);
-
-	for(int i = 0; i < num_devices; i++)
-	{
-		if(unique_ids[i] != 0)
-		{
-			//devices will be deleted within destructor
-			deviceList.push_back(new RemoteAardvark());
-		}
-	}
-}
 
 
 

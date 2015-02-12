@@ -5,19 +5,19 @@
  *      Author: dnoack
  */
 
-#ifndef INCLUDE_MYTHREADCLASS_HPP_
-#define INCLUDE_MYTHREADCLASS_HPP_
+#ifndef INCLUDE_WORKERTHREADS_HPP_
+#define INCLUDE_WORKERTHREADS_HPP_
 
 
 
 #include <pthread.h>
 #include <stdlib.h>
 
-class MyThreadClass;
+class WorkerThreads;
 
 struct argStruct
 {
-	MyThreadClass* th_id;
+	WorkerThreads* th_id;
 	int socket;
 	char* buffer;
 };
@@ -38,19 +38,19 @@ classes who inherit from MyThreadClass. The class got two internal variables for
 - As long as the worker is busy, the listener can receive commands, but they will not be executed.
 - After finishing a computation, the worker will get ready again and can handler further commands from the listener.
 */
-class MyThreadClass
+class WorkerThreads
 {
 public:
 
 	/**Constructor*/
-   MyThreadClass()
+   WorkerThreads()
    {
 	   _worker = 0;
 	   _listener = 0;
 
    }
    /**Destructor*/
-   virtual ~MyThreadClass() {/* empty */}
+   virtual ~WorkerThreads() {/* empty */}
 
    /**
    Starts the worker thread, which start executing the thread_work() function.
@@ -80,7 +80,6 @@ public:
 
 
 
-
    /** Will not return until the internal worker thread has exited. */
    void WaitForWorkerThreadToExit()
    {
@@ -95,6 +94,7 @@ public:
 
 
 
+
 protected:
 
 	/** This method has to be responsible for the connection setup and execution tasks like prngd computation.*/
@@ -104,11 +104,12 @@ protected:
 
 
 
+
 private:
 	/** Creates a new worker thread and starts executing thread_work within it.*/
    static void* thread_workEntryFunc(void * This)
    {
-	   MyThreadClass* mtc = ((argStruct*)This)->th_id;
+	   WorkerThreads* mtc = ((argStruct*)This)->th_id;
 	   int socket =  ((argStruct*)This)->socket;
 
 	   mtc->thread_work(socket);
@@ -117,7 +118,7 @@ private:
    /** Creates a new listener thread and starts executing thread_listen within it.*/
    static void* thread_listenerEntryFunc(void* This)
    {
-	   MyThreadClass* mtc = ((argStruct*)This)->th_id;
+	   WorkerThreads* mtc = ((argStruct*)This)->th_id;
 	   int socket =  ((argStruct*)This)->socket;
 	   char* buffer = ((argStruct*)This)->buffer;
 
@@ -126,10 +127,13 @@ private:
 	   return NULL;
    }
 
+
+
    /** Id of the internal worker thread.*/
    pthread_t _worker;
    /** ID of the internal listener thread.*/
    pthread_t _listener;
+
 
    argStruct tempStruct;
 };
@@ -137,4 +141,4 @@ private:
 
 
 
-#endif /* INCLUDE_MYTHREADCLASS_HPP_ */
+#endif /* INCLUDE_WORKERTHREADS_HPP_ */

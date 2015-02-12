@@ -59,7 +59,6 @@ class UdsServer {
 		static struct sockaddr_un address;
 		static socklen_t addrlen;
 
-		//Plugin::JsonRPC* json;
 
 		int optionflag;
 

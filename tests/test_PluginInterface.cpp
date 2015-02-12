@@ -57,22 +57,6 @@ TEST(Plugin_Interface, findParams_MemberNOTFound) //is object
 }
 
 
-TEST(Plugin_Interface, IdentitySet)
-{
-	string testIdentity = "3005";
-	testInterface->setIdentity(&testIdentity);
-	CHECK_EQUAL(testIdentity, *(testInterface->getIdentity()));
-	testInterface->setIdentity(NULL); //deallocate identity
-}
-
-
-TEST(Plugin_Interface, IdentityReset)
-{
-	string testIdentity = "3005";
-	testInterface->setIdentity(&testIdentity);
-	testInterface->setIdentity(NULL);
-	CHECK_EQUAL(NULL, testInterface->getIdentity());
-}
 
 
 TEST(Plugin_Interface, executeFunction_FunctionNOTfound)

@@ -28,15 +28,15 @@ class PluginInterface{
 		PluginInterface(TDriver derivedClass)
 		{
 			driver = derivedClass;
-			currentIdentity = NULL;
-			error = NULL;
 		};
 
-		~PluginInterface(){};
+		~PluginInterface()
+		{
+			funcMap.clear();
+		};
 
 		bool executeFunction(Value &method, Value &params, Value &result)
 		{
-			this->error = error;
 			try{
 				funcP = funcMap[(char*)method.GetString()];
 				if(funcP == NULL)
@@ -51,26 +51,6 @@ class PluginInterface{
 		}
 
 
-		string* getIdentity(){return currentIdentity;}
-
-
-		void setIdentity(string* identity)
-		{
-			//parameter not null
-			if(identity != FREE_IDENTITY)
-			{
-				currentIdentity = new string(*identity);
-			}
-			//parameter null -> free memory, set pointer null
-			else
-			{
-				if(currentIdentity != NULL)
-				{
-					delete currentIdentity;
-					currentIdentity = NULL;
-				}
-			}
-		}
 
 		bool findParamsMember(Value &object, char* memberName)
 		{
@@ -107,9 +87,6 @@ class PluginInterface{
 		map<char*, TPointer, PluginInterface::cmp_keys> funcMap;
 		TPointer funcP;
 		TDriver driver;
-		string* currentIdentity;
-		char** error;
-
 
 };
 

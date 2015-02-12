@@ -15,13 +15,15 @@
 #include <netinet/in.h>
 #include <unistd.h>
 #include <cstdio>
+#include <cstring>
 #include <list>
 
 
 #include "JsonRPC.hpp"
 #include "Aardvark.hpp"
+#include "PluginAardvark.hpp"
 #include <pthread.h>
-#include "MyThreadClass.hpp"
+#include "WorkerThreads.hpp"
 #include "signal.h"
 
 class UdsServer;
@@ -35,7 +37,7 @@ class UdsServer;
 #define WORKER_GETSTATUS 2
 
 
-class UdsWorker : public MyThreadClass{
+class UdsWorker : public WorkerThreads{
 
 	public:
 		UdsWorker(int socket);
@@ -53,10 +55,9 @@ class UdsWorker : public MyThreadClass{
 
 		//variables for worker
 		bool worker_thread_active;
-		char* bufferOut;
-		string* jsonInput;
-		string* identity;
-		string* jsonReturn;
+		PluginAardvark* paard;
+		string* request;
+		string* response;
 
 
 		//shared variables
@@ -69,7 +70,6 @@ class UdsWorker : public MyThreadClass{
 
 		//not shared, more common
 		pthread_t lthread;
-		Plugin::JsonRPC* json;
 		int optionflag;
 		struct sockaddr_un address;
 		int currentSocket;

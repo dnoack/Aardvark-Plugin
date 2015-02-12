@@ -9,10 +9,21 @@
 #define private public
 
 #include "JsonRPC.hpp"
+#include "Plugin_Error.h"
 #include "TestHarness.h"
 
 static Document* dom;
-static Plugin::JsonRPC* json;
+static JsonRPC* json;
+
+static string OK_STRING =
+		"{\"jsonrpc\": \"2.0\", \"params\": { \"handle\": 1}, \"method\": \"aa_close\", \"id\": 3}";
+
+static string PARSE_ERROR_STRING =
+		"{\"jsonrpc\": \"2.0\", \"params\": { \"handle\": 1 , \"method\": \"aa_close\", \"id\": 3}";
+
+static string REQ_FROMAT_ERROR_STRING =
+		"{\"jsonrpc\": \"2.0\", \"params\": { \"handle\": 1} , \"notAMethod\": \"aa_close\", \"id\": 3}";
+
 
 
 static void generateRequest(Document &requestMsg)
@@ -31,7 +42,7 @@ TEST_GROUP(Plugin_JsonRPC)
 {
 	void setup()
 	{
-		json = new Plugin::JsonRPC();
+		json = new JsonRPC();
 		dom = new Document();
 		dom->SetObject();
 	}
@@ -42,6 +53,12 @@ TEST_GROUP(Plugin_JsonRPC)
 		delete dom;
 	}
 };
+
+
+TEST(Plugin_JsonRPC, checkParse_FAIL)
+{
+	CHECK_THROWS(PluginError, json->parse(&PARSE_ERROR_STRING));
+}
 
 
 
@@ -62,31 +79,27 @@ TEST(Plugin_JsonRPC, checkJsonRpcVersionOK)
 
 TEST(Plugin_JsonRPC, checkJsonRpc_RequestFormat_OK)
 {
-	dom->AddMember("jsonrpc", "2.0", dom->GetAllocator());
-	dom->AddMember("method" , "func", dom->GetAllocator());
-	CHECK(json->checkJsonRpc_RequestFormat(*dom));
+
+	json->parse(&OK_STRING);
+	CHECK(json->checkJsonRpc_RequestFormat());
 }
 
 
 TEST(Plugin_JsonRPC, checkJsonRpc_RequestFormat_FAIL)
 {
-	dom->AddMember("jsonrpc", "2.0", dom->GetAllocator());
-	dom->AddMember("NOTaMethod", "foo", dom->GetAllocator());
-	CHECK_THROWS(PluginError, json->checkJsonRpc_RequestFormat(*dom));
+	json->parse(&REQ_FROMAT_ERROR_STRING);
+	CHECK_THROWS(PluginError, json->checkJsonRpc_RequestFormat());
 }
 
 
-TEST(Plugin_JsonRPC, isRequest_no)
-{
-	dom->AddMember("id", "5", dom->GetAllocator());
-	CHECK(json->isRequest(*dom));
-	CHECK(json->isRequest(*dom));
-}
+
+
 
 
 TEST(Plugin_JsonRPC, responseDOM_ok)
 {
 	Value* id;
+	Value response;
 	Document* temp;
 
 	//see begin of this file
@@ -94,7 +107,7 @@ TEST(Plugin_JsonRPC, responseDOM_ok)
 
 	temp = (json->requestDOM);
 	id = &(*temp)["id"];
-	json->generateResponse(*id);
+	json->generateResponse(*id, response);
 
 	CHECK(json->responseDOM->HasMember("jsonrpc"));
 	CHECK(json->responseDOM->HasMember("result"));
@@ -133,17 +146,6 @@ TEST(Plugin_JsonRPC, responseError_ok)
 
 }
 
-
-TEST(Plugin_JsonRPC, errorWhileParsing)
-{
-	string* wrongRequest = new string("{\"jsonrpc\": \"2.0\", \"params\": { \"port\": 0 , \"method\": \"aa_open\", \"id\": 1}");
-	string* emptyIdentity = new string();
-
-	STRCMP_EQUAL("{\"jsonrpc\":\"2.0\",\"error\":{\"code\":-32700,\"message\":\"Server error\",\"data\":\"\"},\"id\":0}", json->handle(wrongRequest, emptyIdentity));
-
-	delete wrongRequest;
-	delete emptyIdentity;
-}
 
 
 

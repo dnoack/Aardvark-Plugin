@@ -10,7 +10,7 @@
 
 #define JSON_PROTOCOL_VERSION "2.0"
 
-#include <Aardvark.hpp>
+
 #include <map>
 #include <vector>
 
@@ -24,8 +24,6 @@ using namespace std;
 using namespace rapidjson;
 
 
-
-namespace Plugin{
 
 
 class JsonRPC {
@@ -45,7 +43,6 @@ class JsonRPC {
 
 			generateResponseDOM(*responseDOM);
 			generateErrorDOM(*errorDOM);
-			detectDevices();
 		};
 
 
@@ -56,20 +53,15 @@ class JsonRPC {
 			delete requestDOM;
 			delete responseDOM;
 			delete errorDOM;
-			for(unsigned int i = 0; i < deviceList.size(); i++)
-				delete deviceList[i];
 		};
 
 
-		//receive json-rpc msg, check if it is a request, process
-		char* handle(string* request, string* identity);
 
 		/**
 		 * Checks if the json rpc msg has the mandatory members (jsonrpc and method).
 		 * It also calls checkJsonRpcVersion.
 		 */
-		bool checkJsonRpc_RequestFormat(Document &dom);
-
+		bool checkJsonRpc_RequestFormat();
 
 		/**
 		 * Checks if the json rpc msg member "jsonrpc" has the correct protocol version.
@@ -77,15 +69,28 @@ class JsonRPC {
 		bool checkJsonRpcVersion(Document &dom);
 
 
-
-	private:
-
 		/**
 		 * Checks if there is a member named "id". If not the msg is assumed to be
 		 * a notification. If "id" is existing, the msg is a request. For checking the other
 		 * mandatory request fields, you need to call checkJsonRpc_RequestFormat().
 		 */
-		bool isRequest(Document &dom);
+		bool isRequest();
+
+
+		Document* parse(string* msg);
+
+		char* generateResponse(Value &id, Value &response);
+
+		Document* getRequestDOM() { return this->requestDOM;}
+		Document* getResponseDOM() { return this->responseDOM;}
+		Document* getErrorDOM(){ return this->errorDOM;}
+		char* getResponseError() {return this->error;}
+
+
+
+	private:
+
+
 
 		//compare functor handels char* compare for the map
 		struct cmp_keys
@@ -98,7 +103,7 @@ class JsonRPC {
 
 		StringBuffer sBuffer;
 		Writer<StringBuffer>* jsonWriter;
-		vector<RemoteAardvark*> deviceList;
+
 
 		//represents the current jsonrpc msg as dom (document object model)
 		Document* requestDOM;
@@ -114,10 +119,6 @@ class JsonRPC {
 		char* error;
 
 
-		//lookup for function
-		char* processRequest(Value &method, Value &params, Value &id, string* identity);
-
-		char* generateResponse(Value &id);
 
 		char* generateResponseError(Value &id, int code, char* msg);
 
@@ -125,13 +126,9 @@ class JsonRPC {
 
 		void generateErrorDOM(Document &dom);
 
-		void detectDevices();
-
 
 };
 
-
-}; //namespace Plugin
 
 
 #endif /* SRC_JSONRPC_H_ */

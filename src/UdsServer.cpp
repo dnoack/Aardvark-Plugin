@@ -9,6 +9,9 @@
 #include "JsonRPC.hpp"
 #include "UdsWorker.hpp"
 
+#define UDS_REGISTER_TO_RSD_PATH "/tmp/RsdRegister.uds"
+#define UDS_COM_PATH "/tmp/AardvarkPlugin.uds"
+#define EXPECTED_NUM_OF_DEVICES 1
 
 //static symbols
 int UdsServer::connection_socket;
@@ -22,7 +25,6 @@ socklen_t UdsServer::addrlen;
 UdsServer::UdsServer(int mode, const char* udsFile, int nameSize)
 {
 
-	//json = new Plugin::JsonRPC();
 	optionflag = 1;
 	connection_socket = socket(AF_UNIX, SOCK_STREAM, 0);
 	address.sun_family = AF_UNIX;
@@ -98,7 +100,7 @@ void UdsServer::editWorkerList(UdsWorker* newWorker, bool add)
 	else
 	{
 		//find worker
-		for(int i = 0; i < workerList.size() ; i++)
+		for(unsigned int i = 0; i < workerList.size() ; i++)
 		{
 			if(workerList[i] == newWorker)
 			{
@@ -118,6 +120,17 @@ void UdsServer::startCom()
 	pthread_t accepter;
 	pthread_create(&accepter, NULL, uds_accept, NULL);
 }
+
+
+/**
+int main(int argc, char** argv)
+{
+	UdsServer* udsServer = new UdsServer(SERVER_MODE, UDS_REGISTER_TO_RSD_PATH, sizeof(UDS_REGISTER_TO_RSD_PATH));
+	udsServer->startCom();
+	while(true)
+		sleep(3);
+
+}*/
 
 
 

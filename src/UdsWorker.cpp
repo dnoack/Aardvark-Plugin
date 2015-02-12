@@ -5,8 +5,8 @@
  *      Author: dnoack
  */
 
-#include "UdsWorker.hpp"
 
+#include "UdsWorker.hpp"
 #include "UdsServer.hpp"
 
 
@@ -16,16 +16,11 @@ UdsWorker::UdsWorker(int socket)
 	this->recvSize = 0;
 	this->lthread = 0;
 	this->worker_thread_active = false;
-	this->bufferOut = NULL;
-	this->jsonInput = NULL;
-	this->identity = new string("fake");
-	this->jsonInput;
-	this->jsonReturn = NULL;
 	this->workerBusy = false;
 	this->currentSig = 0;
 	this->optionflag = 1;
 	this->currentSocket = socket;
-	this->json = new Plugin::JsonRPC();
+	this->paard = new PluginAardvark();
 	memset(receiveBuffer, '\0', BUFFER_SIZE);
 
 
@@ -72,16 +67,16 @@ void UdsWorker::thread_work(int socket)
 					//printf("We received something and the worker got a signal.\n");
 
 					//1 get data from queue
-					jsonInput = receiveQueue.back();
-					//2 work
-					bufferOut = json->handle(jsonInput, identity);
-					jsonReturn = new string(bufferOut);
-					send(currentSocket, jsonReturn->c_str(), jsonReturn->size(), 0);
+					request = receiveQueue.back();
+
+					response = paard->processMsg(request);
+
+					send(currentSocket, response->c_str(), response->size(), 0);
 					//3 remove data from queue
 					editReceiveQueue(NULL, false);
 
 					//4 check for further data, if there is goto step 1
-					delete jsonReturn;
+					delete response;
 				}
 				break;
 
