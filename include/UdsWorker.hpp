@@ -81,8 +81,6 @@ class UdsWorker : public WorkerThreads{
 		int currentSig;
 
 
-
-
 		virtual void thread_listen(pthread_t partent_th, int socket, char* workerBuffer);
 
 		virtual void thread_work(int socket);

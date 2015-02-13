@@ -8,15 +8,15 @@
 
 #include "PluginAardvark.hpp"
 
-vector<RemoteAardvark*>* PluginAardvark::deviceList;
-pthread_mutex_t PluginAardvark::dLmutex;
+//vector<RemoteAardvark*> PluginAardvark::deviceList;
+//pthread_mutex_t PluginAardvark::dLmutex;
 
 
 PluginAardvark::PluginAardvark()
 {
 	pthread_mutex_init(&dLmutex, NULL);
 	json = new JsonRPC();
-	//deviceList = new vector<RemoteAardvark*>();
+	result = NULL;
 	detectDevices();
 }
 
@@ -25,14 +25,16 @@ PluginAardvark::PluginAardvark()
 PluginAardvark::~PluginAardvark()
 {
 	pthread_mutex_destroy(&dLmutex);
+	int size = deviceList.size();
 	delete json;
-
-	//delete deviceList;
-
-	delete test;
 
 	if(result != NULL)
 		delete result;
+
+	for(int i = 0; i < size; i++)
+		delete deviceList[i];
+
+
 }
 
 
@@ -40,7 +42,7 @@ RemoteAardvark* PluginAardvark::getDevice(int handle)
 {
 	RemoteAardvark* device;
 	pthread_mutex_lock(&dLmutex);
-	device = (*deviceList)[handle];
+	device = deviceList[handle];
 	pthread_mutex_unlock(&dLmutex);
 	return device;
 }
@@ -61,8 +63,7 @@ void PluginAardvark::detectDevices()
 		if(unique_ids[i] != 0)
 		{
 			//devices will be deleted within destructor
-			//deviceList->push_back(new RemoteAardvark());
-			test = new RemoteAardvark();
+			deviceList.push_back(new RemoteAardvark());
 		}
 	}
 

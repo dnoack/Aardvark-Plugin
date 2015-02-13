@@ -25,9 +25,10 @@ UdsWorker::UdsWorker(int socket)
 
 
 	pthread_mutex_init(&rQmutex, NULL);
-	//pthread_mutex_init(&wBusyMutex, NULL);
+	pthread_mutex_init(&wBusyMutex, NULL);
+
 	configSignals();
-	StartWorkerThread(currentSocket);
+	//StartWorkerThread(currentSocket);
 }
 
 
@@ -37,7 +38,11 @@ UdsWorker::~UdsWorker()
 {
 	pthread_mutex_destroy(&rQmutex);
 	pthread_mutex_destroy(&wBusyMutex);
+	delete paard;
 
+	worker_thread_active = false;
+	listen_thread_active = false;
+	//WaitForWorkerThreadToExit();
 }
 
 

@@ -144,10 +144,10 @@
 								<option id="gnu.cpp.compiler.exe.debug.option.optimization.level.1046023665" name="Optimization Level" superClass="gnu.cpp.compiler.exe.debug.option.optimization.level" value="gnu.cpp.compiler.optimization.level.none" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.exe.debug.option.debugging.level.2080550692" name="Debug Level" superClass="gnu.cpp.compiler.exe.debug.option.debugging.level" value="gnu.cpp.compiler.debugging.level.max" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.option.include.paths.2063765518" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
-									<listOptionValue builtIn="false" value="/home/dnoack/libs/rapidjson/include/rapidjson"/>
-									<listOptionValue builtIn="false" value="/home/dnoack/cpputest/include/CppUTest"/>
-									<listOptionValue builtIn="false" value="/home/dnoack/cpputest/include/CppUTestExt"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/include}&quot;"/>
+									<listOptionValue builtIn="false" value="../include"/>
+									<listOptionValue builtIn="false" value="../cpputest/include/CppUTest"/>
+									<listOptionValue builtIn="false" value="../cpputest/include/CppUTestExt"/>
+									<listOptionValue builtIn="false" value="../rapidjson/include/rapidjson"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.other.other.557232989" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" value="-c -fmessage-length=0 -Wno-write-strings" valueType="string"/>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.140906367" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
@@ -156,10 +156,10 @@
 								<option defaultValue="gnu.c.optimization.level.none" id="gnu.c.compiler.exe.debug.option.optimization.level.2099101141" name="Optimization Level" superClass="gnu.c.compiler.exe.debug.option.optimization.level" valueType="enumerated"/>
 								<option id="gnu.c.compiler.exe.debug.option.debugging.level.1916432367" name="Debug Level" superClass="gnu.c.compiler.exe.debug.option.debugging.level" value="gnu.c.debugging.level.max" valueType="enumerated"/>
 								<option id="gnu.c.compiler.option.include.paths.1840181164" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/include}&quot;"/>
-									<listOptionValue builtIn="false" value="/home/dnoack/cpputest/include/CppUTest"/>
-									<listOptionValue builtIn="false" value="/home/dnoack/cpputest/include/CppUTestExt"/>
-									<listOptionValue builtIn="false" value="/home/dnoack/libs/rapidjson/include/rapidjson"/>
+									<listOptionValue builtIn="false" value="../include"/>
+									<listOptionValue builtIn="false" value="../cpputest/include/CppUTest"/>
+									<listOptionValue builtIn="false" value="../cpputest/include/CppUTestExt"/>
+									<listOptionValue builtIn="false" value="../rapidjson/include/rapidjson"/>
 								</option>
 								<option id="gnu.c.compiler.option.misc.other.126240665" name="Other flags" superClass="gnu.c.compiler.option.misc.other" value="-c -fmessage-length=0 -Wno-write-strings" valueType="string"/>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.806515018" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
@@ -174,7 +174,7 @@
 									<listOptionValue builtIn="false" value="dl"/>
 								</option>
 								<option id="gnu.cpp.link.option.paths.690693994" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" valueType="libPaths">
-									<listOptionValue builtIn="false" value="/home/dnoack/cpputest/lib"/>
+									<listOptionValue builtIn="false" value="../cpputest/lib"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.112754320" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
