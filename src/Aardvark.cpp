@@ -78,7 +78,7 @@
 /*=========================================================================
 | DEFINES
  ========================================================================*/
-#define API_NAME                     "aardvark"
+#define API_NAME                     "libaardvark"
 #define API_DEBUG                    AA_DEBUG
 #define API_OK                       AA_OK
 #define API_UNABLE_TO_LOAD_LIBRARY   AA_UNABLE_TO_LOAD_LIBRARY
