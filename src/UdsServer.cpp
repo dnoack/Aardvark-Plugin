@@ -15,8 +15,10 @@
 
 //static symbols
 int UdsServer::connection_socket;
+
 vector<UdsWorker*> UdsServer::workerList;
 pthread_mutex_t UdsServer::wLmutex;
+
 struct sockaddr_un UdsServer::address;
 socklen_t UdsServer::addrlen;
 

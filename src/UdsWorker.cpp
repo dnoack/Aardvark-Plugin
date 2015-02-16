@@ -10,6 +10,7 @@
 #include "UdsServer.hpp"
 
 
+
 UdsWorker::UdsWorker(int socket)
 {
 	this->listen_thread_active = false;
@@ -28,7 +29,7 @@ UdsWorker::UdsWorker(int socket)
 	pthread_mutex_init(&wBusyMutex, NULL);
 
 	configSignals();
-	//StartWorkerThread(currentSocket);
+	StartWorkerThread(currentSocket);
 }
 
 
@@ -42,7 +43,7 @@ UdsWorker::~UdsWorker()
 
 	worker_thread_active = false;
 	listen_thread_active = false;
-	//WaitForWorkerThreadToExit();
+	WaitForWorkerThreadToExit();
 }
 
 

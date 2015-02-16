@@ -30,10 +30,10 @@ class UdsWorker;
 
 
 
-
-class UdsServer {
+class UdsServer{
 
 	public:
+
 		UdsServer(int mode, const char* udsFile, int nameSize);
 
 		~UdsServer();
@@ -45,7 +45,7 @@ class UdsServer {
 		void startCom();
 
 		//add=true -> add the worker, add=false->delete worker
-		static void editWorkerList(UdsWorker* newWorker, bool add);
+		static void editWorkerList(UdsWorker* newWorker, bool add); //static
 
 	private:
 
@@ -63,10 +63,6 @@ class UdsServer {
 		int optionflag;
 
 		static void* uds_accept(void*);
-
-
-
-
 
 
 };

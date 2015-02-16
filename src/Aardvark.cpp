@@ -307,10 +307,10 @@ static void *_loadFunction (const char *name, int *result) {
 
 static int (*c_aa_find_devices_ext) (int, u16 *, int, u32 *) = 0;
 int aa_find_devices_ext (
-    int   num_devices,
-    u16 * devices,
-    int   num_ids,
-    u32 * unique_ids
+    int  num_devices,
+    u16* devices,
+    int  num_ids,
+    u32* unique_ids
 )
 {
     if (c_aa_find_devices_ext == 0) {

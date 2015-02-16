@@ -8,8 +8,8 @@
 
 #include "PluginAardvark.hpp"
 
-//vector<RemoteAardvark*> PluginAardvark::deviceList;
-//pthread_mutex_t PluginAardvark::dLmutex;
+vector<RemoteAardvark*> PluginAardvark::deviceList;
+pthread_mutex_t PluginAardvark::dLmutex;
 
 
 PluginAardvark::PluginAardvark()
@@ -31,10 +31,12 @@ PluginAardvark::~PluginAardvark()
 	if(result != NULL)
 		delete result;
 
+
 	for(int i = 0; i < size; i++)
 		delete deviceList[i];
 
-
+	deviceList.clear();
+	vector<RemoteAardvark*>().swap(deviceList);
 }
 
 
@@ -52,18 +54,20 @@ void PluginAardvark::detectDevices()
 {
 	u16 devices[EXPECTED_NUM_OF_DEVICES];
 	u32 unique_ids[EXPECTED_NUM_OF_DEVICES];
+	int found = 0;
 
 	pthread_mutex_lock(&dLmutex);
 
-	aa_find_devices_ext(EXPECTED_NUM_OF_DEVICES, devices, EXPECTED_NUM_OF_DEVICES, unique_ids);
+	found = aa_find_devices_ext(EXPECTED_NUM_OF_DEVICES, devices, EXPECTED_NUM_OF_DEVICES, unique_ids);
 
 
-	for(int i = 0; i < EXPECTED_NUM_OF_DEVICES; i++)
+	for(int i = 0; i < found; i++)
 	{
 		if(unique_ids[i] != 0)
 		{
 			//devices will be deleted within destructor
 			deviceList.push_back(new RemoteAardvark());
+
 		}
 	}
 
