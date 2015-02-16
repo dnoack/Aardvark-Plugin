@@ -174,7 +174,7 @@
 									<listOptionValue builtIn="false" value="dl"/>
 								</option>
 								<option id="gnu.cpp.link.option.paths.690693994" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" valueType="libPaths">
-									<listOptionValue builtIn="false" value="../"/>
+									<listOptionValue builtIn="false" value="../aardvark/lib"/>
 									<listOptionValue builtIn="false" value="../cpputest/lib"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.112754320" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
