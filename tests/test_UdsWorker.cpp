@@ -1,14 +1,17 @@
 
+#include "UdsServer.hpp"
 #include "UdsWorker.hpp"
 #include "TestHarness.h"
 
+#define TEST_UDSFILE "/tmp/test_com.uds"
 
+static UdsWorker* test_udsWorker;
+static int test_socket;
 
-/*
 static int bindTestSocket()
 {
 	int optionflag = 1;
-	static int connection_socket = socket(AF_UNIX, SOCK_STREAM, 0);
+	test_socket = socket(AF_UNIX, SOCK_STREAM, 0);
 	struct sockaddr_un address;
 	socklen_t addrlen;
 
@@ -17,10 +20,10 @@ static int bindTestSocket()
 	addrlen = sizeof(address);
 
 	unlink(TEST_UDSFILE);
-	setsockopt(connection_socket, SOL_SOCKET, SO_REUSEADDR, &optionflag, sizeof(optionflag));
-	bind(connection_socket, (struct sockaddr*)&address, addrlen);
-	return connection_socket;
-}*/
+	setsockopt(test_socket, SOL_SOCKET, SO_REUSEADDR, &optionflag, sizeof(optionflag));
+	bind(test_socket, (struct sockaddr*)&address, addrlen);
+	return test_socket;
+}
 
 
 
@@ -28,24 +31,31 @@ TEST_GROUP(Plugin_UdsWorker)
 {
 	void setup()
 	{
-
+		bindTestSocket();
+		test_udsWorker = new UdsWorker(test_socket);
 	}
 
 	void teardown()
 	{
-
+		delete test_udsWorker;
+		close(test_socket);
 	}
 };
 
 
 TEST(Plugin_UdsWorker, test1)
 {
-	UdsWorker* test_udsWorker = new UdsWorker(1);
-	//there will be one leak because of static vector (which is deallocated after main)
-	MemoryLeakWarningPlugin::getFirstPlugin()->expectLeaksInTest(1);
-	FAIL("test failed");
-	delete test_udsWorker;
+
+
 }
+
+TEST(Plugin_UdsWorker, test2)
+{
+
+
+}
+
+
 
 
 

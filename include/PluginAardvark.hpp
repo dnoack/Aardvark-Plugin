@@ -29,8 +29,8 @@ class PluginAardvark{
 
 	private:
 
-		vector<RemoteAardvark*> deviceList;
-		pthread_mutex_t dLmutex;
+		static vector<RemoteAardvark*> deviceList;
+		static pthread_mutex_t dLmutex;
 		JsonRPC* json;
 		string* result;
 
