@@ -45,7 +45,7 @@ all: Plugin-Server
 Plugin-Server: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C++ Linker'
-	g++ -L../ -L../cpputest/lib -o "Plugin-Server" $(OBJS) $(USER_OBJS) $(LIBS)
+	g++ -L../aardvark/lib -L../cpputest/lib -o "Plugin-Server" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
