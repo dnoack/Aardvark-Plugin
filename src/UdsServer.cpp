@@ -124,7 +124,7 @@ void UdsServer::startCom()
 
 
 //active during Test_pluginInterface build
-#ifndef TESTMODE
+
 /*
 int main(int argc, char** argv)
 {
@@ -135,6 +135,6 @@ int main(int argc, char** argv)
 
 }
 /*
-#endif
+
 
 
