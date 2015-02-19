@@ -28,8 +28,9 @@ PluginAardvark::~PluginAardvark()
 	int size = deviceList.size();
 	delete json;
 
-	if(result != NULL)
-		delete result;
+	/*
+	if(result != 0)
+		delete result;*/
 
 
 	for(int i = 0; i < size; i++)
@@ -118,7 +119,7 @@ string* PluginAardvark::processMsg(string* msg)
 	catch(PluginError &e)
 	{
 		result = new string(json->getResponseError());
-		throw;
+		throw result;
 	}
 
 	return result;

@@ -75,7 +75,15 @@ void UdsWorker::thread_work(int socket)
 					//1 get data from queue
 					request = receiveQueue.back();
 
-					response = paard->processMsg(request);
+					try
+					{
+						response = paard->processMsg(request);
+					}
+					catch(string* &e)
+					{
+						response = e;
+						e = 0;
+					}
 
 					send(currentSocket, response->c_str(), response->size(), 0);
 					//3 remove data from queue
@@ -83,6 +91,7 @@ void UdsWorker::thread_work(int socket)
 
 					//4 check for further data, if there is goto step 1
 					delete response;
+					delete request;
 				}
 				break;
 
@@ -93,8 +102,8 @@ void UdsWorker::thread_work(int socket)
 				break;
 
 			case SIGPIPE:
-				worker_thread_active = false;
 				listen_thread_active = false;
+				worker_thread_active = false;
 				break;
 			default:
 				worker_thread_active = false;
@@ -115,13 +124,15 @@ void UdsWorker::thread_work(int socket)
 
 void UdsWorker::thread_listen(pthread_t parent_th, int socket, char* workerBuffer)
 {
+
 	listen_thread_active = true;
 
 	while(listen_thread_active)
 	{
 		memset(receiveBuffer, '\0', BUFFER_SIZE);
 
-		recvSize = recv( socket , receiveBuffer, BUFFER_SIZE, 0);
+		//TODO:msg_dontwait lets us cancel the client with listen_thread_active flag but not with sigpipe (disco at clientside)
+		recvSize = recv( socket , receiveBuffer, BUFFER_SIZE, MSG_DONTWAIT);
 		if(recvSize > 0)
 		{
 			//add received data in buffer to queue
@@ -135,11 +146,10 @@ void UdsWorker::thread_listen(pthread_t parent_th, int socket, char* workerBuffe
 				pthread_kill(parent_th, SIGUSR1);
 			}
 		}
-		else
-			pthread_kill(parent_th, SIGPOLL);
+
 	}
 	printf("Listener beendet.\n");
-
+	pthread_kill(parent_th, SIGPOLL);
 }
 
 

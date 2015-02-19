@@ -55,7 +55,6 @@ UdsServer::~UdsServer()
 {
 	pthread_mutex_destroy(&wLmutex);
 	close(connection_socket);
-	//delete json;
 	workerList.erase(workerList.begin(), workerList.end());
 }
 
@@ -124,7 +123,9 @@ void UdsServer::startCom()
 }
 
 
-/**
+//active during Test_pluginInterface build
+#ifndef TESTMODE
+
 int main(int argc, char** argv)
 {
 	UdsServer* udsServer = new UdsServer(SERVER_MODE, UDS_REGISTER_TO_RSD_PATH, sizeof(UDS_REGISTER_TO_RSD_PATH));
@@ -132,7 +133,8 @@ int main(int argc, char** argv)
 	while(true)
 		sleep(3);
 
-}*/
+}
 
+#endif
 
 
