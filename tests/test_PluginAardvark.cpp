@@ -24,7 +24,7 @@ TEST_GROUP(Plugin_PluginAardvark)
 
 TEST(Plugin_PluginAardvark, processMsg_OK)
 {
-	string testString = "{\"jsonrpc\": \"2.0\", \"params\": { \"handle\": 1}, \"method\": \"aa_close\", \"id\": 3}";
+	string testString = "{\"jsonrpc\": \"2.0\", \"params\": { \"port\": 0}, \"method\": \"aa_open\", \"id\": 3}";
 	string* response = plugin->processMsg(&testString);
 	delete response;
 }
@@ -33,9 +33,9 @@ TEST(Plugin_PluginAardvark, processMsg_FAIL)
 {
 	string testString = "{\"jsonrpc\": \"2.0\", \"params\":  \"handle\": 1}, \"method\": \"aa_close\", \"id\": 3}";
 
-	CHECK_THROWS(string*,plugin->processMsg(&testString));
+	CHECK_THROWS(PluginError,plugin->processMsg(&testString));
 	//plugin->result is normally private and will be deleted by UdsWorker
-	delete plugin->result;
+	//delete plugin->result;
 }
 
 
