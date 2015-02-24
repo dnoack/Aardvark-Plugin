@@ -17,7 +17,7 @@ PluginAardvark::PluginAardvark()
 	pthread_mutex_init(&dLmutex, NULL);
 	json = new JsonRPC();
 	result = NULL;
-	detectDevices();
+	user = new string();
 }
 
 
@@ -27,11 +27,7 @@ PluginAardvark::~PluginAardvark()
 	pthread_mutex_destroy(&dLmutex);
 	int size = deviceList.size();
 	delete json;
-
-	/*
-	if(result != 0)
-		delete result;*/
-
+	delete user;
 
 	for(int i = 0; i < size; i++)
 		delete deviceList[i];
@@ -41,39 +37,57 @@ PluginAardvark::~PluginAardvark()
 }
 
 
-RemoteAardvark* PluginAardvark::getDevice(int handle)
+RemoteAardvark* PluginAardvark::getDevice(int value, int valueType)
 {
-	RemoteAardvark* device;
+	RemoteAardvark* device = NULL;
+	bool found = false;
+
 	pthread_mutex_lock(&dLmutex);
-	device = deviceList[handle];
+	for(unsigned int i = 0; i < deviceList.size() && !found ; i++)
+	{
+		if(valueType == HANDLE)
+		{
+			if(deviceList[i]->getHandle() == value)
+			{
+				device = deviceList[i];
+				found = true;
+			}
+		}
+		if(valueType == PORT)
+		{
+			if(deviceList[i]->getPort() == value)
+			{
+				device = deviceList[i];
+				found = true;
+			}
+		}
+	}
+
+	//we found a device, but is no one else using it ?
+	if(found)
+	{
+		//TODO: compare user string from PluginAardvark with user string of RemoteAardvark
+	}
+	else //didnt found the device
+	{
+		if(valueType == PORT) //create a new device instance
+		{
+			device = new RemoteAardvark(value);
+			deviceList.push_back(device);
+		}
+		else
+		{
+			pthread_mutex_unlock(&dLmutex);
+			throw PluginError("No device with this handle available.");
+		}
+	}
+
 	pthread_mutex_unlock(&dLmutex);
 	return device;
 }
 
 
-void PluginAardvark::detectDevices()
-{
-	u16 devices[EXPECTED_NUM_OF_DEVICES];
-	u32 unique_ids[EXPECTED_NUM_OF_DEVICES];
-	int found = 0;
 
-	pthread_mutex_lock(&dLmutex);
-
-	found = aa_find_devices_ext(EXPECTED_NUM_OF_DEVICES, devices, EXPECTED_NUM_OF_DEVICES, unique_ids);
-
-
-	for(int i = 0; i < found; i++)
-	{
-		if(unique_ids[i] != 0)
-		{
-			//devices will be deleted within destructor
-			deviceList.push_back(new RemoteAardvark());
-
-		}
-	}
-
-	pthread_mutex_unlock(&dLmutex);
-}
 
 
 //main method for processing new json rpc msgs
@@ -95,7 +109,8 @@ string* PluginAardvark::processMsg(string* msg)
 			{
 				if((*dom)["params"].HasMember("port"))
 				{
-					device = getDevice((*dom)["params"]["port"].GetInt());
+
+					device = getDevice((*dom)["params"]["port"].GetInt(), PORT);
 					device->executeFunction((*dom)["method"], (*dom)["params"], responseValue);
 					result = new string(json->generateResponse((*dom)["id"], responseValue));
 				}
@@ -103,7 +118,7 @@ string* PluginAardvark::processMsg(string* msg)
 				{
 					if((*dom)["params"].HasMember("handle"))
 					{
-						device = getDevice((*dom)["params"]["handle"].GetInt()-1);
+						device = getDevice((*dom)["params"]["handle"].GetInt(), HANDLE);
 						device->executeFunction((*dom)["method"], (*dom)["params"], responseValue);
 						result = new string(json->generateResponse((*dom)["id"], responseValue));
 					}
@@ -118,8 +133,7 @@ string* PluginAardvark::processMsg(string* msg)
 	}
 	catch(PluginError &e)
 	{
-		result = new string(json->getResponseError());
-		throw result;
+		throw;
 	}
 
 	return result;

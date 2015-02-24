@@ -9,7 +9,8 @@
 #define INCLUDE_PLUGINAARDVARK_HPP_
 
 #define EXPECTED_NUM_OF_DEVICES 1
-
+#define PORT 0
+#define HANDLE 1
 
 #include <vector>
 #include "JsonRPC.hpp"
@@ -22,8 +23,8 @@ class PluginAardvark{
 		PluginAardvark();
 		~PluginAardvark();
 
-		RemoteAardvark* getDevice(int handle);
-		void detectDevices();
+		//valueType can be PORT or HANDLE
+		RemoteAardvark* getDevice(int value, int valueType);
 
 		string* processMsg(string* msg);
 
@@ -33,6 +34,7 @@ class PluginAardvark{
 		static pthread_mutex_t dLmutex;
 		JsonRPC* json;
 		string* result;
+		string* user;
 
 
 };

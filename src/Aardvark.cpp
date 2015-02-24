@@ -56,6 +56,7 @@
 #include <Plugin_Error.h>
 
 
+
 /*=========================================================================
 | VERSION CHECK
  ========================================================================*/
@@ -246,7 +247,7 @@ static void *_loadFunction (const char *name, int *result) {
             return 0;
         }
 
-        version = reinterpret_cast<u32(*)(void)>((void *)dlsym(handle, "aa_c_version"));
+        version = reinterpret_cast<u32(*)(void)>((void *)dlsym(handle, "c_version"));
         if (version == 0) {
 #if API_DEBUG
             fprintf(stderr, "Unable to bind aa_c_version() in %s\n",

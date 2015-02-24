@@ -976,12 +976,13 @@ typedef bool (RemoteAardvark::*afptr)(Value&, Value&);
 class RemoteAardvark : public PluginInterface<RemoteAardvark*, afptr>{
 
 	public:
-		RemoteAardvark() : PluginInterface<RemoteAardvark*, afptr>(this)
+		RemoteAardvark(int port) : PluginInterface<RemoteAardvark*, afptr>(this)
 		{
 			afptr temp;
-			port = -1;
+			this->port = port;
 			uniqueId = 0;
 			handle = 0;
+			user = new string();
 
 			//get relativ adress of function
 			temp = &RemoteAardvark::aa_open;
@@ -998,7 +999,13 @@ class RemoteAardvark : public PluginInterface<RemoteAardvark*, afptr>{
 			funcMap.insert(pair<char*, afptr>("aa_target_power", temp));
 
 		};
-		~RemoteAardvark(){};
+
+
+
+		~RemoteAardvark()
+		{
+			delete user;
+		};
 
 
 
@@ -1012,6 +1019,10 @@ class RemoteAardvark : public PluginInterface<RemoteAardvark*, afptr>{
 
 		bool aa_target_power(Value &params , Value &result);
 
+		int getPort(){return this->port;}
+		int getHandle(){return this->handle;}
+		string* getUser(){return this->user;}
+
 
 
 	private:
@@ -1019,6 +1030,7 @@ class RemoteAardvark : public PluginInterface<RemoteAardvark*, afptr>{
 		int port;
 		unsigned int uniqueId;
 		int handle;
+		string* user;
 
 };
 

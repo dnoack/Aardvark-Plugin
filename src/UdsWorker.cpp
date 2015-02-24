@@ -79,10 +79,10 @@ void UdsWorker::thread_work(int socket)
 					{
 						response = paard->processMsg(request);
 					}
-					catch(string* &e)
+					catch(PluginError &e)
 					{
-						response = e;
-						e = 0;
+						response = new string(e.get());
+						printf("catch\n");
 					}
 
 					send(currentSocket, response->c_str(), response->size(), 0);

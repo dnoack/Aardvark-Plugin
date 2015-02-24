@@ -22,7 +22,7 @@ TEST_GROUP(Plugin_Interface)
 	void setup()
 	{
 		dom = new Document();
-		testInterface = new RemoteAardvark();
+		testInterface = new RemoteAardvark(0);
 	}
 
 	void teardown()

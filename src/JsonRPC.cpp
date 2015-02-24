@@ -15,23 +15,20 @@
 
 Document* JsonRPC::parse(string* msg)
 {
-	Document* result;
+	Document* result = NULL;
+	Value nullId;
 
-	try
-	{
 		requestDOM->Parse(msg->c_str());
 		if(!requestDOM->HasParseError())
 			result = requestDOM;
 		else
-			throw PluginError("Error while parsing json rpc.");
-	}
-	catch(PluginError &errorMsg)
-	{
-		Value nullId;
-		error = generateResponseError(nullId, -32700, errorMsg.get());
-		result = NULL;
-		throw;
-	}
+		{
+
+			error = generateResponseError(nullId, -32700, "Error while parsing json rpc.");
+			result = NULL;
+			throw PluginError(error);
+		}
+
 	return result;
 }
 

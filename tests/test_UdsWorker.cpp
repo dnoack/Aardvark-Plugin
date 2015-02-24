@@ -95,7 +95,7 @@ TEST_GROUP(Plugin_UdsWorker)
 };
 
 
-TEST(Plugin_UdsWorker, test1)
+IGNORE_TEST(Plugin_UdsWorker, test1)
 {
 	char buffer[RECEIVE_BUFFER_SIZE];
 	bool active = true;

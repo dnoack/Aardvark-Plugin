@@ -34,6 +34,7 @@ class JsonRPC {
 		{
 			this->currentValue = NULL;
 			this->result = NULL;
+			this->error = NULL;
 
 
 			jsonWriter = new Writer<StringBuffer>(sBuffer);
@@ -84,8 +85,6 @@ class JsonRPC {
 		Document* getRequestDOM() { return this->requestDOM;}
 		Document* getResponseDOM() { return this->responseDOM;}
 		Document* getErrorDOM(){ return this->errorDOM;}
-		char* getResponseError() {return this->error;}
-
 
 
 	private:
