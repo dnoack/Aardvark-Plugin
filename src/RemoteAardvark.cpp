@@ -52,7 +52,7 @@
 | INCLUDES
  ========================================================================*/
 /* This #include can be customized to conform to the user's build paths. */
-#include <Aardvark.hpp>
+#include <RemoteAardvark.hpp>
 #include <Plugin_Error.h>
 
 

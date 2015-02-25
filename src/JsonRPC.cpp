@@ -6,8 +6,7 @@
  */
 
 #include <JsonRPC.hpp>
-#include "Plugin_Interface.h"
-#include "Aardvark.hpp"
+#include "RemoteAardvark.hpp"
 #include "stdio.h"
 
 

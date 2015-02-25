@@ -4,25 +4,34 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
-../src/Aardvark.cpp \
+../src/AardvarkCareTaker.cpp \
+../src/AardvarkPlugin.cpp \
 ../src/JsonRPC.cpp \
-../src/PluginAardvark.cpp \
-../src/UdsServer.cpp \
-../src/UdsWorker.cpp 
+../src/RemoteAardvark.cpp \
+../src/UdsComWorker.cpp \
+../src/UdsRegClient.cpp \
+../src/UdsRegWorker.cpp \
+../src/UdsServer.cpp 
 
 OBJS += \
-./src/Aardvark.o \
+./src/AardvarkCareTaker.o \
+./src/AardvarkPlugin.o \
 ./src/JsonRPC.o \
-./src/PluginAardvark.o \
-./src/UdsServer.o \
-./src/UdsWorker.o 
+./src/RemoteAardvark.o \
+./src/UdsComWorker.o \
+./src/UdsRegClient.o \
+./src/UdsRegWorker.o \
+./src/UdsServer.o 
 
 CPP_DEPS += \
-./src/Aardvark.d \
+./src/AardvarkCareTaker.d \
+./src/AardvarkPlugin.d \
 ./src/JsonRPC.d \
-./src/PluginAardvark.d \
-./src/UdsServer.d \
-./src/UdsWorker.d 
+./src/RemoteAardvark.d \
+./src/UdsComWorker.d \
+./src/UdsRegClient.d \
+./src/UdsRegWorker.d \
+./src/UdsServer.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes

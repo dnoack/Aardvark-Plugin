@@ -20,9 +20,9 @@
 
 #include "signal.h"
 #include "JsonRPC.hpp"
-#include "Aardvark.hpp"
 
-class UdsWorker;
+
+class UdsComWorker;
 
 
 #define CLIENT_MODE 1
@@ -34,7 +34,7 @@ class UdsServer{
 
 	public:
 
-		UdsServer(int mode, const char* udsFile, int nameSize);
+		UdsServer(const char* udsFile, int nameSize);
 
 		~UdsServer();
 
@@ -45,7 +45,7 @@ class UdsServer{
 		void startCom();
 
 		//add=true -> add the worker, add=false->delete worker
-		static void editWorkerList(UdsWorker* newWorker, bool add); //static
+		static void editWorkerList(UdsComWorker* newWorker, bool add); //static
 
 	private:
 
@@ -53,7 +53,7 @@ class UdsServer{
 
 
 		//list of pthread ids with all the active worker. push and pop must be protected by mutex
-		static vector<UdsWorker*> workerList;
+		static vector<UdsComWorker*> workerList;
 		static pthread_mutex_t wLmutex;
 
 		static struct sockaddr_un address;

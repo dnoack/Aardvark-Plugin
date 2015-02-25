@@ -55,7 +55,7 @@
 
 #include "document.h"
 #include "writer.h"
-#include "Plugin_Interface.h"
+#include "DriverInterface.h"
 
 using namespace rapidjson;
 
@@ -973,10 +973,10 @@ typedef bool (RemoteAardvark::*afptr)(Value&, Value&);
 
 
 
-class RemoteAardvark : public PluginInterface<RemoteAardvark*, afptr>{
+class RemoteAardvark : public DriverInterface<RemoteAardvark*, afptr>{
 
 	public:
-		RemoteAardvark(int port) : PluginInterface<RemoteAardvark*, afptr>(this)
+		RemoteAardvark(int port) : DriverInterface<RemoteAardvark*, afptr>(this)
 		{
 			afptr temp;
 			this->port = port;
@@ -984,7 +984,7 @@ class RemoteAardvark : public PluginInterface<RemoteAardvark*, afptr>{
 			handle = 0;
 			user = new string();
 
-			//get relativ adress of function
+			//get relativ address of function
 			temp = &RemoteAardvark::aa_open;
 			//save the relativ address to the map with the corresponding key for rpc
 			funcMap.insert(pair<char* , afptr>("aa_open", temp));

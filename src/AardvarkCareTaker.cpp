@@ -1,18 +1,18 @@
 /*
- * PluginAardvark.cpp
+ * AardvarkCareTaker.cpp
  *
  *  Created on: 05.02.2015
  *      Author: dnoack
  */
 
 
-#include "PluginAardvark.hpp"
+#include "AardvarkCareTaker.hpp"
 
-vector<RemoteAardvark*> PluginAardvark::deviceList;
-pthread_mutex_t PluginAardvark::dLmutex;
+vector<RemoteAardvark*> AardvarkCareTaker::deviceList;
+pthread_mutex_t AardvarkCareTaker::dLmutex;
 
 
-PluginAardvark::PluginAardvark()
+AardvarkCareTaker::AardvarkCareTaker()
 {
 	pthread_mutex_init(&dLmutex, NULL);
 	json = new JsonRPC();
@@ -22,7 +22,7 @@ PluginAardvark::PluginAardvark()
 
 
 
-PluginAardvark::~PluginAardvark()
+AardvarkCareTaker::~AardvarkCareTaker()
 {
 	pthread_mutex_destroy(&dLmutex);
 	int size = deviceList.size();
@@ -37,7 +37,7 @@ PluginAardvark::~PluginAardvark()
 }
 
 
-RemoteAardvark* PluginAardvark::getDevice(int value, int valueType)
+RemoteAardvark* AardvarkCareTaker::getDevice(int value, int valueType)
 {
 	RemoteAardvark* device = NULL;
 	bool found = false;
@@ -70,12 +70,12 @@ RemoteAardvark* PluginAardvark::getDevice(int value, int valueType)
 	}
 	else //didnt found the device
 	{
-		if(valueType == PORT) //create a new device instance
+		if(valueType == PORT) //create a new device instance with value as port
 		{
 			device = new RemoteAardvark(value);
 			deviceList.push_back(device);
 		}
-		else
+		else // cant create new devices with handle as value
 		{
 			pthread_mutex_unlock(&dLmutex);
 			throw PluginError("No device with this handle available.");
@@ -91,7 +91,7 @@ RemoteAardvark* PluginAardvark::getDevice(int value, int valueType)
 
 
 //main method for processing new json rpc msgs
-string* PluginAardvark::processMsg(string* msg)
+string* AardvarkCareTaker::processMsg(string* msg)
 {
 	Document* dom;
 	Value responseValue;

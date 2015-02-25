@@ -6,8 +6,8 @@
  */
 
 
-#include "Plugin_Interface.h"
-#include "Aardvark.hpp"
+#include "DriverInterface.h"
+#include "RemoteAardvark.hpp"
 #include "TestHarness.h"
 
 

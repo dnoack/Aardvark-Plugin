@@ -5,8 +5,8 @@
  *      Author: dnoack
  */
 
-#ifndef PLUGIN_ORIGIN_INCLUDE_PLUGIN_INTERFACE_H_
-#define PLUGIN_ORIGIN_INCLUDE_PLUGIN_INTERFACE_H_
+#ifndef DRIVERINTERFACE_H_
+#define DRIVERINTERFACE_H_
 
 
 #include <map>
@@ -18,19 +18,18 @@
 using namespace std;
 using namespace rapidjson;
 
-#define FREE_IDENTITY NULL
 
 
 template <class TDriver, class TPointer>
-class PluginInterface{
+class DriverInterface{
 
 	public:
-		PluginInterface(TDriver derivedClass)
+		DriverInterface(TDriver derivedClass)
 		{
 			driver = derivedClass;
 		};
 
-		~PluginInterface()
+		~DriverInterface()
 		{
 			funcMap.clear();
 		};
@@ -84,7 +83,7 @@ class PluginInterface{
 
 
 		//use char* for keys, because rapidjson gives us char* and we save a lot of allocating new strings
-		map<char*, TPointer, PluginInterface::cmp_keys> funcMap;
+		map<char*, TPointer, DriverInterface::cmp_keys> funcMap;
 		TPointer funcP;
 		TDriver driver;
 

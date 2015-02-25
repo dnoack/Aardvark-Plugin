@@ -1,6 +1,6 @@
 
 #include "UdsServer.hpp"
-#include "UdsWorker.hpp"
+#include "UdsComWorker.hpp"
 #include "sys/socket.h"
 #include <unistd.h>
 #include <fcntl.h>
@@ -10,7 +10,7 @@
 #define RECEIVE_BUFFER_SIZE 1024
 #define MILLISECONDS *1000
 
-static UdsWorker* test_udsWorker;
+static UdsComWorker* test_udsWorker;
 static struct sockaddr_un address;
 static socklen_t addrlen;
 
@@ -75,14 +75,14 @@ static void connectClientToServer(int clientSocket, int serverAcceptSocket)
 
 
 
-TEST_GROUP(Plugin_UdsWorker)
+TEST_GROUP(Plugin_UdsComWorker)
 {
 	void setup()
 	{
 		createServerAcceptSocket();
 		createClientSocket();
 		connectClientToServer(clientSocket, server_accept_socket);
-		test_udsWorker = new UdsWorker(serverSocket);
+		test_udsWorker = new UdsComWorker(serverSocket);
 	}
 
 	void teardown()
@@ -95,7 +95,7 @@ TEST_GROUP(Plugin_UdsWorker)
 };
 
 
-IGNORE_TEST(Plugin_UdsWorker, test1)
+TEST(Plugin_UdsComWorker, test1)
 {
 	char buffer[RECEIVE_BUFFER_SIZE];
 	bool active = true;

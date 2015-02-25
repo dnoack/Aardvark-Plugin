@@ -1,46 +1,35 @@
 /*
- * UdsWorker.cpp
+ * UdsComWorker.cpp
  *
  *  Created on: 09.02.2015
  *      Author: dnoack
  */
 
 
-#include "UdsWorker.hpp"
+#include "UdsComWorker.hpp"
 #include "UdsServer.hpp"
 
 
 
-UdsWorker::UdsWorker(int socket)
+UdsComWorker::UdsComWorker(int socket)
 {
 	this->listen_thread_active = false;
+	this->worker_thread_active = false;
 	this->recvSize = 0;
 	this->lthread = 0;
-	this->worker_thread_active = false;
-	this->workerBusy = false;
-	this->currentSig = 0;
-	this->optionflag = 1;
+	this->request = 0;
+	this->response = 0;
 	this->currentSocket = socket;
-	this->paard = new PluginAardvark();
+	this->paard = new AardvarkCareTaker();
 	memset(receiveBuffer, '\0', BUFFER_SIZE);
-
-
-	pthread_mutex_init(&rQmutex, NULL);
-	pthread_mutex_init(&wBusyMutex, NULL);
-
-	configSignals();
 	StartWorkerThread(currentSocket);
 }
 
 
 
-
-UdsWorker::~UdsWorker()
+UdsComWorker::~UdsComWorker()
 {
-	pthread_mutex_destroy(&rQmutex);
-	pthread_mutex_destroy(&wBusyMutex);
 	delete paard;
-
 	worker_thread_active = false;
 	listen_thread_active = false;
 	WaitForWorkerThreadToExit();
@@ -49,7 +38,7 @@ UdsWorker::~UdsWorker()
 
 
 
-void UdsWorker::thread_work(int socket)
+void UdsComWorker::thread_work(int socket)
 {
 
 	memset(receiveBuffer, '\0', BUFFER_SIZE);
@@ -122,7 +111,7 @@ void UdsWorker::thread_work(int socket)
 
 
 
-void UdsWorker::thread_listen(pthread_t parent_th, int socket, char* workerBuffer)
+void UdsComWorker::thread_listen(pthread_t parent_th, int socket, char* workerBuffer)
 {
 
 	listen_thread_active = true;
@@ -153,24 +142,4 @@ void UdsWorker::thread_listen(pthread_t parent_th, int socket, char* workerBuffe
 }
 
 
-bool UdsWorker::workerStatus(int status)
-{
-	bool rValue = false;
-	pthread_mutex_lock(&wBusyMutex);
-	switch(status)
-	{
-		case WORKER_FREE:
-			workerBusy = false;
-			break;
-		case WORKER_BUSY:
-			workerBusy = true;
-			break;
-		case WORKER_GETSTATUS:
-			rValue = workerBusy;
-			break;
-		default:
-			break;
-	}
-	pthread_mutex_unlock(&wBusyMutex);
-	return rValue;
-}
+

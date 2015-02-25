@@ -7,16 +7,15 @@
 
 #include <UdsServer.hpp>
 #include "JsonRPC.hpp"
-#include "UdsWorker.hpp"
+#include "UdsComWorker.hpp"
 
-#define UDS_REGISTER_TO_RSD_PATH "/tmp/RsdRegister.uds"
-#define UDS_COM_PATH "/tmp/AardvarkPlugin.uds"
+
 #define EXPECTED_NUM_OF_DEVICES 1
 
 //static symbols
 int UdsServer::connection_socket;
 
-vector<UdsWorker*> UdsServer::workerList;
+vector<UdsComWorker*> UdsServer::workerList;
 pthread_mutex_t UdsServer::wLmutex;
 
 struct sockaddr_un UdsServer::address;
@@ -24,7 +23,7 @@ socklen_t UdsServer::addrlen;
 
 
 
-UdsServer::UdsServer(int mode, const char* udsFile, int nameSize)
+UdsServer::UdsServer( const char* udsFile, int nameSize)
 {
 
 	optionflag = 1;
@@ -35,18 +34,11 @@ UdsServer::UdsServer(int mode, const char* udsFile, int nameSize)
 
 	pthread_mutex_init(&wLmutex, NULL);
 
+	unlink(udsFile);
+	setsockopt(connection_socket, SOL_SOCKET, SO_REUSEADDR, &optionflag, sizeof(optionflag));
+	bind(connection_socket, (struct sockaddr*)&address, addrlen);
 
 
-	switch(mode)
-	{
-		case SERVER_MODE:
-			unlink(udsFile);
-			setsockopt(connection_socket, SOL_SOCKET, SO_REUSEADDR, &optionflag, sizeof(optionflag));
-			bind(connection_socket, (struct sockaddr*)&address, addrlen);
-			break;
-		default:
-			break;
-	}
 }
 
 
@@ -72,7 +64,7 @@ int UdsServer::call()
 void* UdsServer::uds_accept(void* param)
 {
 	int new_socket = 0;
-	UdsWorker* worker;
+	UdsComWorker* worker;
 	bool accept_thread_active = true;
 	listen(connection_socket, 5);
 
@@ -81,7 +73,7 @@ void* UdsServer::uds_accept(void* param)
 		new_socket = accept(connection_socket, (struct sockaddr*)&address, &addrlen);
 		if(new_socket >= 0)
 		{
-			worker = new UdsWorker(new_socket);
+			worker = new UdsComWorker(new_socket);
 			editWorkerList(worker, ADD_WORKER);
 			//printf("Client verbunden.\n");
 		}
@@ -91,7 +83,7 @@ void* UdsServer::uds_accept(void* param)
 }
 
 
-void UdsServer::editWorkerList(UdsWorker* newWorker, bool add)
+void UdsServer::editWorkerList(UdsComWorker* newWorker, bool add)
 {
 	pthread_mutex_lock(&wLmutex);
 	if(add)
@@ -121,22 +113,6 @@ void UdsServer::startCom()
 	pthread_t accepter;
 	pthread_create(&accepter, NULL, uds_accept, NULL);
 }
-
-
-//active during Test_pluginInterface build
-
-#ifndef TESTMODE
-
-int main(int argc, char** argv)
-{
-	UdsServer* udsServer = new UdsServer(SERVER_MODE, UDS_REGISTER_TO_RSD_PATH, sizeof(UDS_REGISTER_TO_RSD_PATH));
-	udsServer->startCom();
-	while(true)
-		sleep(3);
-}
-
-#endif
-
 
 
 

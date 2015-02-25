@@ -1,18 +1,18 @@
 
 #define private public
 
-#include "PluginAardvark.hpp"
+#include "AardvarkCareTaker.hpp"
 #include "TestHarness.h"
 
-static PluginAardvark* plugin;
+static AardvarkCareTaker* plugin;
 
 
 
-TEST_GROUP(Plugin_PluginAardvark)
+TEST_GROUP(Plugin_AardvarkCareTaker)
 {
 	void setup()
 	{
-		plugin = new PluginAardvark();
+		plugin = new AardvarkCareTaker();
 	}
 
 	void teardown()
@@ -22,14 +22,14 @@ TEST_GROUP(Plugin_PluginAardvark)
 };
 
 
-TEST(Plugin_PluginAardvark, processMsg_OK)
+TEST(Plugin_AardvarkCareTaker, processMsg_OK)
 {
 	string testString = "{\"jsonrpc\": \"2.0\", \"params\": { \"port\": 0}, \"method\": \"aa_open\", \"id\": 3}";
 	string* response = plugin->processMsg(&testString);
 	delete response;
 }
 
-TEST(Plugin_PluginAardvark, processMsg_FAIL)
+TEST(Plugin_AardvarkCareTaker, processMsg_FAIL)
 {
 	string testString = "{\"jsonrpc\": \"2.0\", \"params\":  \"handle\": 1}, \"method\": \"aa_close\", \"id\": 3}";
 
