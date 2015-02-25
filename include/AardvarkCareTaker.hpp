@@ -14,14 +14,14 @@
 
 #include <vector>
 #include "JsonRPC.hpp"
-#include "Aardvark.hpp"
+#include "RemoteAardvark.hpp"
 
 
-class PluginAardvark{
+class AardvarkCareTaker{
 
 	public:
-		PluginAardvark();
-		~PluginAardvark();
+		AardvarkCareTaker();
+		~AardvarkCareTaker();
 
 		//valueType can be PORT or HANDLE
 		RemoteAardvark* getDevice(int value, int valueType);
