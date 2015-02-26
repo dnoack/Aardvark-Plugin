@@ -25,10 +25,6 @@
 class UdsComWorker;
 
 
-#define CLIENT_MODE 1
-#define SERVER_MODE 2
-
-
 
 class UdsServer{
 

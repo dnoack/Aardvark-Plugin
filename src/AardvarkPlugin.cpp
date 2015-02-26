@@ -12,7 +12,7 @@
 
 AardvarkPlugin::AardvarkPlugin()
 {
-	comServer = new UdsServer(UDS_REGISTER_TO_RSD_PATH, sizeof(UDS_REGISTER_TO_RSD_PATH));
+	comServer = new UdsServer(UDS_COM_PATH, sizeof(UDS_COM_PATH));
 	regClient = new UdsRegClient(UDS_REGISTER_TO_RSD_PATH, sizeof(UDS_REGISTER_TO_RSD_PATH));
 }
 
@@ -30,6 +30,7 @@ AardvarkPlugin::~AardvarkPlugin()
 void AardvarkPlugin::startCommunication()
 {
 	comServer->startCom();
+	regClient->connectToRSD();
 }
 
 

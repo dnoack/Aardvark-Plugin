@@ -34,6 +34,7 @@ void UdsRegClient::connectToRSD()
 {
 	connect(currentSocket, (struct sockaddr*)&address, addrlen);
 	//send a json rpc which signals "hey rsd, i want to register this plugin
+	send(currentSocket, "hallo RSD",9 ,0);
 }
 
 
