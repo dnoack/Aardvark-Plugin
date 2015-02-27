@@ -8,10 +8,16 @@
 
 #include <AardvarkPlugin.hpp>
 #include "UdsServer.hpp"
+#include "RemoteAardvark.hpp"
 
 
 AardvarkPlugin::AardvarkPlugin()
 {
+	//get List of key, which are supported by the driver
+	RemoteAardvark* tempDriver = new RemoteAardvark(0);
+	funcList = tempDriver->getAllFunctionNames();
+	delete tempDriver;
+
 	comServer = new UdsServer(UDS_COM_PATH, sizeof(UDS_COM_PATH));
 	regClient = new UdsRegClient(UDS_REGISTER_TO_RSD_PATH, sizeof(UDS_REGISTER_TO_RSD_PATH));
 }
