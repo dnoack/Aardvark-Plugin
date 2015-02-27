@@ -10,6 +10,7 @@
 
 
 #include <map>
+#include <list>
 #include <cstring>
 #include "document.h"
 #include "writer.h"
@@ -71,6 +72,22 @@ class DriverInterface{
 			return false;
 		}
 
+
+
+		list<string*>* getAllFunctionNames()
+		{
+			list<string*>* funcList = new list<string*>();
+
+
+			for(typename map<char*,TPointer>::iterator it=funcMap.begin(); it != funcMap.end(); it++)
+			{
+				funcList->push_back(new string(it->first));
+			}
+			return funcList;
+		}
+
+
+
 	protected:
 
 		struct cmp_keys
@@ -86,6 +103,7 @@ class DriverInterface{
 		map<char*, TPointer, DriverInterface::cmp_keys> funcMap;
 		TPointer funcP;
 		TDriver driver;
+
 
 };
 

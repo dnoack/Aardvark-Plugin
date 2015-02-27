@@ -17,9 +17,9 @@ Document* JsonRPC::parse(string* msg)
 	Document* result = NULL;
 	Value nullId;
 
-		requestDOM->Parse(msg->c_str());
-		if(!requestDOM->HasParseError())
-			result = requestDOM;
+		inputDOM->Parse(msg->c_str());
+		if(!inputDOM->HasParseError())
+			result = inputDOM;
 		else
 		{
 
@@ -35,7 +35,7 @@ Document* JsonRPC::parse(string* msg)
 
 bool JsonRPC::checkJsonRpc_RequestFormat()
 {
-	Document &dom = *requestDOM;
+	Document &dom = *inputDOM;
 
 	if(!dom.HasMember("jsonrpc"))
 	{
@@ -67,7 +67,7 @@ bool JsonRPC::checkJsonRpcVersion(Document &dom)
 
 bool JsonRPC::isRequest()
 {
-	Document &dom = *requestDOM;
+	Document &dom = *inputDOM;
 
 	if(dom.HasMember("id"))
 	{
@@ -76,6 +76,32 @@ bool JsonRPC::isRequest()
 	}
 	else
 		return false;
+}
+
+
+char* JsonRPC::generateRequest(Value &method, Value &params, Value &id)
+{
+	Value* oldMethod;
+
+	sBuffer.Clear();
+	jsonWriter->Reset(sBuffer);
+
+	if(requestDOM->HasMember("params"))
+		requestDOM->RemoveMember("params");
+
+	//method swap
+	oldMethod = &((*requestDOM)["method"]);
+	oldMethod->Swap(method);
+
+	//params insert as object (params is optional)
+	if(params != NULL)
+		requestDOM->AddMember("params", params, requestDOM->GetAllocator());
+
+	//set id (simple int)
+	(*requestDOM)["id"] = id.GetInt();
+	requestDOM->Accept(*jsonWriter);
+
+	return (char*)sBuffer.GetString();
 }
 
 
@@ -123,6 +149,19 @@ char* JsonRPC::generateResponseError(Value &id, int code, char* msg)
 	//printf("\nErrorMsg: %s\n", sBuffer.GetString());
 
 	return (char*)sBuffer.GetString();
+}
+
+
+void JsonRPC::generateRequestDOM(Document &dom)
+{
+	Value id;
+	id.SetInt(0);
+
+	dom.SetObject();
+	dom.AddMember("jsonrpc", JSON_PROTOCOL_VERSION, dom.GetAllocator());
+	dom.AddMember("method", "", dom.GetAllocator());
+	dom.AddMember("id", id, dom.GetAllocator());
+
 }
 
 

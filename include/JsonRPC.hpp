@@ -38,10 +38,13 @@ class JsonRPC {
 
 
 			jsonWriter = new Writer<StringBuffer>(sBuffer);
+			inputDOM = new Document();
 			requestDOM = new Document();
 			responseDOM = new Document();
 			errorDOM = new Document();
 
+
+			generateRequestDOM(*requestDOM);
 			generateResponseDOM(*responseDOM);
 			generateErrorDOM(*errorDOM);
 		};
@@ -51,6 +54,7 @@ class JsonRPC {
 		~JsonRPC()
 		{
 			delete jsonWriter;
+			delete inputDOM;
 			delete requestDOM;
 			delete responseDOM;
 			delete errorDOM;
@@ -80,9 +84,11 @@ class JsonRPC {
 
 		Document* parse(string* msg);
 
+		char* generateRequest(Value &method, Value &params, Value &id);
+
 		char* generateResponse(Value &id, Value &response);
 
-		Document* getRequestDOM() { return this->requestDOM;}
+		Document* getRequestDOM() { return this->inputDOM;}
 		Document* getResponseDOM() { return this->responseDOM;}
 		Document* getErrorDOM(){ return this->errorDOM;}
 
@@ -105,6 +111,7 @@ class JsonRPC {
 
 
 		//represents the current jsonrpc msg as dom (document object model)
+		Document* inputDOM;
 		Document* requestDOM;
 		Document* responseDOM;
 		Document* errorDOM;
@@ -120,6 +127,8 @@ class JsonRPC {
 
 
 		char* generateResponseError(Value &id, int code, char* msg);
+
+		void generateRequestDOM(Document &dom);
 
 		void generateResponseDOM(Document &dom);
 

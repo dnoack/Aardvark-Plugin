@@ -21,6 +21,7 @@
 
 #include "UdsRegClient.hpp"
 #include "UdsRegWorker.hpp"
+#include "JsonRPC.hpp"
 
 using namespace std;
 
@@ -42,6 +43,7 @@ class UdsRegClient{
 	private:
 
 	UdsRegWorker* regWorker;
+	JsonRPC* json;
 
 	static struct sockaddr_un address;
 	static socklen_t addrlen;
