@@ -39,7 +39,6 @@ void UdsRegClient::connectToRSD()
 	Value method;
 	Value params;
 	Value id;
-	Value pluginName;
 	Document dom;
 	char* msg;
 
@@ -47,11 +46,11 @@ void UdsRegClient::connectToRSD()
 	connect(currentSocket, (struct sockaddr*)&address, addrlen);
 
 
-	//send a json rpc which signals "hey rsd, i want to register this plugin
+	//send a json rpc which signals "hey rsd, I want to register this plugin"
 	method.SetString("announce");
 	params.SetObject();
-	pluginName.SetString("Aardvark");
-	params.AddMember("pluginName", pluginName, dom.GetAllocator());
+	params.AddMember("pluginName", "Aardvark", dom.GetAllocator());
+	params.AddMember("udsFilePath", "/tmp/Aardvark.uds", dom.GetAllocator());
 	id.SetInt(1);
 
 	msg = json->generateRequest(method, params, id);

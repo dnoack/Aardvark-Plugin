@@ -6,7 +6,7 @@
  */
 
 #include <JsonRPC.hpp>
-#include "RemoteAardvark.hpp"
+#include "Plugin_Error.h"
 #include "stdio.h"
 
 
@@ -28,6 +28,24 @@ Document* JsonRPC::parse(string* msg)
 			throw PluginError(error);
 		}
 
+	return result;
+}
+
+
+Value* JsonRPC::getParam(char* name)
+{
+	Value* params = NULL;
+	Value* result = NULL;
+
+	if(checkJsonRpcVersion(*inputDOM))
+	{
+		if(checkJsonRpc_RequestFormat())
+			if(isRequest())
+			{
+				params = &((*inputDOM)["params"]);
+				result = &((*params)[name]);
+			}
+	}
 	return result;
 }
 

@@ -39,6 +39,8 @@ class UdsRegWorker : public WorkerInterface, WorkerThreads{
 		pthread_t lthread;
 		int currentSocket;
 
+		enum REG_STATE{NOT_ACTIVE, ANNOUNCED, ACTIVE, BROKEN};
+		unsigned int state;
 
 		//variables for worker
 		bool worker_thread_active;

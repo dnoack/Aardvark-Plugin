@@ -11,13 +11,13 @@ environment/project/cdt.managedbuild.config.gnu.exe.debug.721159017.157011383/LD
 environment/project/cdt.managedbuild.config.gnu.exe.debug.721159017.157011383/append=true
 environment/project/cdt.managedbuild.config.gnu.exe.debug.721159017.157011383/appendContributed=true
 environment/project/cdt.managedbuild.config.gnu.exe.debug.721159017.411245810/CFLAGS/delimiter=\:
-environment/project/cdt.managedbuild.config.gnu.exe.debug.721159017.411245810/CFLAGS/operation=append
-environment/project/cdt.managedbuild.config.gnu.exe.debug.721159017.411245810/CFLAGS/value=-I../include -I../cpputest/include/CppUTest -I../cpputest/include/CppUTestExt -I../include/rapidjson
+environment/project/cdt.managedbuild.config.gnu.exe.debug.721159017.411245810/CFLAGS/operation=replace
+environment/project/cdt.managedbuild.config.gnu.exe.debug.721159017.411245810/CFLAGS/value=-I../include -I${HOME}/cpputest-3.6/lib/include/CppUTest -I${HOME}/cpputest-3.6/lib/include/CppUTestExt -I../cpputest/include/CppUTestExt -I../include/rapidjson
 environment/project/cdt.managedbuild.config.gnu.exe.debug.721159017.411245810/CXXFLAGS/delimiter=\:
 environment/project/cdt.managedbuild.config.gnu.exe.debug.721159017.411245810/CXXFLAGS/operation=append
 environment/project/cdt.managedbuild.config.gnu.exe.debug.721159017.411245810/CXXFLAGS/value=${CFLGAS}
 environment/project/cdt.managedbuild.config.gnu.exe.debug.721159017.411245810/LDFLAGS/delimiter=\:
-environment/project/cdt.managedbuild.config.gnu.exe.debug.721159017.411245810/LDFLAGS/operation=append
-environment/project/cdt.managedbuild.config.gnu.exe.debug.721159017.411245810/LDFLAGS/value=-L../aardvark/lib -L../cpputest/lib64
+environment/project/cdt.managedbuild.config.gnu.exe.debug.721159017.411245810/LDFLAGS/operation=replace
+environment/project/cdt.managedbuild.config.gnu.exe.debug.721159017.411245810/LDFLAGS/value=-L../aardvark/lib -L${HOME}/cpputest-3.6/lib/lib
 environment/project/cdt.managedbuild.config.gnu.exe.debug.721159017.411245810/append=true
 environment/project/cdt.managedbuild.config.gnu.exe.debug.721159017.411245810/appendContributed=true

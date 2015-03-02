@@ -15,7 +15,10 @@ UdsRegWorker::UdsRegWorker(int socket)
 	this->recvSize = 0;
 	this->lthread = 0;
 	this->currentSocket = socket;
+	this->state = NOT_ACTIVE;
 	memset(receiveBuffer, '\0', BUFFER_SIZE);
+
+	StartWorkerThread(currentSocket);
 }
 
 
@@ -63,6 +66,7 @@ void UdsRegWorker::thread_work(int socket)
 {
 	memset(receiveBuffer, '\0', BUFFER_SIZE);
 	worker_thread_active = true;
+	string* request = NULL;
 
 	//start the listenerthread and remember the theadId of it
 	lthread = StartListenerThread(pthread_self(), currentSocket, receiveBuffer);
@@ -78,10 +82,30 @@ void UdsRegWorker::thread_work(int socket)
 			case SIGUSR1:
 				while(receiveQueue.size() > 0)
 				{
+					request = receiveQueue.back();
 					//sigusr1 = there is data for work e.g. parsing json rpc
-					printf("We received something and the worker got a signal.\n");
-
-
+					switch(state)
+					{
+						case NOT_ACTIVE:
+							//check for announce ack then switch state to announced
+							//and send register msg
+							printf("Received: %s \n", request->c_str());
+							break;
+						case ANNOUNCED:
+							//check for register ack then switch state to active
+							break;
+						case ACTIVE:
+							//maybe heartbeat check
+							break;
+						case BROKEN:
+							//should not occur
+							break;
+						default:
+							//something went completely wrong
+							state = BROKEN;
+							break;
+					}
+					editReceiveQueue(NULL, false);
 				}
 				break;
 

@@ -32,7 +32,7 @@ CPP_DEPS += \
 tests/%.o: ../tests/%.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: GCC C++ Compiler'
-	g++ -DTESTMODE -O0 -g3 -Wall -c -fmessage-length=0 -Wno-write-strings -I../include -I../cpputest/include/CppUTest -I../cpputest/include/CppUTestExt -I../include/rapidjson -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
+	g++ -DTESTMODE -I/home/dnoack/cpputest-3.6/lib/include/CppUTest -O0 -g3 -Wall -c -fmessage-length=0 -Wno-write-strings -I../include -I/home/dnoack/cpputest-3.6/lib/include/CppUTest -I/home/dnoack/cpputest-3.6/lib/include/CppUTestExt -I../cpputest/include/CppUTestExt -I../include/rapidjson -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 

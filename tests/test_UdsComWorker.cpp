@@ -95,7 +95,7 @@ TEST_GROUP(Plugin_UdsComWorker)
 };
 
 
-TEST(Plugin_UdsComWorker, test1)
+IGNORE_TEST(Plugin_UdsComWorker, test1)
 {
 	char buffer[RECEIVE_BUFFER_SIZE];
 	bool active = true;

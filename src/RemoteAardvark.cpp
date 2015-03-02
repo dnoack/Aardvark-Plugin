@@ -250,7 +250,7 @@ static void *_loadFunction (const char *name, int *result) {
         version = reinterpret_cast<u32(*)(void)>((void *)dlsym(handle, "c_version"));
         if (version == 0) {
 #if API_DEBUG
-            fprintf(stderr, "Unable to bind aa_c_version() in %s\n",
+            fprintf(stderr, "Unable to bind c_version() in %s\n",
                     SO_NAME);
             fprintf(stderr, "%s\n", dlerror());
 #endif
