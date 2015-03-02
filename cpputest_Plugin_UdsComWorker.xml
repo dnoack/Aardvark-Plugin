@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite errors="0" failures="0" hostname="localhost" name="Plugin_UdsComWorker" tests="1" time="0.000" timestamp="2015-03-02T16:57:59">
+<properties>
+</properties>
+<testcase classname="Plugin_UdsComWorker" name="test1" time="0.000">
+</testcase>
+<system-out></system-out>
+<system-err></system-err>
+</testsuite>

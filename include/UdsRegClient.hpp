@@ -51,6 +51,7 @@ class UdsRegClient{
 	int optionflag;
 	int currentSocket;
 
+
 	int sendData(string* data);
 };
 
