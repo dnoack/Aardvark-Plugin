@@ -25,11 +25,13 @@ class AardvarkPlugin {
 		void startCommunication();
 		void registerToRSD();
 
+		static list<string*>* getFuncList(){return funcList;}
+
 
 	private:
 		UdsServer* comServer;
 		UdsRegClient* regClient;
-		list<string*>* funcList;
+		static list<string*>* funcList;
 
 
 };

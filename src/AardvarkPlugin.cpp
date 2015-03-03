@@ -10,6 +10,8 @@
 #include "UdsServer.hpp"
 #include "RemoteAardvark.hpp"
 
+list<string*>* AardvarkPlugin::funcList;
+
 
 AardvarkPlugin::AardvarkPlugin()
 {

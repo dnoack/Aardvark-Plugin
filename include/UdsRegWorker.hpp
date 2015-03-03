@@ -30,6 +30,9 @@ class UdsRegWorker : public WorkerInterface, WorkerThreads{
 		~UdsRegWorker();
 
 	private:
+		JsonRPC* json;
+
+
 		//variables for listener
 		bool listen_thread_active;
 		char receiveBuffer[BUFFER_SIZE];
@@ -39,11 +42,19 @@ class UdsRegWorker : public WorkerInterface, WorkerThreads{
 		pthread_t lthread;
 		int currentSocket;
 
-		enum REG_STATE{NOT_ACTIVE, ANNOUNCED, ACTIVE, BROKEN};
+		enum REG_STATE{NOT_ACTIVE, ANNOUNCED, REGISTERED, ACTIVE, BROKEN};
 		unsigned int state;
 
 		//variables for worker
 		bool worker_thread_active;
+
+		bool handleAnnounceACKMsg(string* msg);
+
+		char* createRegisterMsg();
+
+		bool handleRegisterACKMsg(string* msg);
+
+		char* createPluginActiveMsg();
 
 		virtual void thread_listen(pthread_t partent_th, int socket, char* workerBuffer);
 
