@@ -34,6 +34,7 @@ class AardvarkPlugin {
 
 		bool regClientReady;
 		bool comServerReady;
+		bool pluginActive;
 
 		static list<string*>* funcList;
 
