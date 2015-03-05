@@ -8,9 +8,12 @@
 #include "AardvarkPlugin.hpp"
 #include <UdsRegWorker.hpp>
 #include <cstring>
+#include "errno.h"
 
 UdsRegWorker::UdsRegWorker(int socket)
 {
+	memset(receiveBuffer, '\0', BUFFER_SIZE);
+
 	this->listen_thread_active = false;
 	this->worker_thread_active = false;
 	this->recvSize = 0;
@@ -18,7 +21,6 @@ UdsRegWorker::UdsRegWorker(int socket)
 	this->currentSocket = socket;
 	this->json = new JsonRPC();
 	this->state = NOT_ACTIVE;
-	memset(receiveBuffer, '\0', BUFFER_SIZE);
 
 	StartWorkerThread(currentSocket);
 }
@@ -27,6 +29,11 @@ UdsRegWorker::UdsRegWorker(int socket)
 
 UdsRegWorker::~UdsRegWorker()
 {
+	worker_thread_active = false;
+	listen_thread_active = false;
+	pthread_kill(lthread, SIGUSR2);
+
+	WaitForWorkerThreadToExit();
 	delete json;
 }
 
@@ -40,27 +47,41 @@ void UdsRegWorker::thread_listen(pthread_t parent_th, int socket, char* workerBu
 	{
 		memset(receiveBuffer, '\0', BUFFER_SIZE);
 
-		//TODO:msg_dontwait lets us cancel the client with listen_thread_active flag but not with sigpipe (disco at clientside)
+		//received data
 		recvSize = recv( socket , receiveBuffer, BUFFER_SIZE, 0);
 		if(recvSize > 0)
 		{
 			//add received data in buffer to queue
 			editReceiveQueue(new string(receiveBuffer, recvSize), true);
 
-			//worker is doing nothing, wake him up
-			if(!workerStatus(WORKER_GETSTATUS))
-			{
-				workerStatus(WORKER_BUSY);
-				//signal the worker
-				pthread_kill(parent_th, SIGUSR1);
-			}
+			pthread_kill(parent_th, SIGUSR1);
 		}
-		if(recvSize == 0)
-			listen_thread_active = false;
-	}
-	printf("Listener beendet.\n");
-	pthread_kill(parent_th, SIGPOLL);
+		//no data, either udsComClient or plugin invoked a shutdown of this UdsComWorker
+		else
+		{
+			//udsComClient invoked shutdown
+			if(errno == EINTR)
+			{
+				pthread_kill(parent_th, SIGUSR2);
+			}
+			//plugin invoked shutdown
+			else
+			{
+				worker_thread_active = false;
+				listen_thread_active = false;
+				pthread_kill(parent_th, SIGUSR2);
+			}
+		listenerDown = true;
+		}
 
+	}
+	if(!listenerDown)
+	{
+		worker_thread_active = false;
+		listen_thread_active = false;
+		pthread_kill(parent_th, SIGUSR2);
+	}
+	printf("UdsRegWorker: Listener beendet.\n");
 
 }
 
@@ -84,7 +105,7 @@ void UdsRegWorker::thread_work(int socket)
 		switch(currentSig)
 		{
 			case SIGUSR1:
-				while(receiveQueue.size() > 0)
+				while(getReceiveQueueSize( )> 0)
 				{
 					request = receiveQueue.back();
 					printf("Received: %s \n", request->c_str());
@@ -113,7 +134,7 @@ void UdsRegWorker::thread_work(int socket)
 								send(currentSocket, response, strlen(response), 0);
 							}
 
-							listen_thread_active = false;
+							//listen_thread_active = false;
 							//check for register ack then switch state to active
 							break;
 						case ACTIVE:
@@ -132,24 +153,21 @@ void UdsRegWorker::thread_work(int socket)
 				break;
 
 			case SIGUSR2:
-				//sigusr2 = time to exit
-				worker_thread_active = false;
-				listen_thread_active = false;
+				//shutdown from UdsComClient
 				break;
 
 			case SIGPIPE:
-				listen_thread_active = false;
-				worker_thread_active = false;
+				printf("UdsRegWorker: SIGPIPE\n");
 				break;
+
 			default:
-				worker_thread_active = false;
-				listen_thread_active = false;
+				printf("UdsRegWorker: unkown signal \n");
 				break;
 		}
-		workerStatus(WORKER_FREE);
+
 	}
 	close(currentSocket);
-	printf("Worker Thread beendet.\n");
+	printf("UdsRegWorker: Worker Thread beendet.\n");
 	WaitForListenerThreadToExit();
 
 }
@@ -181,7 +199,7 @@ char* UdsRegWorker::createRegisterMsg()
 	Value fNumber;
 	int count = 1;
 	char* buffer = NULL;
-	memset(buffer, '\0', 0);
+
 	list<string*>* funcList;
 	string* tempString;
 
@@ -192,9 +210,11 @@ char* UdsRegWorker::createRegisterMsg()
 	params.SetObject();
 	for(list<string*>::const_iterator i = funcList->begin(); i != funcList->end(); ++i)
 	{
-		tempString = *i;
+		memset(buffer, '\0', 0);
 		buffer = new char[10];
-		sprintf(buffer, "f%d\0", count);
+		tempString = *i;
+
+		sprintf(buffer, "f%d", count);
 		fNumber.SetString(buffer, strlen(buffer));
 		f.SetString(tempString->c_str(), tempString->size());
 		params.AddMember(fNumber,f, dom.GetAllocator());

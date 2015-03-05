@@ -14,7 +14,7 @@
 static RemoteAardvark* testInterface;
 static Document* dom;
 static Value testValue;
-static char* memberValue = "NoMember";
+static const char* memberValue = "NoMember";
 
 
 TEST_GROUP(Plugin_Interface)
@@ -64,7 +64,6 @@ TEST(Plugin_Interface, executeFunction_FunctionNOTfound)
 	Value method;
 	Value params;
 	Value result;
-	char** error;
 
 	method.SetString("aa_NOTAFUNCTION", dom->GetAllocator());
 	params.SetObject();

@@ -52,7 +52,7 @@ class DriverInterface{
 
 
 
-		bool findParamsMember(Value &object, char* memberName)
+		bool findParamsMember(Value &object, const char* memberName)
 		{
 			Type paramsType;
 
@@ -79,7 +79,7 @@ class DriverInterface{
 			list<string*>* funcList = new list<string*>();
 
 
-			for(typename map<char*,TPointer>::iterator it=funcMap.begin(); it != funcMap.end(); it++)
+			for(typename map<const char*,TPointer>::iterator it=funcMap.begin(); it != funcMap.end(); it++)
 			{
 				funcList->push_back(new string(it->first));
 			}
@@ -100,7 +100,7 @@ class DriverInterface{
 
 
 		//use char* for keys, because rapidjson gives us char* and we save a lot of allocating new strings
-		map<char*, TPointer, DriverInterface::cmp_keys> funcMap;
+		map<const char*, TPointer, DriverInterface::cmp_keys> funcMap;
 		TPointer funcP;
 		TDriver driver;
 

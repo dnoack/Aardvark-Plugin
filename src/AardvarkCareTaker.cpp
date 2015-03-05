@@ -16,8 +16,8 @@ AardvarkCareTaker::AardvarkCareTaker()
 {
 	pthread_mutex_init(&dLmutex, NULL);
 	json = new JsonRPC();
-	result = NULL;
 	user = new string();
+	result = NULL;
 }
 
 
@@ -39,6 +39,7 @@ AardvarkCareTaker::~AardvarkCareTaker()
 
 RemoteAardvark* AardvarkCareTaker::getDevice(int value, int valueType)
 {
+
 	RemoteAardvark* device = NULL;
 	bool found = false;
 
@@ -96,6 +97,8 @@ string* AardvarkCareTaker::processMsg(string* msg)
 	Document* dom;
 	Value responseValue;
 	RemoteAardvark* device;
+
+	//TODO: irgendwo hier ist der fehler
 
 	try
 	{

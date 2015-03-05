@@ -21,7 +21,7 @@ class PluginError : exception{
 
 
 	public:
-		PluginError(const char* msg, char* file, int line)
+		PluginError(const char* msg, const char* file, int line)
 		{
 			this->exMsg = new string(msg);
 			memset(lineBuffer, '\0', 33);
@@ -59,11 +59,6 @@ class PluginError : exception{
 
 
 };
-
-//string PluginError::msgOut;
-
-//#define throw_PluginError(msg) throw PluginError(msg , __FILE__, __LINE__);
-
 
 
 #endif /* INCLUDE_PLUGIN_ERROR_H_ */

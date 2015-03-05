@@ -95,9 +95,6 @@ typedef signed   __int64  s64;
 
 #endif /* __MSC_VER */
 
-typedef float   f32;
-typedef double  f64;
-
 #endif /* TOTALPHASE_DATA_TYPES */
 
 
@@ -222,16 +219,6 @@ struct AardvarkVersion {
 typedef struct AardvarkVersion AardvarkVersion;
 #endif
 
-//DN 12012015
-struct LibraryInformation {
-  const char* libraryName;
-  int funcCount;
-  char* test_func;
-
-};
-#ifndef __cplusplus
-typedef struct LibraryInformation LibraryInformation;
-#endif
 
 /*=========================================================================
 | GENERAL API
@@ -281,7 +268,6 @@ int aa_find_devices_ext (
 );
 
 
-
 /*
  * Open the Aardvark port.
  *
@@ -300,9 +286,6 @@ int aa_find_devices_ext (
 Aardvark aa_open (
     int port_number
 );
-
-
-//bool aa_open_remote(rapidjson::Value &params , rapidjson::Value &result);
 
 
 /*
@@ -376,7 +359,6 @@ int aa_features (
 u32 aa_unique_id (
     Aardvark aardvark
 );
-
 
 
 /*
@@ -987,16 +969,16 @@ class RemoteAardvark : public DriverInterface<RemoteAardvark*, afptr>{
 			//get relativ address of function
 			temp = &RemoteAardvark::aa_open;
 			//save the relativ address to the map with the corresponding key for rpc
-			funcMap.insert(pair<char* , afptr>("aa_open", temp));
+			funcMap.insert(pair<const char* , afptr>("aa_open", temp));
 
 			temp = &RemoteAardvark::aa_close;
-			funcMap.insert(pair<char* , afptr>("aa_close", temp));
+			funcMap.insert(pair<const char* , afptr>("aa_close", temp));
 
 			temp = &RemoteAardvark::aa_unique_id;
-			funcMap.insert(pair<char* , afptr>("aa_unique_id", temp));
+			funcMap.insert(pair<const char* , afptr>("aa_unique_id", temp));
 
 			temp = &RemoteAardvark::aa_target_power;
-			funcMap.insert(pair<char*, afptr>("aa_target_power", temp));
+			funcMap.insert(pair<const char*, afptr>("aa_target_power", temp));
 
 		};
 
@@ -1019,6 +1001,9 @@ class RemoteAardvark : public DriverInterface<RemoteAardvark*, afptr>{
 
 		bool aa_target_power(Value &params , Value &result);
 
+		bool test_close(int value);
+
+
 		int getPort(){return this->port;}
 		int getHandle(){return this->handle;}
 		string* getUser(){return this->user;}
@@ -1035,13 +1020,10 @@ class RemoteAardvark : public DriverInterface<RemoteAardvark*, afptr>{
 };
 
 
+
+
 #ifdef __cplusplus
 }
-
-
-
-
-
 #endif
 
 #endif  /* __aardvark_h__ */

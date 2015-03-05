@@ -59,14 +59,13 @@ static void createClientSocket()
 static void connectClientToServer(int clientSocket, int serverAcceptSocket)
 {
 	bool active = true;
-	int connectOK = 0;
 
 	while(active)
 	{
 		serverSocket = accept(server_accept_socket, (struct sockaddr*)&address, &addrlen);
 		if( serverSocket < 0)
 		{
-			connectOK = connect(clientSocket, (struct sockaddr*)&address, addrlen);
+			connect(clientSocket, (struct sockaddr*)&address, addrlen);
 		}
 		else
 			active = false;

@@ -68,14 +68,14 @@ void* UdsServer::uds_accept(void* param)
 	bool accept_thread_active = true;
 	listen(connection_socket, 5);
 
+	printf("Accepter created\n");
 	while(accept_thread_active)
 	{
 		new_socket = accept(connection_socket, (struct sockaddr*)&address, &addrlen);
-		if(new_socket >= 0)
+		if(new_socket > 0)
 		{
 			worker = new UdsComWorker(new_socket);
-			editWorkerList(worker, ADD_WORKER);
-			//printf("Client verbunden.\n");
+			//editWorkerList(worker, ADD_WORKER);
 		}
 
 	}

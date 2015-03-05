@@ -52,9 +52,8 @@
 | INCLUDES
  ========================================================================*/
 /* This #include can be customized to conform to the user's build paths. */
-#include <RemoteAardvark.hpp>
-#include <Plugin_Error.h>
-
+#include "RemoteAardvark.hpp"
+#include "document.h"
 
 
 /*=========================================================================
@@ -247,7 +246,7 @@ static void *_loadFunction (const char *name, int *result) {
             return 0;
         }
 
-        version = reinterpret_cast<u32(*)(void)>((void *)dlsym(handle, "c_version"));
+        version = reinterpret_cast<u32(*)(void)>((void*)dlsym(handle, "aa_c_version"));
         if (version == 0) {
 #if API_DEBUG
             fprintf(stderr, "Unable to bind c_version() in %s\n",
@@ -324,28 +323,12 @@ int aa_find_devices_ext (
 
 
 
-
-
-
-
-
 static Aardvark (*c_aa_open) (int) = 0;
-Aardvark aa_open (
-    int port_number
-)
-{
-    if (c_aa_open == 0) {
-        int res = 0;
-        if (!(c_aa_open = reinterpret_cast<Aardvark(*)(int)>(_loadFunction("c_aa_open", &res))))
-            return res;
-    }
-    return c_aa_open(port_number);
-}
 
-//remote function
 bool RemoteAardvark::aa_open(rapidjson::Value &params , rapidjson::Value &result)
 {
 	int port_number = 0;
+	int newHandle = 0;
 	int fail = 0;
 	Value member;
 
@@ -360,7 +343,9 @@ bool RemoteAardvark::aa_open(rapidjson::Value &params , rapidjson::Value &result
 				}
 				else
 				{
-					result.SetInt(c_aa_open(port_number));
+					newHandle = c_aa_open(port_number);
+					result.SetInt(newHandle);
+					handle = newHandle;
 				}
 			}
 			else throw PluginError("Member \"port\" has to be an integer type.",  __FILE__, __LINE__);
@@ -372,17 +357,6 @@ bool RemoteAardvark::aa_open(rapidjson::Value &params , rapidjson::Value &result
 
 
 static int (*c_aa_close) (Aardvark) = 0;
-int aa_close (
-    Aardvark aardvark
-)
-{
-    if (c_aa_close == 0) {
-        int res = 0;
-        if (!(c_aa_close = reinterpret_cast<int(*)(Aardvark)>(_loadFunction("c_aa_close", &res))))
-            return res;
-    }
-    return c_aa_close(aardvark);
-}
 
 
 bool RemoteAardvark::aa_close(rapidjson::Value &params , rapidjson::Value &result)
@@ -410,18 +384,10 @@ bool RemoteAardvark::aa_close(rapidjson::Value &params , rapidjson::Value &resul
 }
 
 
+
+
+
 static u32 (*c_aa_unique_id) (Aardvark) = 0;
-u32 aa_unique_id (
-    Aardvark aardvark
-)
-{
-    if (c_aa_unique_id == 0) {
-        int res = 0;
-        if (!(c_aa_unique_id = reinterpret_cast<u32(*)(Aardvark)>(_loadFunction("c_aa_unique_id", &res))))
-            return res;
-    }
-    return c_aa_unique_id(aardvark);
-}
 
 
 bool RemoteAardvark::aa_unique_id(rapidjson::Value &params , rapidjson::Value &result)
@@ -453,19 +419,6 @@ bool RemoteAardvark::aa_unique_id(rapidjson::Value &params , rapidjson::Value &r
 
 
 static int (*c_aa_target_power) (Aardvark, u08) = 0;
-int aa_target_power (
-    Aardvark aardvark,
-    u08      power_mask
-)
-{
-    if (c_aa_target_power == 0) {
-        int res = 0;
-        if (!(c_aa_target_power = reinterpret_cast<int(*)(Aardvark, u08)>(_loadFunction("c_aa_target_power", &res))))
-            return res;
-    }
-    return c_aa_target_power(aardvark, power_mask);
-}
-
 
 bool RemoteAardvark::aa_target_power(rapidjson::Value &params , rapidjson::Value &result)
 {

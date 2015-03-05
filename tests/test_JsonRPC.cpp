@@ -121,7 +121,7 @@ TEST(Plugin_JsonRPC, responseError_ok)
 	Value* error;
 	Document* tempRequest;
 	Document* tempResponse;
-	char* message = "Test";
+	const char* message = "Test";
 
 
 	//see begin of this file

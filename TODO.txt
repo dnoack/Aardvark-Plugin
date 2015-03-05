@@ -1,8 +1,7 @@
 
 
-- Nachrichten zwischen plugin und rsd definieren
+
 - wie sollen plugin funktionen in rsd registriert sein ? z.b. wenn client frägt : welche funktionen stehen zur verfügung
-- Zentrale liste von Plugins in RSD
 - Tcp worker braucht jsonRPC parser und zugang zur zentralen liste der registrierten plugins
 - wenn eine anfrage zu vorhandenem plugin -> UdsComClient zu plugin
 

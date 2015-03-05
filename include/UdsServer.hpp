@@ -44,9 +44,9 @@ class UdsServer{
 		static void editWorkerList(UdsComWorker* newWorker, bool add); //static
 
 	private:
+		int optionflag;
 
 		static int connection_socket;
-
 
 		//list of pthread ids with all the active worker. push and pop must be protected by mutex
 		static vector<UdsComWorker*> workerList;
@@ -55,8 +55,6 @@ class UdsServer{
 		static struct sockaddr_un address;
 		static socklen_t addrlen;
 
-
-		int optionflag;
 
 		static void* uds_accept(void*);
 

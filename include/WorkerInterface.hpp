@@ -14,11 +14,6 @@
 #include "signal.h"
 
 
-#define WORKER_FREE 0
-#define WORKER_BUSY 1
-#define WORKER_GETSTATUS 2
-
-
 using namespace std;
 
 
@@ -28,19 +23,17 @@ class WorkerInterface{
 		WorkerInterface()
 		{
 			pthread_mutex_init(&rQmutex, NULL);
-			pthread_mutex_init(&wBusyMutex, NULL);
 
 			this->currentSig = 0;
-			this->workerBusy = false;
-
+			this->listenerDown = false;
 			configSignals();
+
 		};
 
 
 		~WorkerInterface()
 		{
 			pthread_mutex_destroy(&rQmutex);
-			pthread_mutex_destroy(&wBusyMutex);
 		};
 
 
@@ -54,14 +47,10 @@ class WorkerInterface{
 		//signal variables
 		struct sigaction action;
 		sigset_t sigmask;
-		//struct sigaction pipehandler;
 		int currentSig;
 
-
-		//shared worker busy flag
-		pthread_mutex_t wBusyMutex;
-		bool workerBusy;
-
+		//test 050315
+		bool listenerDown;
 
 		static void dummy_handler(int){};
 
@@ -89,6 +78,16 @@ class WorkerInterface{
 			pthread_mutex_unlock(&rQmutex);
 		}
 
+		int getReceiveQueueSize()
+		{
+			int result = 0;
+			pthread_mutex_lock(&rQmutex);
+			result = receiveQueue.size();
+			pthread_mutex_unlock(&rQmutex);
+
+			return result;
+		}
+
 
 
 		void configSignals()
@@ -103,30 +102,6 @@ class WorkerInterface{
 			sigaction(SIGPOLL, &action, (struct sigaction*)0);
 			sigaction(SIGPIPE, &action, (struct sigaction*)0);
 		}
-
-
-		bool workerStatus(int status)
-		{
-			bool rValue = false;
-			pthread_mutex_lock(&wBusyMutex);
-			switch(status)
-			{
-				case WORKER_FREE:
-					workerBusy = false;
-					break;
-				case WORKER_BUSY:
-					workerBusy = true;
-					break;
-				case WORKER_GETSTATUS:
-					rValue = workerBusy;
-					break;
-				default:
-					break;
-			}
-			pthread_mutex_unlock(&wBusyMutex);
-			return rValue;
-		}
-
 
 
 };

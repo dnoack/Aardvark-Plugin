@@ -8,11 +8,13 @@
 
 #include "UdsComWorker.hpp"
 #include "UdsServer.hpp"
+#include "errno.h"
 
 
 
 UdsComWorker::UdsComWorker(int socket)
 {
+	memset(receiveBuffer, '\0', BUFFER_SIZE);
 	this->listen_thread_active = false;
 	this->worker_thread_active = false;
 	this->recvSize = 0;
@@ -21,7 +23,7 @@ UdsComWorker::UdsComWorker(int socket)
 	this->response = 0;
 	this->currentSocket = socket;
 	this->paard = new AardvarkCareTaker();
-	memset(receiveBuffer, '\0', BUFFER_SIZE);
+
 	StartWorkerThread(currentSocket);
 }
 
@@ -32,6 +34,8 @@ UdsComWorker::~UdsComWorker()
 	delete paard;
 	worker_thread_active = false;
 	listen_thread_active = false;
+	pthread_kill(lthread, SIGUSR2);
+
 	WaitForWorkerThreadToExit();
 }
 
@@ -41,7 +45,6 @@ UdsComWorker::~UdsComWorker()
 void UdsComWorker::thread_work(int socket)
 {
 
-	memset(receiveBuffer, '\0', BUFFER_SIZE);
 	worker_thread_active = true;
 
 	//start the listenerthread and remember the theadId of it
@@ -56,25 +59,27 @@ void UdsComWorker::thread_work(int socket)
 		switch(currentSig)
 		{
 			case SIGUSR1:
-				while(receiveQueue.size() > 0)
+				while(getReceiveQueueSize() > 0)
 				{
 					//sigusr1 = there is data for work e.g. parsing json rpc
 					//printf("We received something and the worker got a signal.\n");
 
 					//1 get data from queue
 					request = receiveQueue.back();
+					printf("Received: %s\n", request->c_str());
 
 					try
 					{
+						//TODO: BUG wenn dieser teil drin ist, passiert was undefiniertes / programm endet mit 5 threads.
 						response = paard->processMsg(request);
 					}
 					catch(PluginError &e)
 					{
 						response = new string(e.get());
-						printf("catch\n");
 					}
 
 					send(currentSocket, response->c_str(), response->size(), 0);
+					//send(currentSocket, "OK", 2, 0);
 					//3 remove data from queue
 					editReceiveQueue(NULL, false);
 
@@ -85,27 +90,23 @@ void UdsComWorker::thread_work(int socket)
 				break;
 
 			case SIGUSR2:
-				//sigusr2 = time to exit
-				worker_thread_active = false;
-				listen_thread_active = false;
-				break;
+				printf("UdsComWorker: SIGUSR2\n");
 
+				break;
 			case SIGPIPE:
-				listen_thread_active = false;
-				worker_thread_active = false;
+				printf("UdsComWorker: SIGPIPE\n");
 				break;
 			default:
-				worker_thread_active = false;
-				listen_thread_active = false;
+				printf("UdsComWorker: unkown signal \n");
 				break;
 		}
-		workerStatus(WORKER_FREE);
+
 	}
 	close(currentSocket);
-	printf("Worker Thread beendet.\n");
 	WaitForListenerThreadToExit();
 	//destroy this UdsWorker and delete it from workerList in Uds::Server
 	UdsServer::editWorkerList(this, DELETE_WORKER);
+	printf("UdsComWorker: Worker Thread beendet.\n");
 
 }
 
@@ -120,25 +121,45 @@ void UdsComWorker::thread_listen(pthread_t parent_th, int socket, char* workerBu
 	{
 		memset(receiveBuffer, '\0', BUFFER_SIZE);
 
-		//TODO:msg_dontwait lets us cancel the client with listen_thread_active flag but not with sigpipe (disco at clientside)
-		recvSize = recv( socket , receiveBuffer, BUFFER_SIZE, MSG_DONTWAIT);
+
+		recvSize = recv( socket , receiveBuffer, BUFFER_SIZE, 0);
 		if(recvSize > 0)
 		{
 			//add received data in buffer to queue
 			editReceiveQueue(new string(receiveBuffer, recvSize), true);
 
-			//worker is doing nothing, wake him up
-			if(!workerStatus(WORKER_GETSTATUS))
+
+			pthread_kill(parent_th, SIGUSR1);
+
+		}
+		//no data, either udsComClient or plugin invoked a shutdown of this UdsComWorker
+		else
+		{
+			//udsComClient invoked shutdown
+			if(errno == EINTR)
 			{
-				workerStatus(WORKER_BUSY);
-				//signal the worker
-				pthread_kill(parent_th, SIGUSR1);
+				worker_thread_active = false;
+				listen_thread_active = false;
+				pthread_kill(parent_th, SIGUSR2);
 			}
+			//plugin invoked shutdown
+			else
+			{
+				worker_thread_active = false;
+				listen_thread_active = false;
+				pthread_kill(parent_th, SIGUSR2);
+			}
+			listenerDown = true;
 		}
 
 	}
-	printf("Listener beendet.\n");
-	pthread_kill(parent_th, SIGPOLL);
+	if(!listenerDown)
+	{
+		worker_thread_active = false;
+		listen_thread_active = false;
+		pthread_kill(parent_th, SIGUSR2);
+	}
+	printf("UdsComWorker: Listener beendet.\n");
 }
 
 
