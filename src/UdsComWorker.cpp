@@ -104,8 +104,8 @@ void UdsComWorker::thread_work(int socket)
 	}
 	close(currentSocket);
 	WaitForListenerThreadToExit();
-	//destroy this UdsWorker and delete it from workerList in Uds::Server
-	UdsServer::editWorkerList(this, DELETE_WORKER);
+	//mark this whole worker object for a delete
+	deletable = true;
 	printf("UdsComWorker: Worker Thread beendet.\n");
 
 }

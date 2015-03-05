@@ -216,13 +216,13 @@ char* UdsRegWorker::createRegisterMsg()
 		fNumber.SetString(buffer, strlen(buffer));
 		f.SetString(tempString->c_str(), tempString->size());
 		params.AddMember(fNumber,f, dom.GetAllocator());
+
+		delete[] buffer;
 		count++;
 	}
 
 	id.SetInt(2);
 	return json->generateRequest(method, params, id);
-
-	//create request json rpc with methodnames as parameters
 }
 
 

@@ -7,6 +7,7 @@
 
 
 #include "UdsRegClient.hpp"
+#include "errno.h"
 
 struct sockaddr_un UdsRegClient::address;
 socklen_t UdsRegClient::addrlen;
@@ -15,6 +16,7 @@ socklen_t UdsRegClient::addrlen;
 UdsRegClient::UdsRegClient(const char* UDS_FILE_PATH, int size)
 {
 	optionflag = 1;
+	ready = false;
 	currentSocket = socket(AF_UNIX, SOCK_STREAM, 0);
 	address.sun_family = AF_UNIX;
 	strncpy(address.sun_path, UDS_FILE_PATH, size);
@@ -34,37 +36,52 @@ UdsRegClient::~UdsRegClient()
 
 
 
-void UdsRegClient::connectToRSD()
+bool UdsRegClient::connectToRSD()
 {
 	Value method;
 	Value params;
 	Value id;
 	Document dom;
 	char* msg;
+	int status = 0;
+	bool result = false;
 
 	//maybe connect will be better separated ?
-	connect(currentSocket, (struct sockaddr*)&address, addrlen);
+	status = connect(currentSocket, (struct sockaddr*)&address, addrlen);
 
+	if(status != -1)
+	{
+		//send a json rpc which signals "hey rsd, I want to register this plugin"
+		method.SetString("announce");
+		params.SetObject();
+		params.AddMember("pluginName", "Aardvark", dom.GetAllocator());
+		params.AddMember("udsFilePath", "/tmp/Aardvark.uds", dom.GetAllocator());
+		id.SetInt(1);
 
-	//send a json rpc which signals "hey rsd, I want to register this plugin"
-	method.SetString("announce");
-	params.SetObject();
-	params.AddMember("pluginName", "Aardvark", dom.GetAllocator());
-	params.AddMember("udsFilePath", "/tmp/Aardvark.uds", dom.GetAllocator());
-	id.SetInt(1);
+		msg = json->generateRequest(method, params, id);
 
-	msg = json->generateRequest(method, params, id);
+		status = send(currentSocket, msg , strlen(msg) ,0);
+		if(status == -1)
+		{
+			printf("Fehler beim senden.\n");
+			result = false;
+			delete regWorker;
+		}
+		else
+		{
+			result = true;
+		}
+	}
+	else
+	{
+		printf("Fehler beim Verbinden zu RSD.\n");
+		result = false;
+		delete regWorker;
 
-	send(currentSocket, msg , strlen(msg) ,0);
+	}
+	return result;
 }
 
-
-
-void UdsRegClient::registerToRSD()
-{
-	//send a json rpc which say "im plugin x and i have y methods [method1, method2, ..., methody]
-
-}
 
 
 void UdsRegClient::unregisterFromRSD()

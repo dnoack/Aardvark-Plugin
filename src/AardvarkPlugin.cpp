@@ -19,6 +19,7 @@ AardvarkPlugin::AardvarkPlugin()
 
 	regClientReady = false;
 	comServerReady = false;
+	pluginActive = true;
 
 	//get List of key, which are supported by the driver
 	RemoteAardvark* tempDriver = new RemoteAardvark(0);
@@ -43,7 +44,14 @@ AardvarkPlugin::~AardvarkPlugin()
 void AardvarkPlugin::startCommunication()
 {
 	comServer->startCom();
-	regClient->connectToRSD();
+	pluginActive = regClient->connectToRSD();
+
+	while(pluginActive)
+	{
+		sleep(3);
+		comServer->checkForDeletableWorker();
+	}
+
 }
 
 
@@ -54,11 +62,7 @@ int main(int argc, const char** argv)
 
 	AardvarkPlugin* plugin = new AardvarkPlugin();
 	plugin->startCommunication();
-
-	while(1)
-		sleep(3);
-
-
+	delete plugin;
 	return 0;
 }
 

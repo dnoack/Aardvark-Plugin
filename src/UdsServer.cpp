@@ -45,9 +45,9 @@ UdsServer::UdsServer( const char* udsFile, int nameSize)
 
 UdsServer::~UdsServer()
 {
-	pthread_mutex_destroy(&wLmutex);
 	close(connection_socket);
 	workerList.erase(workerList.begin(), workerList.end());
+	pthread_mutex_destroy(&wLmutex);
 }
 
 
@@ -64,7 +64,7 @@ int UdsServer::call()
 void* UdsServer::uds_accept(void* param)
 {
 	int new_socket = 0;
-	UdsComWorker* worker;
+	UdsComWorker* worker = NULL;
 	bool accept_thread_active = true;
 	listen(connection_socket, 5);
 
@@ -75,7 +75,7 @@ void* UdsServer::uds_accept(void* param)
 		if(new_socket > 0)
 		{
 			worker = new UdsComWorker(new_socket);
-			//editWorkerList(worker, ADD_WORKER);
+			pushWorkerList(worker);
 		}
 
 	}
@@ -83,27 +83,32 @@ void* UdsServer::uds_accept(void* param)
 }
 
 
-void UdsServer::editWorkerList(UdsComWorker* newWorker, bool add)
+
+
+void UdsServer::pushWorkerList(UdsComWorker* newWorker)
 {
 	pthread_mutex_lock(&wLmutex);
-	if(add)
-	{
 		workerList.push_back(newWorker);
-	}
-	else
+	pthread_mutex_unlock(&wLmutex);
+}
+
+
+
+void UdsServer::checkForDeletableWorker()
+{
+
+	pthread_mutex_lock(&wLmutex);
+	for(unsigned int i = 0; i < workerList.size() ; i++)
 	{
-		//find worker
-		for(unsigned int i = 0; i < workerList.size() ; i++)
+		if(workerList[i]->isDeletable())
 		{
-			if(workerList[i] == newWorker)
-			{
-				workerList.erase(workerList.begin()+i);
-				break;
-			}
+			delete workerList[i];
+			workerList.erase(workerList.begin()+i);
 		}
 	}
 	pthread_mutex_unlock(&wLmutex);
 }
+
 
 
 

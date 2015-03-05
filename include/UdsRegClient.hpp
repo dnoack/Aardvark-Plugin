@@ -34,8 +34,7 @@ class UdsRegClient{
 		~UdsRegClient();
 
 
-		void connectToRSD();
-		void registerToRSD();
+		bool connectToRSD();
 		void unregisterFromRSD();
 
 

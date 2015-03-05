@@ -40,8 +40,9 @@ class UdsServer{
 
 		void startCom();
 
-		//add=true -> add the worker, add=false->delete worker
-		static void editWorkerList(UdsComWorker* newWorker, bool add); //static
+
+		static void pushWorkerList(UdsComWorker* newWorker);
+		void checkForDeletableWorker();
 
 	private:
 		int optionflag;
