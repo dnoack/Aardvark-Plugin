@@ -52,7 +52,7 @@ void UdsRegWorker::thread_listen(pthread_t parent_th, int socket, char* workerBu
 		if(recvSize > 0)
 		{
 			//add received data in buffer to queue
-			editReceiveQueue(new string(receiveBuffer, recvSize), true);
+			pushReceiveQueue(new string(receiveBuffer, recvSize));
 
 			pthread_kill(parent_th, SIGUSR1);
 		}
@@ -133,8 +133,6 @@ void UdsRegWorker::thread_work(int socket)
 								response = createPluginActiveMsg();
 								send(currentSocket, response, strlen(response), 0);
 							}
-
-							//listen_thread_active = false;
 							//check for register ack then switch state to active
 							break;
 						case ACTIVE:
@@ -148,7 +146,7 @@ void UdsRegWorker::thread_work(int socket)
 							state = BROKEN;
 							break;
 					}
-					editReceiveQueue(NULL, false);
+					popReceiveQueue();
 				}
 				break;
 

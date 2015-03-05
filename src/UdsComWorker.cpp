@@ -53,6 +53,7 @@ void UdsComWorker::thread_work(int socket)
 
 	while(worker_thread_active)
 	{
+		request = NULL;
 		//wait for signals from listenerthread
 
 		sigwait(&sigmask, &currentSig);
@@ -81,11 +82,10 @@ void UdsComWorker::thread_work(int socket)
 					send(currentSocket, response->c_str(), response->size(), 0);
 					//send(currentSocket, "OK", 2, 0);
 					//3 remove data from queue
-					editReceiveQueue(NULL, false);
+					popReceiveQueue();
 
-					//4 check for further data, if there is goto step 1
 					delete response;
-					delete request;
+
 				}
 				break;
 
@@ -126,7 +126,7 @@ void UdsComWorker::thread_listen(pthread_t parent_th, int socket, char* workerBu
 		if(recvSize > 0)
 		{
 			//add received data in buffer to queue
-			editReceiveQueue(new string(receiveBuffer, recvSize), true);
+			pushReceiveQueue(new string(receiveBuffer, recvSize));
 
 
 			pthread_kill(parent_th, SIGUSR1);
