@@ -44,12 +44,16 @@ class UdsRegClient{
 
 	UdsRegWorker* regWorker;
 	JsonRPC* json;
+	//client is ready if listener is recving
+	bool ready;
+	int optionflag;
+	int currentSocket;
+
 
 	static struct sockaddr_un address;
 	static socklen_t addrlen;
 
-	int optionflag;
-	int currentSocket;
+
 
 
 	int sendData(string* data);

@@ -31,7 +31,12 @@ class AardvarkPlugin {
 	private:
 		UdsServer* comServer;
 		UdsRegClient* regClient;
+
+		bool regClientReady;
+		bool comServerReady;
+
 		static list<string*>* funcList;
+
 
 
 };

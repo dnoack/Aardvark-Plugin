@@ -10,11 +10,16 @@
 #include "UdsServer.hpp"
 #include "RemoteAardvark.hpp"
 
+
 list<string*>* AardvarkPlugin::funcList;
 
 
 AardvarkPlugin::AardvarkPlugin()
 {
+
+	regClientReady = false;
+	comServerReady = false;
+
 	//get List of key, which are supported by the driver
 	RemoteAardvark* tempDriver = new RemoteAardvark(0);
 	funcList = tempDriver->getAllFunctionNames();
@@ -46,6 +51,7 @@ void AardvarkPlugin::startCommunication()
 
 int main(int argc, const char** argv)
 {
+
 	AardvarkPlugin* plugin = new AardvarkPlugin();
 	plugin->startCommunication();
 
