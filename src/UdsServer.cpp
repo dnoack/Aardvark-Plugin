@@ -65,8 +65,9 @@ void* UdsServer::uds_accept(void* param)
 {
 	int new_socket = 0;
 	UdsComWorker* worker = NULL;
-	bool accept_thread_active = true;
 	listen(connection_socket, 5);
+	bool accept_thread_active = true;
+
 
 	printf("Accepter created\n");
 	while(accept_thread_active)

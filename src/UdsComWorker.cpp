@@ -62,16 +62,12 @@ void UdsComWorker::thread_work(int socket)
 			case SIGUSR1:
 				while(getReceiveQueueSize() > 0)
 				{
-					//sigusr1 = there is data for work e.g. parsing json rpc
-					//printf("We received something and the worker got a signal.\n");
 
-					//1 get data from queue
 					request = receiveQueue.back();
 					printf("Received: %s\n", request->c_str());
 
 					try
 					{
-						//TODO: BUG wenn dieser teil drin ist, passiert was undefiniertes / programm endet mit 5 threads.
 						response = paard->processMsg(request);
 					}
 					catch(PluginError &e)
@@ -80,12 +76,9 @@ void UdsComWorker::thread_work(int socket)
 					}
 
 					send(currentSocket, response->c_str(), response->size(), 0);
-					//send(currentSocket, "OK", 2, 0);
-					//3 remove data from queue
+
 					popReceiveQueue();
-
 					delete response;
-
 				}
 				break;
 

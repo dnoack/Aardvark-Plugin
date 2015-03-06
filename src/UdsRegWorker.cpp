@@ -126,8 +126,7 @@ void UdsRegWorker::thread_work(int socket)
 							if(handleRegisterACKMsg(request))
 							{
 								state = REGISTERED;
-								//check if Plugin com part is ready, if yes -> state = active
-
+								//TODO: check if Plugin com part is ready, if yes -> state = active
 
 								//create pluginActive msg
 								response = createPluginActiveMsg();
@@ -213,7 +212,7 @@ char* UdsRegWorker::createRegisterMsg()
 		tempString = *i;
 
 		sprintf(buffer, "f%d", count);
-		fNumber.SetString(buffer, strlen(buffer));
+		fNumber.SetString(buffer, dom.GetAllocator());
 		f.SetString(tempString->c_str(), tempString->size());
 		params.AddMember(fNumber,f, dom.GetAllocator());
 
