@@ -969,16 +969,16 @@ class RemoteAardvark : public DriverInterface<RemoteAardvark*, afptr>{
 			//get relativ address of function
 			temp = &RemoteAardvark::aa_open;
 			//save the relativ address to the map with the corresponding key for rpc
-			funcMap.insert(pair<const char* , afptr>("aa_open", temp));
+			funcMap.insert(pair<const char* , afptr>("Aardvark.aa_open", temp));
 
 			temp = &RemoteAardvark::aa_close;
-			funcMap.insert(pair<const char* , afptr>("aa_close", temp));
+			funcMap.insert(pair<const char* , afptr>("Aardvark.aa_close", temp));
 
 			temp = &RemoteAardvark::aa_unique_id;
-			funcMap.insert(pair<const char* , afptr>("aa_unique_id", temp));
+			funcMap.insert(pair<const char* , afptr>("Aardvark.aa_unique_id", temp));
 
 			temp = &RemoteAardvark::aa_target_power;
-			funcMap.insert(pair<const char*, afptr>("aa_target_power", temp));
+			funcMap.insert(pair<const char*, afptr>("Aardvark.aa_target_power", temp));
 
 		};
 

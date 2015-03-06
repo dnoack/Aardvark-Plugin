@@ -55,7 +55,7 @@ bool UdsRegClient::connectToRSD()
 		method.SetString("announce");
 		params.SetObject();
 		params.AddMember("pluginName", "Aardvark", dom.GetAllocator());
-		params.AddMember("udsFilePath", "/tmp/Aardvark.uds", dom.GetAllocator());
+		params.AddMember("udsFilePath", "/tmp/AardvarkPlugin.uds", dom.GetAllocator());
 		id.SetInt(1);
 
 		msg = json->generateRequest(method, params, id);
