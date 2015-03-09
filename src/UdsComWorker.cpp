@@ -63,7 +63,7 @@ void UdsComWorker::thread_work(int socket)
 				while(getReceiveQueueSize() > 0)
 				{
 
-					request = receiveQueue.back();
+					request = receiveQueue.back(); // ?bug with linked list
 					printf("Received: %s\n", request->c_str());
 
 					try
