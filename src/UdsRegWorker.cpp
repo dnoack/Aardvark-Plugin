@@ -178,7 +178,7 @@ bool UdsRegWorker::handleAnnounceACKMsg(string* msg)
 	json->parse(msg);
 
 	//check if it is really announceACK (maybe it is announceNACK)
-	rpcResult = json->getResult();
+	rpcResult = json->getResult(true);
 	if(strcmp(rpcResult, "announceACK") == 0)
 		result = true;
 
@@ -234,7 +234,7 @@ bool UdsRegWorker::handleRegisterACKMsg(string* msg)
 	json->parse(msg);
 
 	//check if it is really announceACK (maybe it is announceNACK)
-	rpcResult = json->getResult();
+	rpcResult = json->getResult(true);
 	if(strcmp(rpcResult, "registerACK") == 0)
 		result = true;
 

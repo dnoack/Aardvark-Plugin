@@ -43,14 +43,13 @@ TEST_GROUP(Plugin_JsonRPC)
 	void setup()
 	{
 		json = new JsonRPC();
-		dom = new Document();
+		dom = json->inputDOM;
 		dom->SetObject();
 	}
 
 	void teardown()
 	{
 		delete json;
-		delete dom;
 	}
 };
 
@@ -65,7 +64,7 @@ TEST(Plugin_JsonRPC, checkParse_FAIL)
 TEST(Plugin_JsonRPC, checkJsonRpcVersion_FAIL)
 {
 	dom->AddMember("jsonrpc", "3.2", dom->GetAllocator());
-	CHECK_THROWS(PluginError, json->checkJsonRpcVersion(*dom));
+	CHECK_THROWS(PluginError, json->checkJsonRpcVersion());
 }
 
 
@@ -73,7 +72,8 @@ TEST(Plugin_JsonRPC, checkJsonRpcVersion_FAIL)
 TEST(Plugin_JsonRPC, checkJsonRpcVersionOK)
 {
 	dom->AddMember("jsonrpc", "2.0", dom->GetAllocator());
-	CHECK(json->checkJsonRpcVersion(*dom));
+	json->inputDOM = dom;
+	CHECK(json->checkJsonRpcVersion());
 }
 
 

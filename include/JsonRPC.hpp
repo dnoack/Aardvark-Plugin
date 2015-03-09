@@ -71,7 +71,7 @@ class JsonRPC {
 		/**
 		 * Checks if the json rpc msg member "jsonrpc" has the correct protocol version.
 		 */
-		bool checkJsonRpcVersion(Document &dom);
+		bool checkJsonRpcVersion();
 
 
 		/**
@@ -81,10 +81,15 @@ class JsonRPC {
 		 */
 		bool isRequest();
 
-		Value* getParam(const char* name);
 
-		const char* getResult();
 
+		Value* getParam(bool checkParamsField, const char* name);
+
+		const char* getResult(bool checkResultField);
+
+		const char* getMethod(bool checkMethodField);
+
+		int getId(bool checkIdField);
 
 		Document* parse(string* msg);
 
@@ -96,6 +101,17 @@ class JsonRPC {
 		Document* getRequestDOM() { return this->inputDOM;}
 		Document* getResponseDOM() { return this->responseDOM;}
 		Document* getErrorDOM(){ return this->errorDOM;}
+
+
+		//new
+
+		bool hasJsonRPCVersion();
+		bool hasMethod();
+		bool hasParams();
+		bool hasId();
+		bool hasResult();
+		bool hasError();
+
 
 
 	private:
