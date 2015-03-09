@@ -60,26 +60,8 @@ TEST(Plugin_JsonRPC, checkParse_FAIL)
 }
 
 
-
-TEST(Plugin_JsonRPC, checkJsonRpcVersion_FAIL)
-{
-	dom->AddMember("jsonrpc", "3.2", dom->GetAllocator());
-	CHECK_THROWS(PluginError, json->checkJsonRpcVersion());
-}
-
-
-
-TEST(Plugin_JsonRPC, checkJsonRpcVersionOK)
-{
-	dom->AddMember("jsonrpc", "2.0", dom->GetAllocator());
-	json->inputDOM = dom;
-	CHECK(json->checkJsonRpcVersion());
-}
-
-
 TEST(Plugin_JsonRPC, checkJsonRpc_RequestFormat_OK)
 {
-
 	json->parse(&OK_STRING);
 	CHECK(json->checkJsonRpc_RequestFormat());
 }
@@ -92,7 +74,189 @@ TEST(Plugin_JsonRPC, checkJsonRpc_RequestFormat_FAIL)
 }
 
 
+TEST(Plugin_JsonRPC, hasJsonRpcVersion_OK)
+{
+	json->parse(&OK_STRING);
+	CHECK(json->hasJsonRPCVersion());
+}
 
+
+TEST(Plugin_JsonRPC, hasJsonRpcVersion_FAIL)
+{
+	string noVersion = "{\"params\": { \"handle\": 1}, \"method\": \"aa_close\", \"id\": 3}";
+	string noString = "{\"jsonrpc\": 2.0, \"params\": { \"handle\": 1}, \"method\": \"aa_close\", \"id\": 3}";
+	json->parse(&noVersion);
+	CHECK_THROWS(PluginError, json->hasJsonRPCVersion());
+	json->parse(&noString);
+	CHECK_THROWS(PluginError, json->hasJsonRPCVersion());
+}
+
+
+TEST(Plugin_JsonRPC, checkJsonRpcVersion_FAIL)
+{
+	string wrongVersion = "{\"jsonrpc\": \"3.0\", \"params\": { \"handle\": 1}, \"method\": \"aa_close\", \"id\": 3}";
+	json->parse(&wrongVersion);
+	CHECK_THROWS(PluginError, json->checkJsonRpcVersion());
+}
+
+
+
+TEST(Plugin_JsonRPC, checkJsonRpcVersionOK)
+{
+	string rightVersion = "{\"jsonrpc\": \"2.0\", \"params\": { \"handle\": 1}, \"method\": \"aa_close\", \"id\": 3}";
+	json->parse(&rightVersion);
+	CHECK(json->checkJsonRpcVersion());
+}
+
+
+TEST(Plugin_JsonRPC, hasMemberId_OK)
+{
+	string idAvailable = "{\"jsonrpc\": \"2.0\", \"params\": { \"handle\": 1}, \"method\": \"aa_close\", \"id\": 3}";
+	json->parse(&idAvailable);
+	CHECK(json->hasId());
+}
+
+
+TEST(Plugin_JsonRPC, hasMemberId_FAIL)
+{
+	string idNOTAvailable = "{\"jsonrpc\": \"2.0\", \"params\": { \"handle\": 1}, \"method\": \"aa_close\"}";
+	json->parse(&idNOTAvailable);
+	CHECK_THROWS(PluginError, json->hasId());
+}
+
+
+TEST(Plugin_JsonRPC, hasMemberMethod_OK)
+{
+	string methodAvailable = "{\"jsonrpc\": \"2.0\", \"params\": { \"handle\": 1}, \"method\": \"aa_close\", \"id\": 1}";
+	json->parse(&methodAvailable);
+	CHECK(json->hasMethod());
+}
+
+
+TEST(Plugin_JsonRPC, hasMemberMethod_FAIL)
+{
+	string methodNOTAvailable = "{\"jsonrpc\": \"2.0\", \"params\": { \"handle\": 1}, \"id\": 1}";
+	string methodNOString = "{\"jsonrpc\": \"2.0\", \"params\": { \"handle\": 1}, \"method\": 4563456 , \"id\": 1}";
+	json->parse(&methodNOTAvailable);
+	CHECK_THROWS(PluginError, json->hasMethod());
+	json->parse(&methodNOString);
+	CHECK_THROWS(PluginError, json->hasMethod());
+
+}
+
+
+TEST(Plugin_JsonRPC, hasParams_OK)
+{
+	string paramsAvailable = "{\"jsonrpc\": \"2.0\", \"params\": { \"handle\": 1}, \"method\": \"aa_close\", \"id\": 1}";
+	json->parse(&paramsAvailable);
+	CHECK(json->hasParams());
+}
+
+
+TEST(Plugin_JsonRPC, hasParams_FAIL)
+{
+	string paramsNOTAvailable = "{\"jsonrpc\": \"2.0\", \"method\": \"aa_close\", \"id\": 1}";
+	string paramsIsString = "{\"jsonrpc\": \"2.0\", \"params\":  \"handle : 1\", \"method\": \"aa_close\", \"id\": 1}";
+	string paramsIsInt = "{\"jsonrpc\": \"2.0\", \"params\": 3425345, \"method\": \"aa_close\", \"id\": 1}";
+	json->parse(&paramsNOTAvailable);
+	CHECK_THROWS(PluginError, json->hasParams());
+	json->parse(&paramsIsString);
+	CHECK_THROWS(PluginError, json->hasParams());
+	json->parse(&paramsIsInt);
+	CHECK_THROWS(PluginError, json->hasParams());
+
+}
+
+//hasResult
+TEST(Plugin_JsonRPC, hasResult_OK)
+{
+	string resultAvailable = "{\"jsonrpc\": \"2.0\", \"result\" : \"hallo welt\", \"id\": 1}";
+	json->parse(&resultAvailable);
+	CHECK(json->hasResult());
+
+}
+
+
+TEST(Plugin_JsonRPC, hasResult_FAIL)
+{
+	string resultNOTAvailable = "{\"jsonrpc\": \"2.0\", \"id\": 1}";
+	json->parse(&resultNOTAvailable);
+	CHECK_THROWS(PluginError, json->hasResult());
+
+}
+
+
+//hasError
+TEST(Plugin_JsonRPC, hasError_OK)
+{
+	string errorAvailable = "{\"jsonrpc\": \"2.0\", \"error\": {\"code\" : -32000, \"message\": \"This is an error\"}, \"id\": 1}";
+	json->parse(&errorAvailable);
+	CHECK(json->hasError());
+}
+
+
+TEST(Plugin_JsonRPC, hasError_FAIL)
+{
+	string errorNOTAvailable = "{\"jsonrpc\": \"2.0\", \"id\": 1}";
+	json->parse(&errorNOTAvailable);
+	CHECK_THROWS(PluginError, json->hasError());
+
+}
+
+
+TEST(Plugin_JsonRPC, getParam_OK)
+{
+	Value* result;
+	string paramAvailable = "{\"jsonrpc\": \"2.0\", \"params\": { \"handle\": 1, \"totalRandomNumber\": 3085}, \"method\": \"aa_close\", \"id\": 3}";
+	json->parse(&paramAvailable);
+	result = json->getParam(false, "totalRandomNumber");
+	LONGS_EQUAL(3085, result->GetInt());
+
+}
+
+
+TEST(Plugin_JsonRPC, getParam_FAIL)
+{
+
+	string paramNOTAvailable = "{\"jsonrpc\": \"2.0\", \"params\": { \"handle\": 1}, \"method\": \"aa_close\", \"id\": 3}";
+	json->parse(&paramNOTAvailable);
+	CHECK_THROWS(PluginError, json->getParam(false, "totalRandomNumber"));
+
+}
+
+
+TEST(Plugin_JsonRPC, getResult_OK)
+{
+	string resultAvailable = "{\"jsonrpc\": \"2.0\", \"result\" : \"hallo welt\", \"id\": 1}";
+	json->parse(&resultAvailable);
+	STRCMP_EQUAL("hallo welt", json->getResult(true));
+}
+
+
+TEST(Plugin_JsonRPC, getResult_FAIL)
+{
+	string resultAvailable = "{\"jsonrpc\": \"2.0\", \"id\": 1}";
+	json->parse(&resultAvailable);
+	CHECK_THROWS(PluginError, json->getResult(true));
+
+}
+
+
+TEST(Plugin_JsonRPC, getMethod_OK)
+{
+	string methodAvailable = "{\"jsonrpc\": \"2.0\", \"params\": { \"handle\": 1}, \"method\": \"aa_close\", \"id\": 1}";
+	json->parse(&methodAvailable);
+	STRCMP_EQUAL("aa_close", json->getMethod(true));
+}
+
+
+TEST(Plugin_JsonRPC, getMethod_FAIL)
+{
+	string methodNOTAvailable = "{\"jsonrpc\": \"2.0\", \"params\": { \"handle\": 1}, \"id\": 1}";
+	json->parse(&methodNOTAvailable);
+	CHECK_THROWS(PluginError, json->getMethod(true));
+
+}
 
 
 
