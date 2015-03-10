@@ -74,6 +74,10 @@ void UdsComWorker::thread_work(int socket)
 					{
 						response = new string(e.get());
 					}
+					catch(...)
+					{
+						printf("Unkown exception.\n");
+					}
 
 					send(currentSocket, response->c_str(), response->size(), 0);
 

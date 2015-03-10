@@ -15,7 +15,7 @@
 //static symbols
 int UdsServer::connection_socket;
 
-vector<UdsComWorker*> UdsServer::workerList;
+list<UdsComWorker*> UdsServer::workerList;
 pthread_mutex_t UdsServer::wLmutex;
 
 struct sockaddr_un UdsServer::address;
@@ -65,7 +65,7 @@ void* UdsServer::uds_accept(void* param)
 {
 	int new_socket = 0;
 	UdsComWorker* worker = NULL;
-	listen(connection_socket, 5);
+	listen(connection_socket, 20);
 	bool accept_thread_active = true;
 
 
@@ -97,15 +97,19 @@ void UdsServer::pushWorkerList(UdsComWorker* newWorker)
 
 void UdsServer::checkForDeletableWorker()
 {
-
 	pthread_mutex_lock(&wLmutex);
-	for(unsigned int i = 0; i < workerList.size() ; i++)
+
+	list<UdsComWorker*>::iterator i = workerList.begin();
+
+	while(i != workerList.end())
 	{
-		if(workerList[i]->isDeletable())
+		if((*i)->isDeletable())
 		{
-			delete workerList[i];
-			workerList.erase(workerList.begin()+i);
+			delete *i;
+			i = workerList.erase(i);
 		}
+		else
+			++i;
 	}
 	pthread_mutex_unlock(&wLmutex);
 }
