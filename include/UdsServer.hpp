@@ -50,7 +50,7 @@ class UdsServer{
 		static int connection_socket;
 
 		//list of pthread ids with all the active worker. push and pop must be protected by mutex
-		static vector<UdsComWorker*> workerList;
+		static list<UdsComWorker*> workerList;
 		static pthread_mutex_t wLmutex;
 
 		static struct sockaddr_un address;
