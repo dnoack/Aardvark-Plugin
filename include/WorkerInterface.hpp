@@ -27,6 +27,7 @@ class WorkerInterface{
 			this->currentSig = 0;
 			this->listenerDown = false;
 			this->deletable = false;
+			this->ready = false;
 			configSignals();
 
 		};
@@ -54,6 +55,7 @@ class WorkerInterface{
 
 		bool listenerDown;
 		bool deletable;
+		bool ready;
 
 		static void dummy_handler(int){};
 

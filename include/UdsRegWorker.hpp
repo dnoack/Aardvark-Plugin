@@ -29,6 +29,8 @@ class UdsRegWorker : public WorkerInterface, WorkerThreads{
 		UdsRegWorker(int socket);
 		~UdsRegWorker();
 
+		bool isReady(){return ready;}
+
 	private:
 		JsonRPC* json;
 

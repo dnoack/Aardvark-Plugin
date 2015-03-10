@@ -34,7 +34,8 @@ UdsComWorker::~UdsComWorker()
 	delete paard;
 	worker_thread_active = false;
 	listen_thread_active = false;
-	pthread_kill(lthread, SIGUSR2);
+	if(!deletable)
+		pthread_kill(lthread, SIGUSR2);
 
 	WaitForWorkerThreadToExit();
 }
@@ -88,10 +89,12 @@ void UdsComWorker::thread_work(int socket)
 
 			case SIGUSR2:
 				printf("UdsComWorker: SIGUSR2\n");
-
 				break;
 			case SIGPIPE:
 				printf("UdsComWorker: SIGPIPE\n");
+				break;
+			case SIGPOLL:
+				printf("UdsComWorker: SIGPOLL\n");
 				break;
 			default:
 				printf("UdsComWorker: unkown signal \n");
@@ -125,14 +128,13 @@ void UdsComWorker::thread_listen(pthread_t parent_th, int socket, char* workerBu
 			//add received data in buffer to queue
 			pushReceiveQueue(new string(receiveBuffer, recvSize));
 
-
 			pthread_kill(parent_th, SIGUSR1);
 
 		}
 		//no data, either udsComClient or plugin invoked a shutdown of this UdsComWorker
 		else
 		{
-			//udsComClient invoked shutdown
+			//RSD invoked shutdown
 			if(errno == EINTR)
 			{
 				worker_thread_active = false;
@@ -144,12 +146,14 @@ void UdsComWorker::thread_listen(pthread_t parent_th, int socket, char* workerBu
 			{
 				worker_thread_active = false;
 				listen_thread_active = false;
-				pthread_kill(parent_th, SIGUSR2);
+				pthread_kill(parent_th, SIGPOLL);
+				printf("Receivsize = 0\n");
 			}
 			listenerDown = true;
 		}
 
 	}
+
 	if(!listenerDown)
 	{
 		worker_thread_active = false;

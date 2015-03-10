@@ -31,7 +31,8 @@ UdsRegWorker::~UdsRegWorker()
 {
 	worker_thread_active = false;
 	listen_thread_active = false;
-	pthread_kill(lthread, SIGUSR2);
+	if(!deletable)
+		pthread_kill(lthread, SIGUSR2);
 
 	WaitForWorkerThreadToExit();
 	delete json;
@@ -48,6 +49,7 @@ void UdsRegWorker::thread_listen(pthread_t parent_th, int socket, char* workerBu
 		memset(receiveBuffer, '\0', BUFFER_SIZE);
 
 		//received data
+		ready = true;
 		recvSize = recv( socket , receiveBuffer, BUFFER_SIZE, 0);
 		if(recvSize > 0)
 		{
@@ -150,11 +152,15 @@ void UdsRegWorker::thread_work(int socket)
 				break;
 
 			case SIGUSR2:
-				//shutdown from UdsComClient
+				printf("UdsRegWorker: SIGUSR2\n");
 				break;
 
 			case SIGPIPE:
 				printf("UdsRegWorker: SIGPIPE\n");
+				break;
+
+			case SIGPOLL:
+				printf("UdsRegWorker: SIGPOLL\n)");
 				break;
 
 			default:
@@ -166,6 +172,7 @@ void UdsRegWorker::thread_work(int socket)
 	close(currentSocket);
 	printf("UdsRegWorker: Worker Thread beendet.\n");
 	WaitForListenerThreadToExit();
+	deletable = true;
 
 }
 

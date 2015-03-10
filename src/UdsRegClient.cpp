@@ -23,7 +23,7 @@ UdsRegClient::UdsRegClient(const char* UDS_FILE_PATH, int size)
 	addrlen = sizeof(address);
 
 	json = new JsonRPC();
-	regWorker = new UdsRegWorker(currentSocket);
+
 }
 
 
@@ -31,7 +31,8 @@ UdsRegClient::UdsRegClient(const char* UDS_FILE_PATH, int size)
 UdsRegClient::~UdsRegClient()
 {
 	delete json;
-	delete regWorker;
+	if(regWorker != NULL)
+		delete regWorker;
 }
 
 
@@ -49,8 +50,12 @@ bool UdsRegClient::connectToRSD()
 	//maybe connect will be better separated ?
 	status = connect(currentSocket, (struct sockaddr*)&address, addrlen);
 
+
 	if(status != -1)
 	{
+		regWorker = new UdsRegWorker(currentSocket);
+		while(!regWorker->isReady()){}
+
 		//send a json rpc which signals "hey rsd, I want to register this plugin"
 		method.SetString("announce");
 		params.SetObject();
@@ -65,7 +70,6 @@ bool UdsRegClient::connectToRSD()
 		{
 			printf("Fehler beim senden.\n");
 			result = false;
-			delete regWorker;
 		}
 		else
 		{
@@ -76,8 +80,6 @@ bool UdsRegClient::connectToRSD()
 	{
 		printf("Fehler beim Verbinden zu RSD.\n");
 		result = false;
-		delete regWorker;
-
 	}
 	return result;
 }
