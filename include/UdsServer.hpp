@@ -40,12 +40,15 @@ class UdsServer{
 
 		void startCom();
 
+		bool isReady(){return ready;}
+
 
 		static void pushWorkerList(UdsComWorker* newWorker);
 		void checkForDeletableWorker();
 
 	private:
 		int optionflag;
+		static bool ready;
 
 		static int connection_socket;
 
