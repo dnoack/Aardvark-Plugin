@@ -39,6 +39,7 @@ class WorkerInterface{
 		};
 
 		bool isDeletable(){return deletable;}
+		bool isReady(){return ready;}
 
 
 	protected:

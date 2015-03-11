@@ -38,6 +38,7 @@ UdsComWorker::~UdsComWorker()
 	if(!deletable)
 		pthread_kill(lthread, SIGUSR2);
 
+
 	WaitForWorkerThreadToExit();
 }
 
@@ -126,9 +127,9 @@ void UdsComWorker::thread_listen(pthread_t parent_th, int socket, char* workerBu
 	while(listen_thread_active)
 	{
 		memset(receiveBuffer, '\0', BUFFER_SIZE);
+		ready = true;
 
 		retval = pselect(socket+1, &rfds, NULL, NULL, NULL, &sigmask);
-
 
 		if(FD_ISSET(socket, &rfds))
 		{
@@ -159,7 +160,6 @@ void UdsComWorker::thread_listen(pthread_t parent_th, int socket, char* workerBu
 			pthread_kill(parent_th, SIGUSR2);
 
 		}
-
 	}
 
 	printf("UdsComWorker: Listener beendet.\n");
