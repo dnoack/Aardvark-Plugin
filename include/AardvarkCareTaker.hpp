@@ -30,11 +30,14 @@ class AardvarkCareTaker{
 
 	private:
 
-		static list<RemoteAardvark*> deviceList;
-		static pthread_mutex_t dLmutex;
 		JsonRPC* json;
 		string* result;
 		string* user;
+
+		static list<RemoteAardvark*> deviceList;
+		static pthread_mutex_t dLmutex;
+
+		void deleteDeviceList();
 
 
 

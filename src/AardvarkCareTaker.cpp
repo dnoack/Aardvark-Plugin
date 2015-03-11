@@ -26,6 +26,7 @@ AardvarkCareTaker::~AardvarkCareTaker()
 {
 	delete json;
 	delete user;
+	deleteDeviceList();
 	pthread_mutex_destroy(&dLmutex);
 }
 
@@ -135,5 +136,18 @@ string* AardvarkCareTaker::processMsg(string* msg)
 	}
 
 	return result;
+}
+
+
+void AardvarkCareTaker::deleteDeviceList()
+{
+	list<RemoteAardvark*>::iterator i = deviceList.begin();
+
+	while(i != deviceList.end())
+	{
+		delete *i;
+		i = deviceList.erase(i);
+	}
+
 }
 
