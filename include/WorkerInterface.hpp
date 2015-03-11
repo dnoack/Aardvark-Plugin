@@ -95,15 +95,22 @@ class WorkerInterface{
 
 		void configSignals()
 		{
-			sigfillset(&sigmask);
-			pthread_sigmask(SIG_UNBLOCK, &sigmask, (sigset_t*)0);
+			//sigfillset(&sigmask);
+			//pthread_sigmask(SIG_UNBLOCK, &sigmask, (sigset_t*)0);
 
-			//action.sa_flags = 0;
+			sigemptyset(&sigmask);
+			sigaddset(&sigmask, SIGUSR1);
+			sigaddset(&sigmask, SIGUSR2);
+			sigaddset(&sigmask, SIGPOLL);
+			sigaddset(&sigmask, SIGPIPE);
+			pthread_sigmask(SIG_BLOCK, &sigmask, NULL);
+
+			/*action.sa_flags = 0;
 			action.sa_handler = dummy_handler;
 			sigaction(SIGUSR1, &action, (struct sigaction*)0);
 			sigaction(SIGUSR2, &action, (struct sigaction*)0);
 			sigaction(SIGPOLL, &action, (struct sigaction*)0);
-			sigaction(SIGPIPE, &action, (struct sigaction*)0);
+			sigaction(SIGPIPE, &action, (struct sigaction*)0);*/
 		}
 
 

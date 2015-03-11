@@ -8,7 +8,7 @@
 
 #include "AardvarkCareTaker.hpp"
 
-list<RemoteAardvark*> AardvarkCareTaker::deviceList;
+//list<RemoteAardvark*> AardvarkCareTaker::deviceList;
 pthread_mutex_t AardvarkCareTaker::dLmutex;
 
 
@@ -49,7 +49,7 @@ RemoteAardvark* AardvarkCareTaker::getDevice(int value, int valueType)
 				found = true;
 			}
 		}
-		if(valueType == PORT)
+		else if(valueType == PORT)
 		{
 			if((*i)->getPort() == value)
 			{
@@ -57,6 +57,7 @@ RemoteAardvark* AardvarkCareTaker::getDevice(int value, int valueType)
 				found = true;
 			}
 		}
+		++i;
 	}
 
 	//we found a device, but is no one else using it ?

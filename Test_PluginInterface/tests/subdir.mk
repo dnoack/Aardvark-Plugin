@@ -29,6 +29,13 @@ CPP_DEPS += \
 
 
 # Each subdirectory must supply rules for building sources it contributes
+tests/TestRunner_Plugin-Server.o: ../tests/TestRunner_Plugin-Server.cpp
+	@echo 'Building file: $<'
+	@echo 'Invoking: GCC C++ Compiler'
+	g++ -DTESTMODE -I"/home/dnoack/workspace/Plugin-Server/include" -I/home/dnoack/cpputest-3.6/include/CppUTest -I/home/dnoack/cpputest-3.6/include/CppUTestExt -I/home/dnoack/libs/rapidjson/include/rapidjson -O0 -g3 -Wall -c -fmessage-length=0 ${CFLAGS} -MMD -MP -MF"$(@:%.o=%.d)" -MT"tests/TestRunner_Plugin-Server.d" -o "$@" "$<"
+	@echo 'Finished building: $<'
+	@echo ' '
+
 tests/%.o: ../tests/%.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: GCC C++ Compiler'
