@@ -5,9 +5,9 @@
  *  Author: David Noack
  */
 
-
-#include "CommandLineTestRunner.h"
 #include "TestHarness.h"
+#include "CommandLineTestRunner.h"
+
 
 
 int main(int argc, char** argv)
