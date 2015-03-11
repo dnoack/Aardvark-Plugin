@@ -34,7 +34,7 @@ class AardvarkCareTaker{
 		string* result;
 		string* user;
 
-		static list<RemoteAardvark*> deviceList;
+		list<RemoteAardvark*> deviceList;
 		static pthread_mutex_t dLmutex;
 
 		void deleteDeviceList();
