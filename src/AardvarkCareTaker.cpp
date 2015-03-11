@@ -8,7 +8,7 @@
 
 #include "AardvarkCareTaker.hpp"
 
-vector<RemoteAardvark*> AardvarkCareTaker::deviceList;
+list<RemoteAardvark*> AardvarkCareTaker::deviceList;
 pthread_mutex_t AardvarkCareTaker::dLmutex;
 
 
@@ -24,16 +24,9 @@ AardvarkCareTaker::AardvarkCareTaker()
 
 AardvarkCareTaker::~AardvarkCareTaker()
 {
-	pthread_mutex_destroy(&dLmutex);
-	int size = deviceList.size();
 	delete json;
 	delete user;
-
-	for(int i = 0; i < size; i++)
-		delete deviceList[i];
-
-	deviceList.clear();
-	vector<RemoteAardvark*>().swap(deviceList);
+	pthread_mutex_destroy(&dLmutex);
 }
 
 
@@ -42,23 +35,24 @@ RemoteAardvark* AardvarkCareTaker::getDevice(int value, int valueType)
 
 	RemoteAardvark* device = NULL;
 	bool found = false;
+	list<RemoteAardvark*>::iterator i = deviceList.begin();
 
 	pthread_mutex_lock(&dLmutex);
-	for(unsigned int i = 0; i < deviceList.size() && !found ; i++)
+	while(i != deviceList.end() && !found)
 	{
 		if(valueType == HANDLE)
 		{
-			if(deviceList[i]->getHandle() == value)
+			if((*i)->getHandle() == value)
 			{
-				device = deviceList[i];
+				device = *i;
 				found = true;
 			}
 		}
 		if(valueType == PORT)
 		{
-			if(deviceList[i]->getPort() == value)
+			if((*i)->getPort() == value)
 			{
-				device = deviceList[i];
+				device = *i;
 				found = true;
 			}
 		}
@@ -68,6 +62,7 @@ RemoteAardvark* AardvarkCareTaker::getDevice(int value, int valueType)
 	if(found)
 	{
 		//TODO: compare user string from PluginAardvark with user string of RemoteAardvark
+		printf("Found device\n");
 	}
 	else //didnt found the device
 	{

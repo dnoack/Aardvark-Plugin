@@ -8,6 +8,7 @@
 
 #include "UdsComWorker.hpp"
 #include "UdsServer.hpp"
+#include <sys/select.h>
 #include "errno.h"
 
 
@@ -116,32 +117,30 @@ void UdsComWorker::thread_listen(pthread_t parent_th, int socket, char* workerBu
 {
 
 	listen_thread_active = true;
+	int retval;
+	fd_set rfds;
+
+	FD_ZERO(&rfds);
+	FD_SET(socket, &rfds);
 
 	while(listen_thread_active)
 	{
 		memset(receiveBuffer, '\0', BUFFER_SIZE);
 
+		retval = pselect(socket+1, &rfds, NULL, NULL, NULL, &sigmask);
 
-		recvSize = recv( socket , receiveBuffer, BUFFER_SIZE, 0);
-		if(recvSize > 0)
+
+		if(FD_ISSET(socket, &rfds))
 		{
-			//add received data in buffer to queue
-			pushReceiveQueue(new string(receiveBuffer, recvSize));
+			recvSize = recv( socket , receiveBuffer, BUFFER_SIZE, 0);
 
-			pthread_kill(parent_th, SIGUSR1);
-
-		}
-		//no data, either udsComClient or plugin invoked a shutdown of this UdsComWorker
-		else
-		{
-			//RSD invoked shutdown
-			if(errno == EINTR)
+			if(recvSize > 0)
 			{
-				worker_thread_active = false;
-				listen_thread_active = false;
-				pthread_kill(parent_th, SIGUSR2);
+				//add received data in buffer to queue
+				pushReceiveQueue(new string(receiveBuffer, recvSize));
+				pthread_kill(parent_th, SIGUSR1);
 			}
-			//plugin invoked shutdown
+			//RSD invoked shutdown
 			else
 			{
 				worker_thread_active = false;
@@ -149,17 +148,20 @@ void UdsComWorker::thread_listen(pthread_t parent_th, int socket, char* workerBu
 				pthread_kill(parent_th, SIGPOLL);
 				printf("Receivsize = 0\n");
 			}
-			listenerDown = true;
+
+		}
+		//no data, either udsComClient or plugin invoked a shutdown of this UdsComWorker
+		else if(retval < 0 && errno == EINTR)
+		{
+			//Plugin itself invoked shutdown
+			worker_thread_active = false;
+			listen_thread_active = false;
+			pthread_kill(parent_th, SIGUSR2);
+
 		}
 
 	}
 
-	if(!listenerDown)
-	{
-		worker_thread_active = false;
-		listen_thread_active = false;
-		pthread_kill(parent_th, SIGUSR2);
-	}
 	printf("UdsComWorker: Listener beendet.\n");
 }
 

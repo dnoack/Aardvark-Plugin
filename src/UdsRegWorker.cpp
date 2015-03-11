@@ -8,6 +8,7 @@
 #include "AardvarkPlugin.hpp"
 #include <UdsRegWorker.hpp>
 #include <cstring>
+#include <sys/select.h>
 #include "errno.h"
 
 UdsRegWorker::UdsRegWorker(int socket)
@@ -39,7 +40,7 @@ UdsRegWorker::~UdsRegWorker()
 }
 
 
-
+/*
 void UdsRegWorker::thread_listen(pthread_t parent_th, int socket, char* workerBuffer)
 {
 	listen_thread_active = true;
@@ -85,6 +86,57 @@ void UdsRegWorker::thread_listen(pthread_t parent_th, int socket, char* workerBu
 	}
 	printf("UdsRegWorker: Listener beendet.\n");
 
+}*/
+
+void UdsRegWorker::thread_listen(pthread_t parent_th, int socket, char* workerBuffer)
+{
+	listen_thread_active = true;
+	fd_set rfds;
+	int retval;
+
+	FD_ZERO(&rfds);
+	FD_SET(socket, &rfds);
+
+	while(listen_thread_active)
+	{
+		memset(receiveBuffer, '\0', BUFFER_SIZE);
+
+		//received data
+		ready = true;
+
+		retval = pselect(socket+1, &rfds, NULL, NULL, NULL, &sigmask);
+
+		if(FD_ISSET(socket, &rfds))
+		{
+			recvSize = recv( socket , receiveBuffer, BUFFER_SIZE, 0);
+
+			if(recvSize > 0)
+			{
+				//add received data in buffer to queue
+				pushReceiveQueue(new string(receiveBuffer, recvSize));
+				printf("UdsRegWorker:Listener: received data\n.");
+				pthread_kill(parent_th, SIGUSR1);
+			}
+			//RSD invoked shutdown
+			else
+			{
+				worker_thread_active = false;
+				listen_thread_active = false;
+				pthread_kill(parent_th, SIGPOLL);
+				printf("Receivsize = 0\n");
+			}
+
+		}
+		else if(retval < 0 && errno == EINTR)
+		{
+			//Plugin itself invoked shutdown
+			worker_thread_active = false;
+			listen_thread_active = false;
+			pthread_kill(parent_th, SIGUSR2);
+
+		}
+	}
+	printf("UdsRegWorker: Listener beendet.\n");
 }
 
 

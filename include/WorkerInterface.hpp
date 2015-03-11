@@ -97,7 +97,7 @@ class WorkerInterface{
 			sigfillset(&sigmask);
 			pthread_sigmask(SIG_UNBLOCK, &sigmask, (sigset_t*)0);
 
-			action.sa_flags = 0;
+			//action.sa_flags = 0;
 			action.sa_handler = dummy_handler;
 			sigaction(SIGUSR1, &action, (struct sigaction*)0);
 			sigaction(SIGUSR2, &action, (struct sigaction*)0);

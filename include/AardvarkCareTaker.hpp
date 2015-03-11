@@ -30,7 +30,7 @@ class AardvarkCareTaker{
 
 	private:
 
-		static vector<RemoteAardvark*> deviceList;
+		static list<RemoteAardvark*> deviceList;
 		static pthread_mutex_t dLmutex;
 		JsonRPC* json;
 		string* result;
