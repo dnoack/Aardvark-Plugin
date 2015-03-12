@@ -40,53 +40,6 @@ UdsRegWorker::~UdsRegWorker()
 }
 
 
-/*
-void UdsRegWorker::thread_listen(pthread_t parent_th, int socket, char* workerBuffer)
-{
-	listen_thread_active = true;
-
-	while(listen_thread_active)
-	{
-		memset(receiveBuffer, '\0', BUFFER_SIZE);
-
-		//received data
-		ready = true;
-		recvSize = recv( socket , receiveBuffer, BUFFER_SIZE, 0);
-		if(recvSize > 0)
-		{
-			//add received data in buffer to queue
-			pushReceiveQueue(new string(receiveBuffer, recvSize));
-
-			pthread_kill(parent_th, SIGUSR1);
-		}
-		//no data, either udsComClient or plugin invoked a shutdown of this UdsComWorker
-		else
-		{
-			//udsComClient invoked shutdown
-			if(errno == EINTR)
-			{
-				pthread_kill(parent_th, SIGUSR2);
-			}
-			//plugin invoked shutdown
-			else
-			{
-				worker_thread_active = false;
-				listen_thread_active = false;
-				pthread_kill(parent_th, SIGUSR2);
-			}
-		listenerDown = true;
-		}
-
-	}
-	if(!listenerDown)
-	{
-		worker_thread_active = false;
-		listen_thread_active = false;
-		pthread_kill(parent_th, SIGUSR2);
-	}
-	printf("UdsRegWorker: Listener beendet.\n");
-
-}*/
 
 void UdsRegWorker::thread_listen(pthread_t parent_th, int socket, char* workerBuffer)
 {
@@ -225,8 +178,8 @@ void UdsRegWorker::thread_work(int socket)
 	printf("UdsRegWorker: Worker Thread beendet.\n");
 	WaitForListenerThreadToExit();
 	deletable = true;
-
 }
+
 
 
 bool UdsRegWorker::handleAnnounceACKMsg(string* msg)

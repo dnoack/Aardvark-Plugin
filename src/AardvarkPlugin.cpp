@@ -46,6 +46,7 @@ void AardvarkPlugin::startCommunication()
 {
 	pluginActive = regClient->connectToRSD();
 
+
 	while(pluginActive)
 	{
 		sleep(3);

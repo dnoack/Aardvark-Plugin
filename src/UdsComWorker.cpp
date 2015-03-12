@@ -36,7 +36,7 @@ UdsComWorker::~UdsComWorker()
 	worker_thread_active = false;
 	listen_thread_active = false;
 	if(!deletable)
-		pthread_kill(lthread, SIGUSR2);
+		pthread_kill(lthread, SIGPOLL);
 
 
 	WaitForWorkerThreadToExit();
