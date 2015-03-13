@@ -32,10 +32,13 @@ UdsRegWorker::~UdsRegWorker()
 {
 	worker_thread_active = false;
 	listen_thread_active = false;
-	if(!deletable)
-		pthread_kill(lthread, SIGUSR2);
 
+	pthread_cancel(getListener());
+	pthread_cancel(getWorker());
+
+	WaitForListenerThreadToExit();
 	WaitForWorkerThreadToExit();
+
 	delete json;
 }
 
@@ -47,46 +50,38 @@ void UdsRegWorker::thread_listen(pthread_t parent_th, int socket, char* workerBu
 	fd_set rfds;
 	int retval;
 
+	configSignals();
+
 	FD_ZERO(&rfds);
 	FD_SET(socket, &rfds);
 
 	while(listen_thread_active)
 	{
 		memset(receiveBuffer, '\0', BUFFER_SIZE);
-
-		//received data
 		ready = true;
 
-		retval = pselect(socket+1, &rfds, NULL, NULL, NULL, &sigmask);
+		retval = pselect(socket+1, &rfds, NULL, NULL, NULL, &origmask);
 
-		if(FD_ISSET(socket, &rfds))
+		if(retval < 0)
+		{
+			//error
+		}
+		else if(FD_ISSET(socket, &rfds))
 		{
 			recvSize = recv( socket , receiveBuffer, BUFFER_SIZE, 0);
 
 			if(recvSize > 0)
 			{
-				//add received data in buffer to queue
+				printf("Received: %s", receiveBuffer);
 				pushReceiveQueue(new string(receiveBuffer, recvSize));
-				printf("UdsRegWorker:Listener: received data\n.");
 				pthread_kill(parent_th, SIGUSR1);
 			}
 			//RSD invoked shutdown
 			else
 			{
-				worker_thread_active = false;
+				deletable = true;
 				listen_thread_active = false;
-				pthread_kill(parent_th, SIGPOLL);
-				printf("Receivsize = 0\n");
 			}
-
-		}
-		else if(retval < 0 && errno == EINTR)
-		{
-			//Plugin itself invoked shutdown
-			worker_thread_active = false;
-			listen_thread_active = false;
-			pthread_kill(parent_th, SIGUSR2);
-
 		}
 	}
 	printf("UdsRegWorker: Listener beendet.\n");
@@ -103,6 +98,7 @@ void UdsRegWorker::thread_work(int socket)
 	//start the listenerthread and remember the theadId of it
 	lthread = StartListenerThread(pthread_self(), currentSocket, receiveBuffer);
 
+	configSignals();
 
 	while(worker_thread_active)
 	{
@@ -160,24 +156,12 @@ void UdsRegWorker::thread_work(int socket)
 				printf("UdsRegWorker: SIGUSR2\n");
 				break;
 
-			case SIGPIPE:
-				printf("UdsRegWorker: SIGPIPE\n");
-				break;
-
-			case SIGPOLL:
-				printf("UdsRegWorker: SIGPOLL\n)");
-				break;
-
 			default:
 				printf("UdsRegWorker: unkown signal \n");
 				break;
 		}
-
 	}
 	close(currentSocket);
-	printf("UdsRegWorker: Worker Thread beendet.\n");
-	WaitForListenerThreadToExit();
-	deletable = true;
 }
 
 

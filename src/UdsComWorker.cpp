@@ -32,14 +32,17 @@ UdsComWorker::UdsComWorker(int socket)
 
 UdsComWorker::~UdsComWorker()
 {
-	delete paard;
 	worker_thread_active = false;
 	listen_thread_active = false;
-	if(!deletable)
-		pthread_kill(lthread, SIGPOLL);
 
 
+	pthread_cancel(getListener());
+	pthread_cancel(getWorker());
+
+	WaitForListenerThreadToExit();
 	WaitForWorkerThreadToExit();
+
+	delete paard;
 }
 
 
@@ -53,6 +56,7 @@ void UdsComWorker::thread_work(int socket)
 	//start the listenerthread and remember the theadId of it
 	lthread = StartListenerThread(pthread_self(), currentSocket, receiveBuffer);
 
+	configSignals();
 
 	while(worker_thread_active)
 	{
@@ -66,7 +70,7 @@ void UdsComWorker::thread_work(int socket)
 				while(getReceiveQueueSize() > 0)
 				{
 
-					request = receiveQueue.back(); // ?bug with linked list
+					request = receiveQueue.back();
 					printf("Received: %s\n", request->c_str());
 
 					try
@@ -92,12 +96,6 @@ void UdsComWorker::thread_work(int socket)
 			case SIGUSR2:
 				printf("UdsComWorker: SIGUSR2\n");
 				break;
-			case SIGPIPE:
-				printf("UdsComWorker: SIGPIPE\n");
-				break;
-			case SIGPOLL:
-				printf("UdsComWorker: SIGPOLL\n");
-				break;
 			default:
 				printf("UdsComWorker: unkown signal \n");
 				break;
@@ -105,11 +103,6 @@ void UdsComWorker::thread_work(int socket)
 
 	}
 	close(currentSocket);
-	WaitForListenerThreadToExit();
-	//mark this whole worker object for a delete
-	deletable = true;
-	printf("UdsComWorker: Worker Thread beendet.\n");
-
 }
 
 
@@ -121,6 +114,8 @@ void UdsComWorker::thread_listen(pthread_t parent_th, int socket, char* workerBu
 	int retval;
 	fd_set rfds;
 
+	configSignals();
+
 	FD_ZERO(&rfds);
 	FD_SET(socket, &rfds);
 
@@ -129,11 +124,16 @@ void UdsComWorker::thread_listen(pthread_t parent_th, int socket, char* workerBu
 		memset(receiveBuffer, '\0', BUFFER_SIZE);
 		ready = true;
 
-		retval = pselect(socket+1, &rfds, NULL, NULL, NULL, &sigmask);
+		retval = pselect(socket+1, &rfds, NULL, NULL, NULL, &origmask);
 
-		if(FD_ISSET(socket, &rfds))
+		if(retval < 0)
 		{
-			recvSize = recv( socket , receiveBuffer, BUFFER_SIZE, 0);
+			deletable = true;
+			listen_thread_active = false;
+		}
+		else if(FD_ISSET(socket, &rfds))
+		{
+			recvSize = recv( socket , receiveBuffer, BUFFER_SIZE, MSG_DONTWAIT);
 
 			if(recvSize > 0)
 			{
@@ -144,25 +144,12 @@ void UdsComWorker::thread_listen(pthread_t parent_th, int socket, char* workerBu
 			//RSD invoked shutdown
 			else
 			{
-				worker_thread_active = false;
+				deletable = true;
 				listen_thread_active = false;
-				pthread_kill(parent_th, SIGPOLL);
-				printf("Receivsize = 0\n");
 			}
 
 		}
-		//no data, either udsComClient or plugin invoked a shutdown of this UdsComWorker
-		else if(retval < 0 && errno == EINTR)
-		{
-			//Plugin itself invoked shutdown
-			worker_thread_active = false;
-			listen_thread_active = false;
-			pthread_kill(parent_th, SIGUSR2);
-
-		}
 	}
-
-	printf("UdsComWorker: Listener beendet.\n");
 }
 
 

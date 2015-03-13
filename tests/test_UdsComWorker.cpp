@@ -166,7 +166,7 @@ TEST(Plugin_UdsComWorker, sendCorrectMsg_and_getAnswer)
 
 
 
-TEST(Plugin_UdsComWorker, correctMsg_x1000)
+TEST(Plugin_UdsComWorker, correctMsg_x50)
 {
 	char buffer[RECEIVE_BUFFER_SIZE];
 	bool active = true;

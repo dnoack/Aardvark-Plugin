@@ -23,7 +23,7 @@
 
 #define BUFFER_SIZE 1024
 
-class UdsRegWorker : public WorkerInterface, WorkerThreads{
+class UdsRegWorker : public WorkerInterface, public WorkerThreads{
 
 	public:
 		UdsRegWorker(int socket);

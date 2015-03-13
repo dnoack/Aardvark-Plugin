@@ -61,7 +61,6 @@ public:
 	  tempStruct.th_id = this;
 
 	  pthread_create(&_worker, NULL, thread_workEntryFunc, &tempStruct);
-	  printf("created worker thread.\n");
 	  return _worker;
    }
 
@@ -75,7 +74,6 @@ public:
 	   tempStruct.buffer = buffer;
 
 	   pthread_create(&_listener, NULL, thread_listenerEntryFunc, &tempStruct);
-	   printf("created listener thread.\n");
 	   return _listener;
    }
 
@@ -94,6 +92,8 @@ public:
 	   (void) pthread_join(_listener, NULL);
    }
 
+   pthread_t getListener(){return _listener;}
+   pthread_t getWorker(){return _worker;}
 
 
 

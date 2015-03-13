@@ -25,9 +25,9 @@ class WorkerInterface{
 			pthread_mutex_init(&rQmutex, NULL);
 
 			this->currentSig = 0;
+			this->listenerDown = false;
 			this->deletable = false;
 			this->ready = false;
-			configSignals();
 
 		};
 
@@ -51,11 +51,15 @@ class WorkerInterface{
 		//signal variables
 		struct sigaction action;
 		sigset_t sigmask;
+		sigset_t origmask;
 		int currentSig;
 
-
+		bool listenerDown;
 		bool deletable;
 		bool ready;
+
+		static void dummy_handler(int){};
+
 
 
 		void popReceiveQueue()
@@ -89,16 +93,24 @@ class WorkerInterface{
 
 
 
+
 		void configSignals()
 		{
+			sigemptyset(&origmask);
 			sigemptyset(&sigmask);
 			sigaddset(&sigmask, SIGUSR1);
 			sigaddset(&sigmask, SIGUSR2);
-			sigaddset(&sigmask, SIGPOLL);
-			sigaddset(&sigmask, SIGPIPE);
-			pthread_sigmask(SIG_BLOCK, &sigmask, NULL);
 
+			action.sa_handler = dummy_handler;
+			sigemptyset(&action.sa_mask);
+			action.sa_flags = 0;
+
+			sigaction(SIGUSR1, &action, NULL);
+			sigaction(SIGUSR2, &action, NULL);
+
+			pthread_sigmask(SIG_BLOCK, &sigmask, &origmask);
 		}
+
 
 
 };

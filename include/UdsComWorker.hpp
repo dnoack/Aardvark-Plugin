@@ -33,7 +33,7 @@ class UdsServer;
 
 
 
-class UdsComWorker : public WorkerInterface, WorkerThreads{
+class UdsComWorker : public WorkerInterface, public WorkerThreads{
 
 	public:
 		UdsComWorker(int socket);
