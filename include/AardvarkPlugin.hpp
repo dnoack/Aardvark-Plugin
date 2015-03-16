@@ -8,8 +8,10 @@
 #ifndef AARDVARKPLUGIN_HPP_
 #define AARDVARKPLUGIN_HPP_
 
-#define UDS_REGISTER_TO_RSD_PATH "/tmp/RsdRegister.uds"
-#define UDS_COM_PATH "/tmp/AardvarkPlugin.uds"
+#define REG_PATH "/tmp/RsdRegister.uds"
+#define COM_PATH "/tmp/AardvarkPlugin.uds"
+#define PLUGIN_NAME "Aardvark"
+#define PLUGIN_NUMBER 1
 
 #include "UdsServer.hpp"
 #include "UdsRegClient.hpp"

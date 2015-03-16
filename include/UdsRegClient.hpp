@@ -30,7 +30,7 @@ class UdsRegClient{
 
 
 	public:
-		UdsRegClient(const char* UDS_FILE_PATH, int size);
+		UdsRegClient(const char* pluginName, int pluginNumber,const char* UDS_FILE_PATH, int size);
 		~UdsRegClient();
 
 
@@ -47,6 +47,11 @@ class UdsRegClient{
 	bool ready;
 	int optionflag;
 	int currentSocket;
+
+	const char* pluginName;
+	int pluginNumber;
+	const char* pluginPath;
+
 
 
 	static struct sockaddr_un address;
