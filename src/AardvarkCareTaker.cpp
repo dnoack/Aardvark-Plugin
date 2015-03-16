@@ -103,9 +103,9 @@ string* AardvarkCareTaker::processMsg(string* msg)
 		dom = json->parse(msg);
 
 
-		if(json->checkJsonRpc_RequestFormat())
+		if(json->isRequest())
 		{
-			if(json->isRequest())
+			if(json->hasParams())
 			{
 				if((*dom)["params"].HasMember("port"))
 				{
@@ -123,13 +123,14 @@ string* AardvarkCareTaker::processMsg(string* msg)
 						result = new string(json->generateResponse((*dom)["id"], responseValue));
 					}
 				}
+			}
 
-			}
-			else
-			{
-				//TODO: notification
-			}
 		}
+		else
+		{
+			//TODO: notification
+		}
+
 	}
 	catch(PluginError &e)
 	{
