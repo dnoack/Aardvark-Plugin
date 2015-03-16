@@ -13,9 +13,14 @@ struct sockaddr_un UdsRegClient::address;
 socklen_t UdsRegClient::addrlen;
 
 
-UdsRegClient::UdsRegClient(const char* UDS_FILE_PATH, int size)
+UdsRegClient::UdsRegClient(const char* pluginName, int pluginNumber, const char* UDS_FILE_PATH, int size)
 {
+	this->regWorker = NULL;
+	this->pluginName = pluginName;
+	this->pluginNumber = pluginNumber;
+	this->pluginPath = UDS_FILE_PATH;
 	optionflag = 1;
+
 	ready = false;
 	currentSocket = socket(AF_UNIX, SOCK_STREAM, 0);
 	address.sun_family = AF_UNIX;
@@ -59,8 +64,9 @@ bool UdsRegClient::connectToRSD()
 		//send a json rpc which signals "hey rsd, I want to register this plugin"
 		method.SetString("announce");
 		params.SetObject();
-		params.AddMember("pluginName", "Aardvark", dom.GetAllocator());
-		params.AddMember("udsFilePath", "/tmp/AardvarkPlugin.uds", dom.GetAllocator());
+		params.AddMember("pluginName", StringRef(pluginName), dom.GetAllocator());
+		params.AddMember("pluginNumber", pluginNumber, dom.GetAllocator());
+		params.AddMember("udsFilePath", StringRef(pluginPath), dom.GetAllocator());
 		id.SetInt(1);
 
 		msg = json->generateRequest(method, params, id);
