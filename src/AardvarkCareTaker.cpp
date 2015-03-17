@@ -95,8 +95,6 @@ string* AardvarkCareTaker::processMsg(string* msg)
 	Value responseValue;
 	RemoteAardvark* device;
 
-	//TODO: irgendwo hier ist der fehler
-
 	try
 	{
 		//parses the msg string into a internal dom object

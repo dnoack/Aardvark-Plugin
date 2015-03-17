@@ -13,18 +13,18 @@ struct sockaddr_un UdsRegClient::address;
 socklen_t UdsRegClient::addrlen;
 
 
-UdsRegClient::UdsRegClient(const char* pluginName, int pluginNumber, const char* UDS_FILE_PATH, int size)
+UdsRegClient::UdsRegClient(const char* pluginName, int pluginNumber, const char* regPath, int size, const char* comPath)
 {
 	this->regWorker = NULL;
 	this->pluginName = pluginName;
 	this->pluginNumber = pluginNumber;
-	this->pluginPath = UDS_FILE_PATH;
+	this->pluginPath = comPath;
 	optionflag = 1;
 
 	ready = false;
 	currentSocket = socket(AF_UNIX, SOCK_STREAM, 0);
 	address.sun_family = AF_UNIX;
-	strncpy(address.sun_path, UDS_FILE_PATH, size);
+	strncpy(address.sun_path, regPath, size);
 	addrlen = sizeof(address);
 
 	json = new JsonRPC();

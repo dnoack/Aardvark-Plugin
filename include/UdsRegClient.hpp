@@ -30,7 +30,7 @@ class UdsRegClient{
 
 
 	public:
-		UdsRegClient(const char* pluginName, int pluginNumber,const char* UDS_FILE_PATH, int size);
+		UdsRegClient(const char* pluginName, int pluginNumber,const char* regPath, int size, const char* comPath);
 		~UdsRegClient();
 
 

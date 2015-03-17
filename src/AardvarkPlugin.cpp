@@ -26,7 +26,7 @@ AardvarkPlugin::AardvarkPlugin()
 	funcList = tempDriver->getAllFunctionNames();
 	delete tempDriver;
 
-	regClient = new UdsRegClient(PLUGIN_NAME, PLUGIN_NUMBER, REG_PATH, sizeof(REG_PATH));
+	regClient = new UdsRegClient(PLUGIN_NAME, PLUGIN_NUMBER, REG_PATH, sizeof(REG_PATH), COM_PATH);
 	comServer = new UdsServer(COM_PATH, sizeof(COM_PATH));
 
 }
