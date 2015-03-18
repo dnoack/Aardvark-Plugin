@@ -455,3 +455,60 @@ bool RemoteAardvark::aa_target_power(rapidjson::Value &params , rapidjson::Value
 	return true;
 }
 
+
+
+static int (*c_aa_i2c_write) (Aardvark, u16, AardvarkI2cFlags, u16, const u08 *) = 0;
+
+bool RemoteAardvark::aa_i2c_write(Value &params, Value &result)
+{
+	Aardvark aardvark;
+	Value array;
+	int res = 0;
+	int wrote = 0;
+	u16 address = 0x0000;
+	u16 numberOfBytes = 0x0000;
+	u08* data = NULL;
+
+
+	if(findParamsMember(params, "handle"))
+	{
+		if(params["handle"].IsInt() )
+		{
+			aardvark = params["handle"].GetInt();
+
+			//TODO: check appearance
+			address = params["slave_addr"].GetInt();
+
+			//TODO: check appearance
+			//flags = params["flags"].GetInt();
+
+			numberOfBytes = params["num_bytes"].GetInt();
+			data = new u08[numberOfBytes];
+
+
+			for(int i = 0; i < numberOfBytes; i++)
+			{
+				data[i] = params["data_out"][i].GetInt();
+			}
+
+
+			if (!(c_aa_i2c_write = reinterpret_cast<int(*)(Aardvark, u16, AardvarkI2cFlags, u16, const u08 *)>(_loadFunction("c_aa_i2c_write", &res))))
+			{
+				throw PluginError("Could not find symbol in shared library.",  __FILE__, __LINE__);
+			}
+			else
+			{
+				wrote = c_aa_i2c_write(aardvark, address, AA_I2C_NO_FLAGS, numberOfBytes, data);
+			}
+
+			delete[] data;
+
+		}
+		else
+			throw PluginError("Member \"handle\" has to be an integer.",  __FILE__, __LINE__);
+	}
+	return true;
+
+
+}
+

@@ -980,6 +980,9 @@ class RemoteAardvark : public DriverInterface<RemoteAardvark*, afptr>{
 			temp = &RemoteAardvark::aa_target_power;
 			funcMap.insert(pair<const char*, afptr>("Aardvark.aa_target_power", temp));
 
+			temp = &RemoteAardvark::aa_i2c_write;
+			funcMap.insert(pair<const char*, afptr>("Aardvark.aa_i2c_write", temp));
+
 		};
 
 
@@ -1001,7 +1004,7 @@ class RemoteAardvark : public DriverInterface<RemoteAardvark*, afptr>{
 
 		bool aa_target_power(Value &params , Value &result);
 
-		bool test_close(int value);
+		bool aa_i2c_write(Value &params, Value &result);
 
 
 		int getPort(){return this->port;}
