@@ -16,11 +16,11 @@
 #include <cstdio>
 #include <list>
 #include <pthread.h>
+#include <UdsRegWorker.hpp>
 #include "signal.h"
 #include <string>
 
 #include "UdsRegClient.hpp"
-#include "UdsRegWorker.hpp"
 #include "JsonRPC.hpp"
 
 using namespace std;
