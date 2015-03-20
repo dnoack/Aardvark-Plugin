@@ -204,57 +204,57 @@ TEST(Plugin_JsonRPC, hasError_FAIL)
 }
 
 
-TEST(Plugin_JsonRPC, getParam_OK)
+TEST(Plugin_JsonRPC, tryTogetParam_OK)
 {
 	Value* result;
 	string paramAvailable = "{\"jsonrpc\": \"2.0\", \"params\": { \"handle\": 1, \"totalRandomNumber\": 3085}, \"method\": \"aa_close\", \"id\": 3}";
 	json->parse(&paramAvailable);
-	result = json->getParam(false, "totalRandomNumber");
+	result = json->tryTogetParam("totalRandomNumber");
 	LONGS_EQUAL(3085, result->GetInt());
 
 }
 
 
-TEST(Plugin_JsonRPC, getParam_FAIL)
+TEST(Plugin_JsonRPC, tryTogetParam_FAIL)
 {
 
 	string paramNOTAvailable = "{\"jsonrpc\": \"2.0\", \"params\": { \"handle\": 1}, \"method\": \"aa_close\", \"id\": 3}";
 	json->parse(&paramNOTAvailable);
-	CHECK_THROWS(PluginError, json->getParam(false, "totalRandomNumber"));
+	CHECK_THROWS(PluginError, json->tryTogetParam("totalRandomNumber"));
 
 }
 
 
-TEST(Plugin_JsonRPC, getResult_OK)
+TEST(Plugin_JsonRPC, tryTogetResult_OK)
 {
 	string resultAvailable = "{\"jsonrpc\": \"2.0\", \"result\" : \"hallo welt\", \"id\": 1}";
 	json->parse(&resultAvailable);
-	STRCMP_EQUAL("hallo welt", json->getResult(true));
+	STRCMP_EQUAL("hallo welt", json->tryTogetResult()->GetString());
 }
 
 
-TEST(Plugin_JsonRPC, getResult_FAIL)
+TEST(Plugin_JsonRPC, tryTogetResult_FAIL)
 {
 	string resultAvailable = "{\"jsonrpc\": \"2.0\", \"id\": 1}";
 	json->parse(&resultAvailable);
-	CHECK_THROWS(PluginError, json->getResult(true));
+	CHECK_THROWS(PluginError, json->tryTogetResult());
 
 }
 
 
-TEST(Plugin_JsonRPC, getMethod_OK)
+TEST(Plugin_JsonRPC, tryTogetMethod_OK)
 {
 	string methodAvailable = "{\"jsonrpc\": \"2.0\", \"params\": { \"handle\": 1}, \"method\": \"aa_close\", \"id\": 1}";
 	json->parse(&methodAvailable);
-	STRCMP_EQUAL("aa_close", json->getMethod(true));
+	STRCMP_EQUAL("aa_close", json->tryTogetMethod()->GetString());
 }
 
 
-TEST(Plugin_JsonRPC, getMethod_FAIL)
+TEST(Plugin_JsonRPC, tryTogetMethod_FAIL)
 {
 	string methodNOTAvailable = "{\"jsonrpc\": \"2.0\", \"params\": { \"handle\": 1}, \"id\": 1}";
 	json->parse(&methodNOTAvailable);
-	CHECK_THROWS(PluginError, json->getMethod(true));
+	CHECK_THROWS(PluginError, json->tryTogetMethod());
 
 }
 

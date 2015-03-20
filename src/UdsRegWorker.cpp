@@ -5,11 +5,14 @@
  *      Author: Dave
  */
 
-#include "AardvarkPlugin.hpp"
-#include <UdsRegWorker.hpp>
 #include <cstring>
 #include <sys/select.h>
 #include "errno.h"
+
+#include "AardvarkPlugin.hpp"
+#include <UdsRegWorker.hpp>
+#include "Plugin_Error.h"
+
 
 UdsRegWorker::UdsRegWorker(int socket)
 {
@@ -19,6 +22,7 @@ UdsRegWorker::UdsRegWorker(int socket)
 	this->worker_thread_active = false;
 	this->recvSize = 0;
 	this->lthread = 0;
+	this->error = NULL;
 	this->currentSocket = socket;
 	this->json = new JsonRPC();
 	this->state = NOT_ACTIVE;
@@ -168,15 +172,25 @@ void UdsRegWorker::thread_work(int socket)
 
 bool UdsRegWorker::handleAnnounceACKMsg(string* msg)
 {
-	const char* rpcResult = NULL;
+	Value* resultValue = NULL;
+	Value nullid;
+	const char* resultString = NULL;
 	bool result = false;
 
 	json->parse(msg);
 
-	//check if it is really announceACK (maybe it is announceNACK)
-	rpcResult = json->getResult(true);
-	if(strcmp(rpcResult, "announceACK") == 0)
-		result = true;
+	resultValue = json->tryTogetResult();
+	if(resultValue->IsString())
+	{
+		resultString = resultValue->GetString();
+		if(strcmp(resultString, "announceACK") == 0)
+			result = true;
+	}
+	else
+	{
+		error = json->generateResponseError(nullid, -31010, "Awaited \"announceACK\" but didn't receive it.");
+		throw PluginError(error);
+	}
 
 	return result;
 }
@@ -224,16 +238,25 @@ char* UdsRegWorker::createRegisterMsg()
 
 bool UdsRegWorker::handleRegisterACKMsg(string* msg)
 {
-	const char* rpcResult = NULL;
+	const char* resultString = NULL;
+	Value* resultValue = NULL;
+	Value nullid;
 	bool result = false;
 
 	json->parse(msg);
 
-	//check if it is really announceACK (maybe it is announceNACK)
-	rpcResult = json->getResult(true);
-	if(strcmp(rpcResult, "registerACK") == 0)
-		result = true;
-
+	resultValue = json->tryTogetResult();
+	if(resultValue->IsString())
+	{
+		resultString = resultValue->GetString();
+		if(strcmp(resultString, "registerACK") == 0)
+			result = true;
+	}
+	else
+	{
+		error = json->generateResponseError(nullid, -31011, "Awaited \"registerACK\" but didn't receive it.");
+		throw PluginError(error);
+	}
 	return result;
 }
 

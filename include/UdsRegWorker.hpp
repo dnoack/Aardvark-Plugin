@@ -33,6 +33,7 @@ class UdsRegWorker : public WorkerInterface, public WorkerThreads{
 
 	private:
 		JsonRPC* json;
+		char* error;
 
 
 		//variables for listener
