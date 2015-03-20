@@ -5,12 +5,12 @@
  *      Author: Dave
  */
 
-#include <cstring>
+
 #include <sys/select.h>
+#include <UdsRegWorker.hpp>
 #include "errno.h"
 
 #include "AardvarkPlugin.hpp"
-#include <UdsRegWorker.hpp>
 #include "Plugin_Error.h"
 
 
@@ -21,7 +21,7 @@ UdsRegWorker::UdsRegWorker(int socket)
 	this->listen_thread_active = false;
 	this->worker_thread_active = false;
 	this->recvSize = 0;
-	this->lthread = 0;
+	this->currentMsgId = NULL;
 	this->error = NULL;
 	this->currentSocket = socket;
 	this->json = new JsonRPC();
@@ -96,68 +96,20 @@ void UdsRegWorker::thread_work(int socket)
 {
 	memset(receiveBuffer, '\0', BUFFER_SIZE);
 	worker_thread_active = true;
-	string* request = NULL;
-	char* response = NULL;
 
 	//start the listenerthread and remember the theadId of it
-	lthread = StartListenerThread(pthread_self(), currentSocket, receiveBuffer);
+	StartListenerThread(pthread_self(), currentSocket, receiveBuffer);
 
 	configSignals();
 
 	while(worker_thread_active)
 	{
 		//wait for signals from listenerthread
-
 		sigwait(&sigmask, &currentSig);
 		switch(currentSig)
 		{
 			case SIGUSR1:
-				while(getReceiveQueueSize( )> 0)
-				{
-					request = receiveQueue.back();
-					printf("Received: %s \n", request->c_str());
-					//sigusr1 = there is data for work e.g. parsing json rpc
-					switch(state)
-					{
-						case NOT_ACTIVE:
-							//check for announce ack then switch state to announced
-							//and send register msg
-							if(handleAnnounceACKMsg(request))
-							{
-								state = ANNOUNCED;
-								response = createRegisterMsg();
-								send(currentSocket, response, strlen(response), 0);
-							}
-							break;
-						case ANNOUNCED:
-							if(handleRegisterACKMsg(request))
-							{
-								state = REGISTERED;
-								//TODO: check if Plugin com part is ready, if yes -> state = active
-
-								//create pluginActive msg
-								response = createPluginActiveMsg();
-								send(currentSocket, response, strlen(response), 0);
-							}
-							//check for register ack then switch state to active
-							break;
-						case ACTIVE:
-							//maybe heartbeat check
-							break;
-						case BROKEN:
-							//should not occur
-							break;
-						default:
-							//something went completely wrong
-							state = BROKEN;
-							break;
-					}
-					popReceiveQueue();
-				}
-				break;
-
-			case SIGUSR2:
-				printf("UdsRegWorker: SIGUSR2\n");
+				processRegistration();
 				break;
 
 			default:
@@ -169,15 +121,86 @@ void UdsRegWorker::thread_work(int socket)
 }
 
 
+int UdsRegWorker::uds_send(char* msg)
+{
+	int wrote = 0;
+
+	wrote = send(currentSocket, msg, strlen(msg), 0);
+	if(wrote == -1)
+	{
+		error = json->generateResponseError(*currentMsgId, -31013, "Could not send Data over UdsSocket.");
+		throw PluginError(error);
+	}
+	return wrote;
+}
+
+
+void UdsRegWorker::processRegistration()
+{
+	string* request = receiveQueue.back();
+	char* response = NULL;
+
+	printf("Received: %s \n", request->c_str());
+
+	try{
+
+		json->parse(request);
+		currentMsgId = json->tryTogetId();
+		currentMsgId->SetInt(currentMsgId->GetInt()+1);
+
+		switch(state)
+		{
+			case NOT_ACTIVE:
+				//check for announce ack then switch state to announced
+				//and send register msg
+				if(handleAnnounceACKMsg(request))
+				{
+					state = ANNOUNCED;
+					response = createRegisterMsg();
+					send(currentSocket, response, strlen(response), 0);
+				}
+				break;
+			case ANNOUNCED:
+				if(handleRegisterACKMsg(request))
+				{
+					state = REGISTERED;
+					//TODO: check if Plugin com part is ready, if yes -> state = active
+					//create pluginActive msg
+					response = createPluginActiveMsg();
+					send(currentSocket, response, strlen(response), 0);
+				}
+				//check for register ack then switch state to active
+				break;
+			case ACTIVE:
+				//maybe heartbeat check
+				break;
+			case BROKEN:
+				//clean up an set state to NOT_ACTIVE
+				state = NOT_ACTIVE;
+				break;
+			default:
+				//something went completely wrong
+				state = BROKEN;
+				break;
+		}
+	}
+	catch(PluginError &e)
+	{
+		state = BROKEN;
+		error = (char*)e.get();
+		send(currentSocket, error, strlen(error), 0);
+	}
+	popReceiveQueue();
+}
+
+
 
 bool UdsRegWorker::handleAnnounceACKMsg(string* msg)
 {
 	Value* resultValue = NULL;
-	Value nullid;
 	const char* resultString = NULL;
 	bool result = false;
 
-	json->parse(msg);
 
 	resultValue = json->tryTogetResult();
 	if(resultValue->IsString())
@@ -188,7 +211,7 @@ bool UdsRegWorker::handleAnnounceACKMsg(string* msg)
 	}
 	else
 	{
-		error = json->generateResponseError(nullid, -31010, "Awaited \"announceACK\" but didn't receive it.");
+		error = json->generateResponseError(*currentMsgId, -31010, "Awaited \"announceACK\" but didn't receive it.");
 		throw PluginError(error);
 	}
 
@@ -202,7 +225,6 @@ char* UdsRegWorker::createRegisterMsg()
 	Value method;
 	Value params;
 	Value f;
-	Value id;
 	Value fNumber;
 	int count = 1;
 	char* buffer = NULL;
@@ -230,8 +252,8 @@ char* UdsRegWorker::createRegisterMsg()
 		count++;
 	}
 
-	id.SetInt(2);
-	return json->generateRequest(method, params, id);
+
+	return json->generateRequest(method, params, *currentMsgId);
 }
 
 
@@ -240,10 +262,8 @@ bool UdsRegWorker::handleRegisterACKMsg(string* msg)
 {
 	const char* resultString = NULL;
 	Value* resultValue = NULL;
-	Value nullid;
 	bool result = false;
 
-	json->parse(msg);
 
 	resultValue = json->tryTogetResult();
 	if(resultValue->IsString())
@@ -254,7 +274,7 @@ bool UdsRegWorker::handleRegisterACKMsg(string* msg)
 	}
 	else
 	{
-		error = json->generateResponseError(nullid, -31011, "Awaited \"registerACK\" but didn't receive it.");
+		error = json->generateResponseError(*currentMsgId, -31011, "Awaited \"registerACK\" but didn't receive it.");
 		throw PluginError(error);
 	}
 	return result;
@@ -267,7 +287,6 @@ char* UdsRegWorker::createPluginActiveMsg()
 	Value method;
 	Value* params = NULL;
 	Value* id = NULL;
-	Document dom;
 	char* msg = NULL;
 
 	method.SetString("pluginActive");

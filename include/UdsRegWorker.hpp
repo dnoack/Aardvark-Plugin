@@ -1,8 +1,9 @@
 /*
  * UdsRegWorker.hpp
  *
- *  Created on: 25.02.2015
- *      Author: Dave
+ *  Created on: 	25.02.2015
+ *  Last edited:	20.03.2015
+ *  Author: 		dnoack
  */
 
 #ifndef UDSREGWORKER_HPP_
@@ -34,35 +35,28 @@ class UdsRegWorker : public WorkerInterface, public WorkerThreads{
 	private:
 		JsonRPC* json;
 		char* error;
+		Value* currentMsgId;
 
 
-		//variables for listener
+		bool worker_thread_active;
 		bool listen_thread_active;
 		char receiveBuffer[BUFFER_SIZE];
 		int recvSize;
-
-		//not shared, more common
-		pthread_t lthread;
 		int currentSocket;
-
 		enum REG_STATE{NOT_ACTIVE, ANNOUNCED, REGISTERED, ACTIVE, BROKEN};
 		unsigned int state;
 
-		//variables for worker
-		bool worker_thread_active;
-
+		int uds_send(char* msg);
+		void processRegistration();
+		//createAnnounceMsg will be created by UdsRegClient
 		bool handleAnnounceACKMsg(string* msg);
-
 		char* createRegisterMsg();
-
 		bool handleRegisterACKMsg(string* msg);
-
 		char* createPluginActiveMsg();
 
+
 		virtual void thread_listen(pthread_t partent_th, int socket, char* workerBuffer);
-
 		virtual void thread_work(int socket);
-
 };
 
 #endif /* UDSREGWORKER_HPP_ */

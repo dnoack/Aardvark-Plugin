@@ -19,7 +19,6 @@ UdsComWorker::UdsComWorker(int socket)
 	this->listen_thread_active = false;
 	this->worker_thread_active = false;
 	this->recvSize = 0;
-	this->lthread = 0;
 	this->request = 0;
 	this->response = 0;
 	this->currentSocket = socket;
@@ -54,7 +53,7 @@ void UdsComWorker::thread_work(int socket)
 	worker_thread_active = true;
 
 	//start the listenerthread and remember the theadId of it
-	lthread = StartListenerThread(pthread_self(), currentSocket, receiveBuffer);
+	StartListenerThread(pthread_self(), currentSocket, receiveBuffer);
 
 	configSignals();
 

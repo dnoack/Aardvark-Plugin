@@ -148,6 +148,5 @@ void AardvarkCareTaker::deleteDeviceList()
 		delete *i;
 		i = deviceList.erase(i);
 	}
-
 }
 

@@ -45,19 +45,15 @@ class UdsComWorker : public WorkerInterface, public WorkerThreads{
 
 		//variables for listener
 		bool listen_thread_active;
+		bool worker_thread_active;
 		char receiveBuffer[BUFFER_SIZE];
 		int recvSize;
 
 
-		//variables for worker
-		bool worker_thread_active;
+
 		AardvarkCareTaker* paard;
 		string* request;
 		string* response;
-
-
-		//not shared, more common
-		pthread_t lthread;
 		int currentSocket;
 
 
