@@ -126,7 +126,7 @@ string* AardvarkCareTaker::processMsg(string* msg)
 		}
 		else
 		{
-			//TODO: notification
+			throw PluginError("Aardvark-Plugin received: NO Request.\n");
 		}
 
 	}
