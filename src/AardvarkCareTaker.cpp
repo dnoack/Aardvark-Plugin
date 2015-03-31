@@ -36,6 +36,7 @@ RemoteAardvark* AardvarkCareTaker::getDevice(int value, int valueType)
 
 	RemoteAardvark* device = NULL;
 	bool found = false;
+	char* error = NULL;
 	list<RemoteAardvark*>::iterator i = deviceList.begin();
 
 	pthread_mutex_lock(&dLmutex);
@@ -76,7 +77,8 @@ RemoteAardvark* AardvarkCareTaker::getDevice(int value, int valueType)
 		else // cant create new devices with handle as value
 		{
 			pthread_mutex_unlock(&dLmutex);
-			throw PluginError("No device with this handle available.");
+			error = json->generateResponseError(*(json->getId()), -99999, "No device with this handle available.");
+			throw PluginError(error);
 		}
 	}
 

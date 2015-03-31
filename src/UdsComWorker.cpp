@@ -79,6 +79,7 @@ void UdsComWorker::thread_work(int socket)
 					catch(PluginError &e)
 					{
 						response = new string(e.get());
+
 					}
 					catch(...)
 					{
