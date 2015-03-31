@@ -86,9 +86,8 @@ void UdsComWorker::thread_work(int socket)
 						printf("Unkown exception.\n");
 					}
 
-					send(currentSocket, response->c_str(), response->size(), 0);
-
 					popReceiveQueue();
+					send(currentSocket, response->c_str(), response->size(), 0);
 					delete response;
 				}
 				break;
