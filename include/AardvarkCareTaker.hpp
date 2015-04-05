@@ -28,16 +28,49 @@ class AardvarkCareTaker{
 
 		string* processMsg(string* msg);
 
+
 	private:
 
 		JsonRPC* json;
 		string* result;
-		string* user;
+		int contextNumber;
 
-		list<RemoteAardvark*> deviceList;
+		static int instanceCount;
+		static list<RemoteAardvark*> deviceList;
 		static pthread_mutex_t dLmutex;
+		static pthread_mutex_t instanceCountMutex;
+
 
 		void deleteDeviceList();
+		void unlockAllUsedDevices();
+
+
+		static void increaseInstanceCount()
+		{
+			pthread_mutex_lock(&instanceCountMutex);
+				++instanceCount;
+			pthread_mutex_unlock(&instanceCountMutex);
+		}
+
+
+		static void decreaseInstanceCount()
+		{
+			pthread_mutex_lock(&instanceCountMutex);
+				--instanceCount;
+			pthread_mutex_unlock(&instanceCountMutex);
+
+		}
+
+
+
+		static int getInstanceCount()
+		{
+			int result = 0;
+			pthread_mutex_lock(&instanceCountMutex);
+				result = instanceCount;
+			pthread_mutex_unlock(&instanceCountMutex);
+			return result;
+		}
 
 
 

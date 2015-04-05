@@ -8,15 +8,23 @@
 
 #include "AardvarkCareTaker.hpp"
 
-//list<RemoteAardvark*> AardvarkCareTaker::deviceList;
+
+list<RemoteAardvark*> AardvarkCareTaker::deviceList;
 pthread_mutex_t AardvarkCareTaker::dLmutex;
+int AardvarkCareTaker::instanceCount = 0;
+pthread_mutex_t AardvarkCareTaker::instanceCountMutex;
 
 
 AardvarkCareTaker::AardvarkCareTaker()
 {
 	pthread_mutex_init(&dLmutex, NULL);
+	if(getInstanceCount() == 0)
+	{
+		pthread_mutex_init(&instanceCountMutex, NULL);
+	}
+	increaseInstanceCount();
 	json = new JsonRPC();
-	user = new string();
+	contextNumber = 0;
 	result = NULL;
 }
 
@@ -24,9 +32,16 @@ AardvarkCareTaker::AardvarkCareTaker()
 
 AardvarkCareTaker::~AardvarkCareTaker()
 {
+	decreaseInstanceCount();
 	delete json;
-	delete user;
-	deleteDeviceList();
+	if(getInstanceCount() == 0)
+	{
+		deleteDeviceList();
+		pthread_mutex_destroy(&instanceCountMutex);
+
+	}
+	else
+		unlockAllUsedDevices();
 	pthread_mutex_destroy(&dLmutex);
 }
 
@@ -36,7 +51,7 @@ RemoteAardvark* AardvarkCareTaker::getDevice(int value, int valueType)
 
 	RemoteAardvark* device = NULL;
 	bool found = false;
-	char* error = NULL;
+	const char* error = NULL;
 	list<RemoteAardvark*>::iterator i = deviceList.begin();
 
 	pthread_mutex_lock(&dLmutex);
@@ -64,14 +79,25 @@ RemoteAardvark* AardvarkCareTaker::getDevice(int value, int valueType)
 	//we found a device, but is no one else using it ?
 	if(found)
 	{
-		//TODO: compare user string from PluginAardvark with user string of RemoteAardvark
-		printf("Found device\n");
+		if(device->getContextNumber() == 0 || device->getContextNumber() == contextNumber)
+		{
+			printf("Found device and got access to it.\n");
+			if(device->getContextNumber() == 0)
+				device->setContextNumber(contextNumber);
+		}
+		else
+		{
+			pthread_mutex_unlock(&dLmutex);
+			error = json->generateResponseError(*(json->getId()), -99998, "Another user is using the requested hardware.");
+			throw PluginError(error);
+		}
 	}
 	else //didnt found the device
 	{
 		if(valueType == PORT) //create a new device instance with value as port
 		{
 			device = new RemoteAardvark(value);
+			device->setContextNumber(contextNumber);
 			deviceList.push_back(device);
 		}
 		else // cant create new devices with handle as value
@@ -95,6 +121,7 @@ string* AardvarkCareTaker::processMsg(string* msg)
 {
 	Document* dom;
 	Value responseValue;
+	Value* paramValue;
 	RemoteAardvark* device;
 
 	try
@@ -107,6 +134,7 @@ string* AardvarkCareTaker::processMsg(string* msg)
 		{
 			if(json->hasParams())
 			{
+
 				if((*dom)["params"].HasMember("port"))
 				{
 
@@ -126,6 +154,12 @@ string* AardvarkCareTaker::processMsg(string* msg)
 			}
 
 		}
+		else if(json->isNotification())
+		{
+			paramValue = json->tryTogetParam("contextNumber");
+			contextNumber = paramValue->GetInt();
+
+		}
 		else
 		{
 			throw PluginError("Aardvark-Plugin received: NO Request.\n");
@@ -143,12 +177,31 @@ string* AardvarkCareTaker::processMsg(string* msg)
 
 void AardvarkCareTaker::deleteDeviceList()
 {
-	list<RemoteAardvark*>::iterator i = deviceList.begin();
+	pthread_mutex_lock(&dLmutex);
+	list<RemoteAardvark*>::iterator device = deviceList.begin();
 
-	while(i != deviceList.end())
+	while(device != deviceList.end())
 	{
-		delete *i;
-		i = deviceList.erase(i);
+		delete *device;
+		device = deviceList.erase(device);
 	}
+	pthread_mutex_unlock(&dLmutex);
 }
+
+
+void AardvarkCareTaker::unlockAllUsedDevices()
+{
+	pthread_mutex_lock(&dLmutex);
+	list<RemoteAardvark*>::iterator device = deviceList.begin();
+
+	while(device != deviceList.end())
+	{
+		if((*device)->getContextNumber() == contextNumber)
+			(*device)->setContextNumber(0);
+		++device;
+	}
+
+	pthread_mutex_unlock(&dLmutex);
+}
+
 

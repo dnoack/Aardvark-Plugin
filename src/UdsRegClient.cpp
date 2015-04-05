@@ -48,7 +48,7 @@ bool UdsRegClient::connectToRSD()
 	Value params;
 	Value id;
 	Document dom;
-	char* msg;
+	const char* msg;
 	int status = 0;
 	bool result = false;
 

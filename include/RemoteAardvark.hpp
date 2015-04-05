@@ -964,7 +964,7 @@ class RemoteAardvark : public DriverInterface<RemoteAardvark*, afptr>{
 			this->port = port;
 			uniqueId = 0;
 			handle = 0;
-			user = new string();
+			contextNumber = 0;
 
 			//get relativ address of function
 			temp = &RemoteAardvark::aa_open;
@@ -987,10 +987,7 @@ class RemoteAardvark : public DriverInterface<RemoteAardvark*, afptr>{
 
 
 
-		~RemoteAardvark()
-		{
-			delete user;
-		};
+		~RemoteAardvark(){};
 
 
 
@@ -1009,7 +1006,8 @@ class RemoteAardvark : public DriverInterface<RemoteAardvark*, afptr>{
 
 		int getPort(){return this->port;}
 		int getHandle(){return this->handle;}
-		string* getUser(){return this->user;}
+		int getContextNumber(){return this->contextNumber;}
+		void setContextNumber(int contextNumber){this->contextNumber = contextNumber;}
 
 
 
@@ -1018,7 +1016,7 @@ class RemoteAardvark : public DriverInterface<RemoteAardvark*, afptr>{
 		int port;
 		unsigned int uniqueId;
 		int handle;
-		string* user;
+		int contextNumber;
 
 };
 

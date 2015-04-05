@@ -34,7 +34,7 @@ class UdsRegWorker : public WorkerInterface, public WorkerThreads{
 
 	private:
 		JsonRPC* json;
-		char* error;
+		const char* error;
 		Value* currentMsgId;
 
 
@@ -50,9 +50,9 @@ class UdsRegWorker : public WorkerInterface, public WorkerThreads{
 		void processRegistration();
 		//createAnnounceMsg will be created by UdsRegClient
 		bool handleAnnounceACKMsg(string* msg);
-		char* createRegisterMsg();
+		const char* createRegisterMsg();
 		bool handleRegisterACKMsg(string* msg);
-		char* createPluginActiveMsg();
+		const char* createPluginActiveMsg();
 
 
 		virtual void thread_listen(pthread_t partent_th, int socket, char* workerBuffer);

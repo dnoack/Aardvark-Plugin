@@ -138,7 +138,7 @@ int UdsRegWorker::uds_send(char* msg)
 void UdsRegWorker::processRegistration()
 {
 	string* request = receiveQueue.back();
-	char* response = NULL;
+	const char* response = NULL;
 
 	printf("Received: %s \n", request->c_str());
 
@@ -187,7 +187,7 @@ void UdsRegWorker::processRegistration()
 	catch(PluginError &e)
 	{
 		state = BROKEN;
-		error = (char*)e.get();
+		error = e.get();
 		send(currentSocket, error, strlen(error), 0);
 	}
 	popReceiveQueue();
@@ -219,7 +219,7 @@ bool UdsRegWorker::handleAnnounceACKMsg(string* msg)
 }
 
 
-char* UdsRegWorker::createRegisterMsg()
+const char* UdsRegWorker::createRegisterMsg()
 {
 	Document dom;
 	Value method;
@@ -282,12 +282,12 @@ bool UdsRegWorker::handleRegisterACKMsg(string* msg)
 
 
 
-char* UdsRegWorker::createPluginActiveMsg()
+const char* UdsRegWorker::createPluginActiveMsg()
 {
 	Value method;
 	Value* params = NULL;
 	Value* id = NULL;
-	char* msg = NULL;
+	const char* msg = NULL;
 
 	method.SetString("pluginActive");
 
