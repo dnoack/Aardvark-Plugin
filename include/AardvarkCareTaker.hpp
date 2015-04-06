@@ -16,11 +16,13 @@
 #include "JsonRPC.hpp"
 #include "RemoteAardvark.hpp"
 
+class UdsComWorker;
 
 class AardvarkCareTaker{
 
 	public:
 		AardvarkCareTaker();
+		AardvarkCareTaker(UdsComWorker* udsWorker);
 		~AardvarkCareTaker();
 
 		//valueType can be PORT or HANDLE
@@ -34,6 +36,8 @@ class AardvarkCareTaker{
 		JsonRPC* json;
 		string* result;
 		int contextNumber;
+		list<string*>* msgList;
+		UdsComWorker* udsworker;
 
 		static int instanceCount;
 		static list<RemoteAardvark*> deviceList;

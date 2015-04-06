@@ -22,7 +22,7 @@ UdsComWorker::UdsComWorker(int socket)
 	this->request = 0;
 	this->response = 0;
 	this->currentSocket = socket;
-	this->paard = new AardvarkCareTaker();
+	this->paard = new AardvarkCareTaker(this);
 
 	StartWorkerThread(currentSocket);
 }
@@ -42,6 +42,17 @@ UdsComWorker::~UdsComWorker()
 	WaitForWorkerThreadToExit();
 
 	delete paard;
+}
+
+
+int UdsComWorker::uds_send(string* data)
+{
+	return send(currentSocket, data->c_str(), data->size(), 0);
+}
+
+int UdsComWorker::uds_send(const char* data)
+{
+	return send(currentSocket, data, strlen(data), 0);
 }
 
 
@@ -72,29 +83,13 @@ void UdsComWorker::thread_work(int socket)
 					request = receiveQueue.back();
 					printf("Received: %s\n", request->c_str());
 
-					try
-					{
-						response = paard->processMsg(request);
-					}
-					catch(PluginError &e)
-					{
-						response = new string(e.get());
-
-					}
-					catch(...)
-					{
-						printf("Unkown exception.\n");
-					}
+					paard->processMsg(request);
 
 					popReceiveQueue();
-					send(currentSocket, response->c_str(), response->size(), 0);
-					delete response;
+
 				}
 				break;
 
-			case SIGUSR2:
-				printf("UdsComWorker: SIGUSR2\n");
-				break;
 			default:
 				printf("UdsComWorker: unkown signal \n");
 				break;

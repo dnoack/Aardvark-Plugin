@@ -39,6 +39,8 @@ class UdsComWorker : public WorkerInterface, public WorkerThreads{
 		UdsComWorker(int socket);
 		~UdsComWorker();
 
+		int uds_send(string* data);
+		int uds_send(const char* data);
 
 	private:
 

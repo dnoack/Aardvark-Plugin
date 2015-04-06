@@ -38,26 +38,29 @@ list<string*>* JsonRPC::splitMsg(string* msg)
 
 	string* splitMsg = NULL;
 	int splitPos = 0;
+	string* tempString = new string(*msg);
 	list<string*>* msgList = new list<string*>();
 
-		inputDOM->Parse(msg->c_str());
+		inputDOM->Parse(tempString->c_str());
 
 		if(!inputDOM->HasParseError())
-			msgList->push_front(msg);
+			msgList->push_back(tempString);
 
 		else
 		{
 			while(inputDOM->GetParseError() == kParseErrorDocumentRootNotSingular)
 			{
 				splitPos = inputDOM->GetErrorOffset();
-				splitMsg = new string(*msg, 0, splitPos);
-				msg->erase(0,splitPos);
+				splitMsg = new string(*tempString, 0, splitPos);
+				tempString->erase(0,splitPos);
 
-				msgList->push_front(splitMsg);
-				inputDOM->Parse(msg->c_str());
+				msgList->push_back(splitMsg);
+				inputDOM->Parse(tempString->c_str());
 			}
-			msgList->push_front(new string(*msg));
+			//if there is a parse error or it is the last root of a valid msg/ push it too
+			msgList->push_back(new string(*tempString));
 		}
+
 	return msgList;
 }
 

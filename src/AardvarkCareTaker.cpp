@@ -5,7 +5,7 @@
  *      Author: dnoack
  */
 
-
+#include "UdsComWorker.hpp"
 #include "AardvarkCareTaker.hpp"
 
 
@@ -18,6 +18,24 @@ pthread_mutex_t AardvarkCareTaker::instanceCountMutex;
 AardvarkCareTaker::AardvarkCareTaker()
 {
 	pthread_mutex_init(&dLmutex, NULL);
+	msgList = NULL;
+	this->udsworker = new UdsComWorker(0);
+	if(getInstanceCount() == 0)
+	{
+		pthread_mutex_init(&instanceCountMutex, NULL);
+	}
+	increaseInstanceCount();
+	json = new JsonRPC();
+	contextNumber = 0;
+	result = NULL;
+}
+
+
+AardvarkCareTaker::AardvarkCareTaker(UdsComWorker* udsWorker)
+{
+	pthread_mutex_init(&dLmutex, NULL);
+	msgList = NULL;
+	this->udsworker = udsWorker;
 	if(getInstanceCount() == 0)
 	{
 		pthread_mutex_init(&instanceCountMutex, NULL);
@@ -52,28 +70,28 @@ RemoteAardvark* AardvarkCareTaker::getDevice(int value, int valueType)
 	RemoteAardvark* device = NULL;
 	bool found = false;
 	const char* error = NULL;
-	list<RemoteAardvark*>::iterator i = deviceList.begin();
+	list<RemoteAardvark*>::iterator tempDevice = deviceList.begin();
 
 	pthread_mutex_lock(&dLmutex);
-	while(i != deviceList.end() && !found)
+	while(tempDevice != deviceList.end() && !found)
 	{
 		if(valueType == HANDLE)
 		{
-			if((*i)->getHandle() == value)
+			if((*tempDevice)->getHandle() == value)
 			{
-				device = *i;
+				device = *tempDevice;
 				found = true;
 			}
 		}
 		else if(valueType == PORT)
 		{
-			if((*i)->getPort() == value)
+			if((*tempDevice)->getPort() == value)
 			{
-				device = *i;
+				device = *tempDevice;
 				found = true;
 			}
 		}
-		++i;
+		++tempDevice;
 	}
 
 	//we found a device, but is no one else using it ?
@@ -81,7 +99,7 @@ RemoteAardvark* AardvarkCareTaker::getDevice(int value, int valueType)
 	{
 		if(device->getContextNumber() == 0 || device->getContextNumber() == contextNumber)
 		{
-			printf("Found device and got access to it.\n");
+			printf("Found device and got access to it. context: %d \n", contextNumber);
 			if(device->getContextNumber() == 0)
 				device->setContextNumber(contextNumber);
 		}
@@ -123,53 +141,64 @@ string* AardvarkCareTaker::processMsg(string* msg)
 	Value responseValue;
 	Value* paramValue;
 	RemoteAardvark* device;
+	list<string*>::iterator currentMsg;
 
-	try
+
+	msgList = json->splitMsg(msg);
+	currentMsg = msgList->begin();
+
+
+	while(currentMsg != msgList->end())
 	{
-		//parses the msg string into a internal dom object
-		dom = json->parse(msg);
-
-
-		if(json->isRequest())
+		try
 		{
-			if(json->hasParams())
+			dom = json->parse(*currentMsg);
+
+			if(json->isRequest())
 			{
-
-				if((*dom)["params"].HasMember("port"))
+				if(json->hasParams())
 				{
-
-					device = getDevice((*dom)["params"]["port"].GetInt(), PORT);
-					device->executeFunction((*dom)["method"], (*dom)["params"], responseValue);
-					result = new string(json->generateResponse((*dom)["id"], responseValue));
-				}
-				else
-				{
-					if((*dom)["params"].HasMember("handle"))
+					if((*dom)["params"].HasMember("port"))
 					{
-						device = getDevice((*dom)["params"]["handle"].GetInt(), HANDLE);
+						device = getDevice((*dom)["params"]["port"].GetInt(), PORT);
 						device->executeFunction((*dom)["method"], (*dom)["params"], responseValue);
 						result = new string(json->generateResponse((*dom)["id"], responseValue));
 					}
+					else
+					{
+						if((*dom)["params"].HasMember("handle"))
+						{
+							device = getDevice((*dom)["params"]["handle"].GetInt(), HANDLE);
+							device->executeFunction((*dom)["method"], (*dom)["params"], responseValue);
+							result = new string(json->generateResponse((*dom)["id"], responseValue));
+						}
+					}
+					udsworker->uds_send(result);
 				}
+
 			}
+			else if(json->isNotification())
+			{
+				paramValue = json->tryTogetParam("contextNumber");
+				contextNumber = paramValue->GetInt();
+			}
+			else
+			{
+				throw PluginError("Aardvark-Plugin received: NO Request.\n");
+			}
+			delete *currentMsg;
+			currentMsg = msgList->erase(currentMsg);
 
 		}
-		else if(json->isNotification())
+		catch(PluginError &e)
 		{
-			paramValue = json->tryTogetParam("contextNumber");
-			contextNumber = paramValue->GetInt();
-
-		}
-		else
-		{
-			throw PluginError("Aardvark-Plugin received: NO Request.\n");
+			udsworker->uds_send(e.get());
+			delete *currentMsg;
+			currentMsg = msgList->erase(currentMsg);
 		}
 
 	}
-	catch(PluginError &e)
-	{
-		throw;
-	}
+	delete msgList;
 
 	return result;
 }
