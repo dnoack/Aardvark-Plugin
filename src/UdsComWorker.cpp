@@ -35,6 +35,7 @@ UdsComWorker::~UdsComWorker()
 	WaitForWorkerThreadToExit();
 
 	delete paard;
+	deleteReceiveQueue();
 }
 
 
@@ -78,7 +79,6 @@ void UdsComWorker::thread_work(int socket)
 					paard->processMsg(request);
 
 					popReceiveQueue();
-
 				}
 				break;
 
