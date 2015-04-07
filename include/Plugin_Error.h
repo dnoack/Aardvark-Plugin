@@ -46,6 +46,7 @@ class PluginError : exception{
 			delete exMsg;
 		}
 
+
 		const char* get() const
 		{
 			return exMsg->c_str();
@@ -55,8 +56,6 @@ class PluginError : exception{
 	private:
 		string* exMsg;
 		char lineBuffer[33];
-
-
 
 };
 

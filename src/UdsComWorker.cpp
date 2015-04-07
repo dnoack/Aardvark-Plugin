@@ -15,10 +15,6 @@
 
 UdsComWorker::UdsComWorker(int socket)
 {
-	memset(receiveBuffer, '\0', BUFFER_SIZE);
-	this->listen_thread_active = false;
-	this->worker_thread_active = false;
-	this->recvSize = 0;
 	this->request = 0;
 	this->response = 0;
 	this->currentSocket = socket;
@@ -31,9 +27,6 @@ UdsComWorker::UdsComWorker(int socket)
 
 UdsComWorker::~UdsComWorker()
 {
-	worker_thread_active = false;
-	listen_thread_active = false;
-
 
 	pthread_cancel(getListener());
 	pthread_cancel(getWorker());
@@ -54,7 +47,6 @@ int UdsComWorker::uds_send(const char* data)
 {
 	return send(currentSocket, data, strlen(data), 0);
 }
-
 
 
 

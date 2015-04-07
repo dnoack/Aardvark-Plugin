@@ -22,9 +22,9 @@
 #include "WorkerInterface.hpp"
 #include "WorkerThreads.hpp"
 
-#define BUFFER_SIZE 1024
 
-class UdsRegWorker : public WorkerInterface, public WorkerThreads{
+
+class UdsRegWorker : public WorkerInterface<string>, public WorkerThreads{
 
 	public:
 		UdsRegWorker(int socket);
@@ -38,10 +38,6 @@ class UdsRegWorker : public WorkerInterface, public WorkerThreads{
 		Value* currentMsgId;
 
 
-		bool worker_thread_active;
-		bool listen_thread_active;
-		char receiveBuffer[BUFFER_SIZE];
-		int recvSize;
 		int currentSocket;
 		enum REG_STATE{NOT_ACTIVE, ANNOUNCED, REGISTERED, ACTIVE, BROKEN};
 		unsigned int state;

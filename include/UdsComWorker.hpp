@@ -33,7 +33,7 @@ class UdsServer;
 
 
 
-class UdsComWorker : public WorkerInterface, public WorkerThreads{
+class UdsComWorker : public WorkerInterface<string>, public WorkerThreads{
 
 	public:
 		UdsComWorker(int socket);
@@ -44,26 +44,14 @@ class UdsComWorker : public WorkerInterface, public WorkerThreads{
 
 	private:
 
+		virtual void thread_listen(pthread_t partent_th, int socket, char* workerBuffer);
 
-		//variables for listener
-		bool listen_thread_active;
-		bool worker_thread_active;
-		char receiveBuffer[BUFFER_SIZE];
-		int recvSize;
-
-
+		virtual void thread_work(int socket);
 
 		AardvarkCareTaker* paard;
 		string* request;
 		string* response;
 		int currentSocket;
-
-
-
-		virtual void thread_listen(pthread_t partent_th, int socket, char* workerBuffer);
-
-		virtual void thread_work(int socket);
-
 
 };
 

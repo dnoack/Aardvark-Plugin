@@ -14,21 +14,26 @@
 #include "signal.h"
 
 
+#define BUFFER_SIZE 1024
+
+
 using namespace std;
 
 
+template <class TMsg>
 class WorkerInterface{
 
 	public:
+
 		WorkerInterface()
 		{
 			pthread_mutex_init(&rQmutex, NULL);
 
 			this->currentSig = 0;
-			this->listenerDown = false;
-			this->deletable = false;
 			this->ready = false;
-
+			this->deletable = false;
+			this->recvSize = 0;
+			memset(receiveBuffer, '\0', BUFFER_SIZE);
 		};
 
 
@@ -38,14 +43,16 @@ class WorkerInterface{
 		};
 
 		bool isDeletable(){return deletable;}
-		bool isReady(){return ready;}
 
 
 	protected:
 
 		//receivequeue
-		list<string*> receiveQueue;
+		list<TMsg*> receiveQueue;
 		pthread_mutex_t rQmutex;
+
+		char receiveBuffer[BUFFER_SIZE];
+		int recvSize;
 
 
 		//signal variables
@@ -54,17 +61,25 @@ class WorkerInterface{
 		sigset_t origmask;
 		int currentSig;
 
-		bool listenerDown;
-		bool deletable;
 		bool ready;
+		bool deletable;
 
 		static void dummy_handler(int){};
 
-
+		void deleteReceiveQueue()
+		{
+			typename list<TMsg*>::iterator i;
+			i = receiveQueue.begin();
+			while(i != receiveQueue.end())
+			{
+				delete *i;
+				i = receiveQueue.erase(i);
+			}
+		}
 
 		void popReceiveQueue()
 		{
-			string* lastElement = NULL;
+			TMsg* lastElement = NULL;
 			pthread_mutex_lock(&rQmutex);
 				lastElement = receiveQueue.back();
 				receiveQueue.pop_back();
@@ -73,10 +88,19 @@ class WorkerInterface{
 		}
 
 
-		void pushReceiveQueue(string* data)
+
+		void popReceiveQueueWithoutDelete()
 		{
 			pthread_mutex_lock(&rQmutex);
-				receiveQueue.push_front(data);
+				receiveQueue.pop_back();
+			pthread_mutex_unlock(&rQmutex);
+		}
+
+
+		void pushReceiveQueue(TMsg* data)
+		{
+			pthread_mutex_lock(&rQmutex);
+				receiveQueue.push_back(data);
 			pthread_mutex_unlock(&rQmutex);
 		}
 
@@ -90,8 +114,6 @@ class WorkerInterface{
 
 			return result;
 		}
-
-
 
 
 		void configSignals()
@@ -110,7 +132,6 @@ class WorkerInterface{
 
 			pthread_sigmask(SIG_BLOCK, &sigmask, &origmask);
 		}
-
 
 
 };

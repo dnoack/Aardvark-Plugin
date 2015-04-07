@@ -12,6 +12,9 @@
 
 #include <pthread.h>
 #include <stdlib.h>
+#include <ctime>
+
+#define TIMEOUT 2
 
 class WorkerThreads;
 
@@ -47,10 +50,16 @@ public:
    {
 	   _worker = 0;
 	   _listener = 0;
+	   worker_thread_active = false;
+	   listen_thread_active = false;
 
    }
    /**Destructor*/
-   virtual ~WorkerThreads() {/* empty */}
+   virtual ~WorkerThreads()
+   {
+	   worker_thread_active = false;
+	   listen_thread_active = false;
+   }
 
    /**
    Starts the worker thread, which start executing the thread_work() function.
@@ -96,6 +105,18 @@ public:
    pthread_t getWorker(){return _worker;}
 
 
+   int wait_for_listener_up()
+   {
+	   time_t startTime = time(NULL);
+	   while(time(NULL) - startTime < TIMEOUT)
+	   {
+		   if(_listener != 0)
+			   return 0;
+	   }
+	   return -1;
+   }
+
+
 
 protected:
 
@@ -104,10 +125,12 @@ protected:
    /**This method has to be responsible for listening to incomming data and signaling the worker.*/
    virtual void thread_listen(pthread_t, int, char*)= 0;
 
-
+   bool worker_thread_active;
+   bool listen_thread_active;
 
 
 private:
+
 	/** Creates a new worker thread and starts executing thread_work within it.*/
    static void* thread_workEntryFunc(void * This)
    {
@@ -117,6 +140,8 @@ private:
 	   mtc->thread_work(socket);
 	   return NULL;
    }
+
+
    /** Creates a new listener thread and starts executing thread_listen within it.*/
    static void* thread_listenerEntryFunc(void* This)
    {
@@ -130,17 +155,15 @@ private:
    }
 
 
-
    /** Id of the internal worker thread.*/
    pthread_t _worker;
    /** ID of the internal listener thread.*/
    pthread_t _listener;
 
 
+
    argStruct tempStruct;
 };
-
-
 
 
 #endif /* INCLUDE_WORKERTHREADS_HPP_ */
