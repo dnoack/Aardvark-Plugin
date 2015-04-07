@@ -134,6 +134,7 @@ TEST(Plugin_UdsComWorker, sendCorrectMsg_and_getAnswer)
 			{
 				printf("Empfangen: %s \n", buffer);
 			}
+
 		}
 	}
 	else if(retval == 0)
