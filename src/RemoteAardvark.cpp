@@ -464,7 +464,6 @@ bool RemoteAardvark::aa_i2c_write(Value &params, Value &result)
 	Aardvark aardvark;
 	Value array;
 	int res = 0;
-	int wrote = 0;
 	u16 address = 0x0000;
 	u16 numberOfBytes = 0x0000;
 	u08* data = NULL;
@@ -498,7 +497,7 @@ bool RemoteAardvark::aa_i2c_write(Value &params, Value &result)
 			}
 			else
 			{
-				wrote = c_aa_i2c_write(aardvark, address, AA_I2C_NO_FLAGS, numberOfBytes, data);
+				c_aa_i2c_write(aardvark, address, AA_I2C_NO_FLAGS, numberOfBytes, data);
 			}
 
 			delete[] data;

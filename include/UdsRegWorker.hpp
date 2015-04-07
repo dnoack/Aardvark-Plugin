@@ -33,14 +33,17 @@ class UdsRegWorker : public WorkerInterface<string>, public WorkerThreads{
 		bool isReady(){return ready;}
 
 	private:
+
+		virtual void thread_listen(pthread_t partent_th, int socket, char* workerBuffer);
+		virtual void thread_work(int socket);
+
 		JsonRPC* json;
 		const char* error;
 		Value* currentMsgId;
-
-
 		int currentSocket;
 		enum REG_STATE{NOT_ACTIVE, ANNOUNCED, REGISTERED, ACTIVE, BROKEN};
 		unsigned int state;
+
 
 		int uds_send(char* msg);
 		void processRegistration();
@@ -50,9 +53,6 @@ class UdsRegWorker : public WorkerInterface<string>, public WorkerThreads{
 		bool handleRegisterACKMsg(string* msg);
 		const char* createPluginActiveMsg();
 
-
-		virtual void thread_listen(pthread_t partent_th, int socket, char* workerBuffer);
-		virtual void thread_work(int socket);
 };
 
 #endif /* UDSREGWORKER_HPP_ */

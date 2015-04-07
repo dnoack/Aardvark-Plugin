@@ -27,12 +27,6 @@
 class UdsServer;
 
 
-#define BUFFER_SIZE 1024
-#define ADD_WORKER true
-#define DELETE_WORKER false
-
-
-
 class UdsComWorker : public WorkerInterface<string>, public WorkerThreads{
 
 	public:
