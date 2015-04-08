@@ -954,6 +954,25 @@ class RemoteAardvark;
 typedef bool (RemoteAardvark::*afptr)(Value&, Value&);
 
 
+struct _function
+{
+	const char* _name;
+	afptr _funcPtr;
+	int paramCount;
+	_param* paramArray;
+};
+
+
+static _param _port = {"port", kNumberType };
+static _param _handle = {"handle", kNumberType };
+
+
+static _param aa_open_params[1] = {_port};
+
+
+
+static _function _aa_open = {"Aardvark.aa_open", NULL, 1, aa_open_params};
+
 
 class RemoteAardvark : public DriverInterface<RemoteAardvark*, afptr>{
 
@@ -970,6 +989,8 @@ class RemoteAardvark : public DriverInterface<RemoteAardvark*, afptr>{
 			temp = &RemoteAardvark::aa_open;
 			//save the relativ address to the map with the corresponding key for rpc
 			funcMap.insert(pair<const char* , afptr>("Aardvark.aa_open", temp));
+
+			_aa_open._funcPtr = temp;
 
 			temp = &RemoteAardvark::aa_close;
 			funcMap.insert(pair<const char* , afptr>("Aardvark.aa_close", temp));

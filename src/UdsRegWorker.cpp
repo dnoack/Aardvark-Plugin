@@ -237,7 +237,7 @@ const char* UdsRegWorker::createRegisterMsg()
 	funcList = AardvarkPlugin::getFuncList();
 	method.SetString("register");
 	params.SetObject();
-	for(list<string*>::const_iterator i = funcList->begin(); i != funcList->end(); ++i)
+	for(list<string*>::iterator i = funcList->begin(); i != funcList->end(); )
 	{
 		memset(buffer, '\0', 0);
 		buffer = new char[10];
@@ -249,9 +249,10 @@ const char* UdsRegWorker::createRegisterMsg()
 		params.AddMember(fNumber,f, dom.GetAllocator());
 
 		delete[] buffer;
+		i = funcList->erase(i);
 		count++;
 	}
-
+	delete funcList;
 
 	return json->generateRequest(method, params, *currentMsgId);
 }
