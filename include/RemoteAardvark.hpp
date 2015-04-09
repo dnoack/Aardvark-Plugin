@@ -962,15 +962,20 @@ struct _function
 	_param* paramArray;
 };
 
-
+//Definition of all known parameters
+static _param _num_devices = {"num_devices", kNumberType};
+static _param _devices = {"devices", kArrayType};
 static _param _port = {"port", kNumberType };
 static _param _handle = {"handle", kNumberType };
 
 
+//Define which function uses which parameter
+static _param aa_find_devices_params[2] = {_num_devices, _devices};
 static _param aa_open_params[1] = {_port};
 
 
-
+//Connect functionname and _param struct
+static _function _aa_find_devices = {"Aardvark.aa_find_devices", NULL, 2, aa_find_devices_params};
 static _function _aa_open = {"Aardvark.aa_open", NULL, 1, aa_open_params};
 
 
@@ -986,23 +991,27 @@ class RemoteAardvark : public DriverInterface<RemoteAardvark*, afptr>{
 			contextNumber = 0;
 
 			//get relativ address of function
-			temp = &RemoteAardvark::aa_open;
+			_aa_find_devices._funcPtr = &RemoteAardvark::aa_find_devices;
 			//save the relativ address to the map with the corresponding key for rpc
-			funcMap.insert(pair<const char* , afptr>("Aardvark.aa_open", temp));
+			funcMap.insert(pair<const char*, afptr>(_aa_find_devices._name, _aa_find_devices._funcPtr));
 
-			_aa_open._funcPtr = temp;
+			if(port > -1)
+			{
+				_aa_open._funcPtr = &RemoteAardvark::aa_open;
+				funcMap.insert(pair<const char*, afptr>(_aa_open._name, _aa_open._funcPtr));
 
-			temp = &RemoteAardvark::aa_close;
-			funcMap.insert(pair<const char* , afptr>("Aardvark.aa_close", temp));
+				temp = &RemoteAardvark::aa_close;
+				funcMap.insert(pair<const char* , afptr>("Aardvark.aa_close", temp));
 
-			temp = &RemoteAardvark::aa_unique_id;
-			funcMap.insert(pair<const char* , afptr>("Aardvark.aa_unique_id", temp));
+				temp = &RemoteAardvark::aa_unique_id;
+				funcMap.insert(pair<const char* , afptr>("Aardvark.aa_unique_id", temp));
 
-			temp = &RemoteAardvark::aa_target_power;
-			funcMap.insert(pair<const char*, afptr>("Aardvark.aa_target_power", temp));
+				temp = &RemoteAardvark::aa_target_power;
+				funcMap.insert(pair<const char*, afptr>("Aardvark.aa_target_power", temp));
 
-			temp = &RemoteAardvark::aa_i2c_write;
-			funcMap.insert(pair<const char*, afptr>("Aardvark.aa_i2c_write", temp));
+				temp = &RemoteAardvark::aa_i2c_write;
+				funcMap.insert(pair<const char*, afptr>("Aardvark.aa_i2c_write", temp));
+			}
 
 		};
 
@@ -1013,6 +1022,7 @@ class RemoteAardvark : public DriverInterface<RemoteAardvark*, afptr>{
 
 
 		//impelemt the driver functions !
+		bool aa_find_devices(Value &params, Value &result);
 
 		bool aa_open(Value &params, Value &result);
 

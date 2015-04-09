@@ -44,6 +44,7 @@ AardvarkCareTaker::AardvarkCareTaker(UdsComWorker* udsWorker)
 	json = new JsonRPC();
 	contextNumber = 0;
 	result = NULL;
+	deviceLessFunctions = new RemoteAardvark(-1);
 }
 
 
@@ -161,18 +162,18 @@ string* AardvarkCareTaker::processMsg(string* msg)
 					if((*dom)["params"].HasMember("port"))
 					{
 						device = getDevice((*dom)["params"]["port"].GetInt(), PORT);
-						device->executeFunction((*dom)["method"], (*dom)["params"], responseValue);
-						result = new string(json->generateResponse((*dom)["id"], responseValue));
+
+					}
+					else if((*dom)["params"].HasMember("handle"))
+					{
+						device = getDevice((*dom)["params"]["handle"].GetInt(), HANDLE);
 					}
 					else
 					{
-						if((*dom)["params"].HasMember("handle"))
-						{
-							device = getDevice((*dom)["params"]["handle"].GetInt(), HANDLE);
-							device->executeFunction((*dom)["method"], (*dom)["params"], responseValue);
-							result = new string(json->generateResponse((*dom)["id"], responseValue));
-						}
+						device = deviceLessFunctions;
 					}
+					device->executeFunction((*dom)["method"], (*dom)["params"], responseValue);
+					result = new string(json->generateResponse((*dom)["id"], responseValue));
 					udsworker->uds_send(result);
 				}
 

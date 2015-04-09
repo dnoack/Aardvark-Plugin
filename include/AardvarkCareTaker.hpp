@@ -38,6 +38,7 @@ class AardvarkCareTaker{
 		int contextNumber;
 		list<string*>* msgList;
 		UdsComWorker* udsworker;
+		RemoteAardvark* deviceLessFunctions;
 
 		static int instanceCount;
 		static list<RemoteAardvark*> deviceList;

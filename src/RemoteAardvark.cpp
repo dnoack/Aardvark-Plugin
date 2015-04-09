@@ -305,6 +305,9 @@ static void *_loadFunction (const char *name, int *result) {
 | FUNCTIONS
  ========================================================================*/
 
+
+
+
 static int (*c_aa_find_devices_ext) (int, u16 *, int, u32 *) = 0;
 int aa_find_devices_ext (
     int  num_devices,
@@ -319,6 +322,51 @@ int aa_find_devices_ext (
             return res;
     }
     return c_aa_find_devices_ext(num_devices, devices, num_ids, unique_ids);
+}
+
+
+static int (*c_aa_find_devices) (int, u16*) = 0;
+
+bool RemoteAardvark::aa_find_devices(Value &params, Value &result)
+{
+	int num_devices = 0;
+	u16* devices = NULL;
+	Value devicesArray;
+	Document dom;
+	int res = 0;
+
+	const char* paramsName = _aa_find_devices.paramArray[0]._name;
+	Type paramType = _aa_find_devices.paramArray[0]._type;
+
+	if(findParamsMember(params, paramsName, paramType))
+	{
+		num_devices = params[paramsName].GetInt();
+
+
+		if (!(c_aa_find_devices = reinterpret_cast<int(*)(int,u16*)>(_loadFunction("c_aa_find_devices", &res))))
+		{
+			throw PluginError("Could not find symbol in shared library.",  __FILE__, __LINE__);
+		}
+		else
+		{
+			devices = new u16[num_devices];
+			num_devices = c_aa_find_devices(num_devices, devices);
+
+
+			result.SetObject();
+			result.AddMember("num_devices", num_devices, dom.GetAllocator());
+			devicesArray.SetArray();
+
+			for(int i = 0 ; i < num_devices ; i++)
+			{
+				devicesArray.PushBack(devices[i], dom.GetAllocator());
+			}
+			delete[] devices;
+			result.AddMember("devices", devicesArray, dom.GetAllocator());
+		}
+	}
+
+	return true;
 }
 
 
@@ -358,7 +406,6 @@ bool RemoteAardvark::aa_open(rapidjson::Value &params , rapidjson::Value &result
 
 static int (*c_aa_close) (Aardvark) = 0;
 
-
 bool RemoteAardvark::aa_close(rapidjson::Value &params , rapidjson::Value &result)
 {
 	Aardvark aardvark;
@@ -388,7 +435,6 @@ bool RemoteAardvark::aa_close(rapidjson::Value &params , rapidjson::Value &resul
 
 
 static u32 (*c_aa_unique_id) (Aardvark) = 0;
-
 
 bool RemoteAardvark::aa_unique_id(rapidjson::Value &params , rapidjson::Value &result)
 {
