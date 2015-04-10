@@ -991,6 +991,7 @@ static _function _aa_features = {"Aardvark.aa_features", NULL, 1, aa_port_params
 static _function _aa_unique_id = {"Aardvark.aa_unique_id", NULL, 1, aa_port_params};
 static _function _aa_status_string = {"Aardvark.aa_status_string", NULL, 1, aa_status_string_params};
 static _function _aa_target_power = {"Aardvark.aa_target_power", NULL, 2, aa_target_power_params};
+static _function _aa_version = {"Aardvark.aa_version", NULL, 1, aa_port_params};
 
 
 class RemoteAardvark : public DriverInterface<RemoteAardvark*, afptr>{
@@ -1035,6 +1036,8 @@ class RemoteAardvark : public DriverInterface<RemoteAardvark*, afptr>{
 				_aa_unique_id._funcPtr = &RemoteAardvark::aa_unique_id;
 				funcMap.insert(pair<const char* , afptr>(_aa_unique_id._name, _aa_unique_id._funcPtr));
 
+				_aa_version._funcPtr = &RemoteAardvark::aa_version;
+				funcMap.insert(pair<const char* , afptr>(_aa_version._name, _aa_version._funcPtr));
 
 				_aa_target_power._funcPtr = &RemoteAardvark::aa_target_power;
 				funcMap.insert(pair<const char*, afptr>(_aa_target_power._name, _aa_target_power._funcPtr));
@@ -1070,6 +1073,8 @@ class RemoteAardvark : public DriverInterface<RemoteAardvark*, afptr>{
 
 		bool aa_status_string(Value &params, Value &result);
 
+		bool aa_version(Value &params, Value &result);
+
 		bool aa_target_power(Value &params , Value &result);
 
 		bool aa_i2c_write(Value &params, Value &result);
@@ -1084,6 +1089,7 @@ class RemoteAardvark : public DriverInterface<RemoteAardvark*, afptr>{
 
 	private:
 
+		Document dom;
 		int port;
 		unsigned int uniqueId;
 		int handle;

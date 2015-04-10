@@ -315,7 +315,6 @@ bool RemoteAardvark::aa_find_devices(Value &params, Value &result)
 	int num_devices = 0;
 	u16* devices = NULL;
 	Value devicesArray;
-	Document dom;
 	int res = 0;
 
 	const char* paramsName = _aa_find_devices.paramArray[0]._name;
@@ -364,7 +363,6 @@ bool RemoteAardvark::aa_find_devices_ext(Value &params, Value &result)
 	Value devicesArray;
 	Value uniqueIdsArray;
 
-	Document dom;
 	int res = 0;
 
 	const char* paramsName = _aa_find_devices_ext.paramArray[0]._name;
@@ -452,7 +450,7 @@ bool RemoteAardvark::aa_open_ext(rapidjson::Value &params , rapidjson::Value &re
 	AardvarkExt aardvarkExt;
 	Value aardvarkVersionValue;
 	Value aardvarkExtValue;
-	Document dom;
+
 	int port_number = 0;
 	int newHandle = 0;
 	int res = 0;
@@ -628,7 +626,6 @@ bool RemoteAardvark::aa_status_string(Value &params, Value &result)
 	int res = 0;
 	int status = 0;
 	const char* statusString = NULL;
-	Document dom;
 
 	const char* paramsName = _aa_status_string.paramArray[0]._name;
 	Type paramType = _aa_status_string.paramArray[0]._type;
@@ -649,6 +646,53 @@ bool RemoteAardvark::aa_status_string(Value &params, Value &result)
 	}
 	return true;
 }
+
+
+static int (*c_aa_version)(Aardvark, AardvarkVersion*) = 0;
+
+bool RemoteAardvark::aa_version(Value &params, Value &result)
+{
+
+	int res = 0;
+	int tempHandle = 0;
+	int tempPort = 0;
+	AardvarkVersion version;
+	Value aardvarkVersionValue;
+
+	const char* paramsName = _aa_version.paramArray[0]._name;
+	Type paramType = _aa_version.paramArray[0]._type;
+
+	if(findParamsMember(params, paramsName, paramType))
+	{
+
+		tempHandle = params[paramsName].GetInt();
+		if (!(c_aa_version = reinterpret_cast<int(*)(Aardvark, AardvarkVersion*)>(_loadFunction("c_aa_version", &res))))
+		{
+			throw PluginError("Could not find symbol in shared library.",  __FILE__, __LINE__);
+		}
+		else
+		{
+			tempPort = c_aa_version(tempHandle, &version);
+			//create Aardvarkversion object
+			aardvarkVersionValue.SetObject();
+			aardvarkVersionValue.AddMember("software", version.software, dom.GetAllocator());
+			aardvarkVersionValue.AddMember("firmware", version.firmware, dom.GetAllocator());
+			aardvarkVersionValue.AddMember("hardware", version.hardware, dom.GetAllocator());
+			aardvarkVersionValue.AddMember("sw_req_by_fw", version.sw_req_by_fw, dom.GetAllocator());
+			aardvarkVersionValue.AddMember("fw_req_by_sw", version.fw_req_by_sw, dom.GetAllocator());
+			aardvarkVersionValue.AddMember("api_req_by_sw", version.api_req_by_sw, dom.GetAllocator());
+
+			result.SetObject();
+			result.AddMember("version", aardvarkVersionValue, dom.GetAllocator());
+
+		}
+
+	}
+	return true;
+
+
+}
+
 
 
 static int (*c_aa_target_power) (Aardvark, u08) = 0;
