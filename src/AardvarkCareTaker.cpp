@@ -14,7 +14,7 @@ pthread_mutex_t AardvarkCareTaker::dLmutex;
 int AardvarkCareTaker::instanceCount = 0;
 pthread_mutex_t AardvarkCareTaker::instanceCountMutex;
 
-
+/*
 AardvarkCareTaker::AardvarkCareTaker()
 {
 	pthread_mutex_init(&dLmutex, NULL);
@@ -28,7 +28,7 @@ AardvarkCareTaker::AardvarkCareTaker()
 	json = new JsonRPC();
 	contextNumber = 0;
 	result = NULL;
-}
+}*/
 
 
 AardvarkCareTaker::AardvarkCareTaker(UdsComWorker* udsWorker)
@@ -61,6 +61,8 @@ AardvarkCareTaker::~AardvarkCareTaker()
 	}
 	else
 		unlockAllUsedDevices();
+
+	delete deviceLessFunctions;
 	pthread_mutex_destroy(&dLmutex);
 }
 

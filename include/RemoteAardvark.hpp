@@ -969,7 +969,7 @@ static _param _port = {"port", kNumberType };
 static _param _handle = {"handle", kNumberType };
 static _param _aardvark = {"Aardvark", kNumberType};
 static _param _status = {"status", kNumberType};
-static _param _power_mask = {"powerMask", kNumberType};
+static _param _powerMmask = {"powerMask", kNumberType};
 
 
 //Define which function uses which parameter
@@ -977,7 +977,7 @@ static _param aa_find_devices_params[1] = {_num_devices};
 static _param aa_open_params[1] = {_port};
 static _param aa_port_params[1] = {_aardvark};
 static _param aa_status_string_params[1] = {_status};
-static _param aa_target_power_params[2] = {_aardvark, _power_mask};
+static _param aa_target_power_params[2] = {_aardvark, _powerMmask};
 
 
 //Connect functionname and _param struct

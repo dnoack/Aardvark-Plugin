@@ -660,14 +660,15 @@ bool RemoteAardvark::aa_target_power(Value &params , Value &result)
 	int returnValue = 0;
 	int res = 0;
 
-	const char* paramsName = _aa_unique_id.paramArray[0]._name;
-	Type paramType = _aa_unique_id.paramArray[0]._type;
+	const char* paramsName = _aa_target_power.paramArray[0]._name;
+	Type paramType = _aa_target_power.paramArray[0]._type;
 
 	if(findParamsMember(params, paramsName, paramType))
 	{
 		aardvark = params[paramsName].GetInt();
-		paramsName = _aa_unique_id.paramArray[1]._name;
-		paramType = _aa_unique_id.paramArray[1]._type;
+
+		paramsName = _aa_target_power.paramArray[1]._name;
+		paramType = _aa_target_power.paramArray[1]._type;
 		power_mask = params[paramsName].GetInt();
 
 		if (!(c_aa_target_power = reinterpret_cast<int(*)(Aardvark, u08)>(_loadFunction("c_aa_target_power", &res))))

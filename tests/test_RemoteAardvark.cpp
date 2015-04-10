@@ -46,13 +46,13 @@ TEST(RemoteAardvark, aa_openOK)
 
 TEST(RemoteAardvark, aa_unique_idOK)
 {
-	params->AddMember("handle", 1, dom->GetAllocator());
+	params->AddMember("Aardvark", 1, dom->GetAllocator());
 	CHECK_EQUAL(true, testInterface->aa_unique_id(*params, *result));
 }
 
 TEST(RemoteAardvark, aa_target_powerOK)
 {
-	params->AddMember("handle", 1, dom->GetAllocator());
+	params->AddMember("Aardvark", 1, dom->GetAllocator());
 	params->AddMember("powerMask", 0x03, dom->GetAllocator());
 	CHECK_EQUAL(true, testInterface->aa_target_power(*params, *result));
 }
