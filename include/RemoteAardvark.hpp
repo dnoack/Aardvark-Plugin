@@ -967,16 +967,30 @@ static _param _num_devices = {"num_devices", kNumberType};
 static _param _devices = {"devices", kArrayType};
 static _param _port = {"port", kNumberType };
 static _param _handle = {"handle", kNumberType };
+static _param _aardvark = {"Aardvark", kNumberType};
+static _param _status = {"status", kNumberType};
+static _param _power_mask = {"powerMask", kNumberType};
 
 
 //Define which function uses which parameter
-static _param aa_find_devices_params[2] = {_num_devices, _devices};
+static _param aa_find_devices_params[1] = {_num_devices};
 static _param aa_open_params[1] = {_port};
+static _param aa_port_params[1] = {_aardvark};
+static _param aa_status_string_params[1] = {_status};
+static _param aa_target_power_params[2] = {_aardvark, _power_mask};
 
 
 //Connect functionname and _param struct
-static _function _aa_find_devices = {"Aardvark.aa_find_devices", NULL, 2, aa_find_devices_params};
+static _function _aa_find_devices = {"Aardvark.aa_find_devices", NULL, 1, aa_find_devices_params};
+static _function _aa_find_devices_ext = {"Aardvark.aa_find_devices_ext", NULL, 1, aa_find_devices_params};
 static _function _aa_open = {"Aardvark.aa_open", NULL, 1, aa_open_params};
+static _function _aa_open_ext = {"Aardvark.aa_open_ext", NULL, 1 , aa_open_params};
+static _function _aa_close = {"Aardvark.aa_close", NULL, 1, aa_open_params};
+static _function _aa_port = {"Aardvark.aa_port", NULL, 1 , aa_port_params};
+static _function _aa_features = {"Aardvark.aa_features", NULL, 1, aa_port_params};
+static _function _aa_unique_id = {"Aardvark.aa_unique_id", NULL, 1, aa_port_params};
+static _function _aa_status_string = {"Aardvark.aa_status_string", NULL, 1, aa_status_string_params};
+static _function _aa_target_power = {"Aardvark.aa_target_power", NULL, 2, aa_target_power_params};
 
 
 class RemoteAardvark : public DriverInterface<RemoteAardvark*, afptr>{
@@ -995,19 +1009,35 @@ class RemoteAardvark : public DriverInterface<RemoteAardvark*, afptr>{
 			//save the relativ address to the map with the corresponding key for rpc
 			funcMap.insert(pair<const char*, afptr>(_aa_find_devices._name, _aa_find_devices._funcPtr));
 
+			_aa_find_devices_ext._funcPtr = &RemoteAardvark::aa_find_devices_ext;
+			funcMap.insert(pair<const char*, afptr>(_aa_find_devices_ext._name, _aa_find_devices_ext._funcPtr));
+
+			_aa_status_string._funcPtr = &RemoteAardvark::aa_status_string;
+			funcMap.insert(pair<const char*, afptr>(_aa_status_string._name, _aa_status_string._funcPtr));
+
 			if(port > -1)
 			{
 				_aa_open._funcPtr = &RemoteAardvark::aa_open;
 				funcMap.insert(pair<const char*, afptr>(_aa_open._name, _aa_open._funcPtr));
 
-				temp = &RemoteAardvark::aa_close;
-				funcMap.insert(pair<const char* , afptr>("Aardvark.aa_close", temp));
+				_aa_open_ext._funcPtr = &RemoteAardvark::aa_open_ext;
+				funcMap.insert(pair<const char*, afptr>(_aa_open_ext._name, _aa_open_ext._funcPtr));
 
-				temp = &RemoteAardvark::aa_unique_id;
-				funcMap.insert(pair<const char* , afptr>("Aardvark.aa_unique_id", temp));
+				_aa_close._funcPtr = &RemoteAardvark::aa_close;
+				funcMap.insert(pair<const char* , afptr>(_aa_close._name, _aa_close._funcPtr));
 
-				temp = &RemoteAardvark::aa_target_power;
-				funcMap.insert(pair<const char*, afptr>("Aardvark.aa_target_power", temp));
+				_aa_port._funcPtr = &RemoteAardvark::aa_port;
+				funcMap.insert(pair<const char* , afptr>(_aa_port._name, _aa_port._funcPtr));
+
+				_aa_features._funcPtr = &RemoteAardvark::aa_features;
+				funcMap.insert(pair<const char* , afptr>(_aa_features._name, _aa_features._funcPtr));
+
+				_aa_unique_id._funcPtr = &RemoteAardvark::aa_unique_id;
+				funcMap.insert(pair<const char* , afptr>(_aa_unique_id._name, _aa_unique_id._funcPtr));
+
+
+				_aa_target_power._funcPtr = &RemoteAardvark::aa_target_power;
+				funcMap.insert(pair<const char*, afptr>(_aa_target_power._name, _aa_target_power._funcPtr));
 
 				temp = &RemoteAardvark::aa_i2c_write;
 				funcMap.insert(pair<const char*, afptr>("Aardvark.aa_i2c_write", temp));
@@ -1024,11 +1054,21 @@ class RemoteAardvark : public DriverInterface<RemoteAardvark*, afptr>{
 		//impelemt the driver functions !
 		bool aa_find_devices(Value &params, Value &result);
 
+		bool aa_find_devices_ext(Value &params, Value &result);
+
 		bool aa_open(Value &params, Value &result);
+
+		bool aa_open_ext(Value &params, Value &result);
 
 		bool aa_close(Value &params, Value &result);
 
+		bool aa_port(Value &params, Value &result);
+
+		bool aa_features(Value &params, Value &result);
+
 		bool aa_unique_id(Value &params, Value &result);
+
+		bool aa_status_string(Value &params, Value &result);
 
 		bool aa_target_power(Value &params , Value &result);
 

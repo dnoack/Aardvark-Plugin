@@ -164,9 +164,13 @@ string* AardvarkCareTaker::processMsg(string* msg)
 						device = getDevice((*dom)["params"]["port"].GetInt(), PORT);
 
 					}
-					else if((*dom)["params"].HasMember("handle"))
+					else if((*dom)["params"].HasMember("handle") )
 					{
 						device = getDevice((*dom)["params"]["handle"].GetInt(), HANDLE);
+					}
+					else if((*dom)["params"].HasMember("Aardvark") )
+					{
+						device = getDevice((*dom)["params"]["Aardvark"].GetInt(), HANDLE);
 					}
 					else
 					{
