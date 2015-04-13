@@ -405,7 +405,7 @@ bool RemoteAardvark::aa_find_devices_ext(Value &params, Value &result)
 			result.AddMember("num_ids", num_ids, dom.GetAllocator());
 			result.AddMember("unique_ids", uniqueIdsArray, dom.GetAllocator());
 			delete[] devices;
-						delete [] uniqueIds;
+			delete [] uniqueIds;
 		}
 	}
 
