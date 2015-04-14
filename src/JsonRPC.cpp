@@ -17,19 +17,34 @@ Document* JsonRPC::parse(string* msg)
 	Document* result = NULL;
 	Value nullId;
 
-		inputDOM->Parse(msg->c_str());
-		if(!inputDOM->HasParseError())
-			result = inputDOM;
+	inputDOM->Parse(msg->c_str());
+	if(!inputDOM->HasParseError())
+		result = inputDOM;
 
-		else
-		{
-			nullId.SetInt(0);
-			error = generateResponseError(nullId, -32700, "Error while parsing json rpc.");
-			result = NULL;
-			throw PluginError(error);
-		}
+	else
+	{
+		nullId.SetInt(0);
+		error = generateResponseError(nullId, -32700, "Error while parsing json rpc.");
+		result = NULL;
+		throw PluginError(error);
+	}
 
 	return result;
+}
+
+
+void JsonRPC::parse(string* msg, Document* dom)
+{
+	Value nullId;
+
+	dom->Parse(msg->c_str());
+
+	if(dom->HasParseError())
+	{
+		nullId.SetInt(0);
+		error = generateResponseError(nullId, -32700, "Error while parsing json rpc.");
+		throw PluginError(error);
+	}
 }
 
 
@@ -41,25 +56,25 @@ list<string*>* JsonRPC::splitMsg(string* msg)
 	string* tempString = new string(*msg);
 	list<string*>* msgList = new list<string*>();
 
-		inputDOM->Parse(tempString->c_str());
+	inputDOM->Parse(tempString->c_str());
 
-		if(!inputDOM->HasParseError())
-			msgList->push_back(tempString);
+	if(!inputDOM->HasParseError())
+		msgList->push_back(tempString);
 
-		else
+	else
+	{
+		while(inputDOM->GetParseError() == kParseErrorDocumentRootNotSingular)
 		{
-			while(inputDOM->GetParseError() == kParseErrorDocumentRootNotSingular)
-			{
-				splitPos = inputDOM->GetErrorOffset();
-				splitMsg = new string(*tempString, 0, splitPos);
-				tempString->erase(0,splitPos);
+			splitPos = inputDOM->GetErrorOffset();
+			splitMsg = new string(*tempString, 0, splitPos);
+			tempString->erase(0,splitPos);
 
-				msgList->push_back(splitMsg);
-				inputDOM->Parse(tempString->c_str());
-			}
-			//if there is a parse error or it is the last root of a valid msg/ push it too
-			msgList->push_back(new string(*tempString));
+			msgList->push_back(splitMsg);
+			inputDOM->Parse(tempString->c_str());
 		}
+		//if there is a parse error or it is the last root of a valid msg/ push it too
+		msgList->push_back(new string(*tempString));
+	}
 
 	return msgList;
 }
@@ -109,12 +124,32 @@ Value* JsonRPC::tryTogetParam(const char* name)
 }
 
 
+Value* JsonRPC::tryTogetParams()
+{
+	Value* params = NULL;
+	try
+	{
+		hasParams();
+		params = &((*inputDOM)["params"]);
+	}
+	catch(PluginError &e)
+	{
+		throw;
+	}
+	return params;
+}
+
+
 
 Value* JsonRPC::getResult()
 {
-	Value* resultValue = NULL;
-	resultValue = &((*inputDOM)["result"]);
-	return resultValue;
+	return &((*inputDOM)["result"]);
+}
+
+
+Value* JsonRPC::getResult(Document* dom)
+{
+	return &((*dom)["result"]);
 }
 
 
@@ -126,6 +161,24 @@ Value* JsonRPC::tryTogetResult()
 	{
 		hasResult();
 		resultValue = getResult();
+	}
+	catch(PluginError &e)
+	{
+		throw;
+	}
+
+	return resultValue;
+}
+
+
+Value* JsonRPC::tryTogetResult(Document* dom)
+{
+	Value* resultValue = NULL;
+
+	try
+	{
+		hasResult(dom);
+		resultValue = getResult(dom);
 	}
 	catch(PluginError &e)
 	{
@@ -411,6 +464,32 @@ bool JsonRPC::hasResult()
 	try
 	{
 		if(inputDOM->HasMember("result"))
+		{
+			result = true;
+			//no checking for type, because the type of result is deetermined by the calling function
+		}
+		else
+		{
+			error = generateResponseError(nullid, -32040, "Member \"result\" is missing.");
+			throw PluginError(error);
+		}
+	}
+	catch(PluginError &e)
+	{
+		throw;
+	}
+
+	return result;
+}
+
+bool JsonRPC::hasResult(Document* dom)
+{
+	bool result = false;
+	Value nullid;
+
+	try
+	{
+		if(dom->HasMember("result"))
 		{
 			result = true;
 			//no checking for type, because the type of result is deetermined by the calling function

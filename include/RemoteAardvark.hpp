@@ -1014,12 +1014,13 @@ static _param aa_target_power_params[2] = {_aardvark, _powerMmask};
 static _param aa_i2c_write_params[5] = {_aardvark,_slave_addr, _flags, _num_bytes, _data_out};
 
 
+
 //Connect functionname and _param struct
 static _function _aa_find_devices = {"Aardvark.aa_find_devices", NULL, 1, aa_find_devices_params};
 static _function _aa_find_devices_ext = {"Aardvark.aa_find_devices_ext", NULL, 1, aa_find_devices_params};
 static _function _aa_open = {"Aardvark.aa_open", NULL, 1, aa_open_params};
 static _function _aa_open_ext = {"Aardvark.aa_open_ext", NULL, 1 , aa_open_params};
-static _function _aa_close = {"Aardvark.aa_close", NULL, 1, aa_open_params};
+static _function _aa_close = {"Aardvark.aa_close", NULL, 1, aa_port_params};
 static _function _aa_port = {"Aardvark.aa_port", NULL, 1 , aa_port_params};
 static _function _aa_features = {"Aardvark.aa_features", NULL, 1, aa_port_params};
 static _function _aa_unique_id = {"Aardvark.aa_unique_id", NULL, 1, aa_port_params};

@@ -507,20 +507,23 @@ static int (*c_aa_close) (Aardvark) = 0;
 bool RemoteAardvark::aa_close(rapidjson::Value &params , rapidjson::Value &result)
 {
 	Aardvark aardvark;
+	int returnValue = 0;
 	int res = 0;
 
-	if(findObjectMember(params, "handle"))
+	if(findObjectMember(params, "Aardvark"))
 	{
-		if(params["handle"].IsInt())
+		if(params["Aardvark"].IsInt())
 		{
-			aardvark = params["handle"].GetInt();
+			aardvark = params["Aardvark"].GetInt();
 			if (!(c_aa_close = reinterpret_cast<int(*)(Aardvark)>(_loadFunction("c_aa_close", &res))))
 			{
 				throw PluginError("Could not find symbol in shared library.",  __FILE__, __LINE__);
 			}
 			else
 			{
-				result.SetInt(c_aa_close(aardvark));
+				returnValue = c_aa_close(aardvark);
+				result.SetObject();
+				result.AddMember("returnCode", returnValue, dom.GetAllocator());
 			}
 		}
 		else throw PluginError("Member \"handle\" has to be an integer type.",  __FILE__, __LINE__);
