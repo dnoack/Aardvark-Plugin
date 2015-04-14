@@ -770,6 +770,7 @@ bool RemoteAardvark::aa_i2c_write(Value &params, Value &result)
 	//get num bytes
 	paramName = _aa_i2c_write.paramArray[3]._name;
 	paramType = _aa_i2c_write.paramArray[3]._type;
+	tempValue = findObjectMember(params, paramName, paramType);
 	numberOfBytes = tempValue->GetUint();
 	data = new u08[numberOfBytes];
 
@@ -779,7 +780,7 @@ bool RemoteAardvark::aa_i2c_write(Value &params, Value &result)
 	paramType = _aa_i2c_write.paramArray[4]._type;
 	tempValue = findObjectMember(params, paramName, paramType);
 	for(int i = 0; i < numberOfBytes; i++)
-			data[i] = tempValue[i].GetInt();
+			data[i] = (*tempValue)[i].GetInt();
 
 
 

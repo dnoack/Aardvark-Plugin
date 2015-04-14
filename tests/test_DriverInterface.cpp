@@ -34,10 +34,10 @@ TEST_GROUP(Plugin_Interface)
 };
 
 
-TEST(Plugin_Interface, findParamsMember_noObject)
+TEST(Plugin_Interface, findObjectMember_noObject)
 {
 	testValue.SetInt(3005);
-	CHECK_THROWS(PluginError, testInterface->findParamsMember(testValue, memberValue));
+	CHECK_THROWS(PluginError, testInterface->findObjectMember(testValue, memberValue));
 }
 
 
@@ -45,7 +45,7 @@ TEST(Plugin_Interface, findParams_MemberFound) //is object
 {
 	testValue.SetObject();
 	testValue.AddMember("GOOD", 0,  dom->GetAllocator());
-	CHECK(testInterface->findParamsMember(testValue, "GOOD"));
+	CHECK(testInterface->findObjectMember(testValue, "GOOD"));
 }
 
 
@@ -53,7 +53,7 @@ TEST(Plugin_Interface, findParams_MemberNOTFound) //is object
 {
 	testValue.SetObject();
 	testValue.AddMember("GOOD", 0, dom->GetAllocator());
-	CHECK_THROWS(PluginError, testInterface->findParamsMember(testValue, memberValue));
+	CHECK_THROWS(PluginError, testInterface->findObjectMember(testValue, memberValue));
 }
 
 
