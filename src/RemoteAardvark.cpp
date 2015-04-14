@@ -320,7 +320,7 @@ bool RemoteAardvark::aa_find_devices(Value &params, Value &result)
 	const char* paramsName = _aa_find_devices.paramArray[0]._name;
 	Type paramType = _aa_find_devices.paramArray[0]._type;
 
-	if(findParamsMember(params, paramsName, paramType))
+	if(findObjectMember(params, paramsName, paramType))
 	{
 		num_devices = params[paramsName].GetInt();
 
@@ -368,7 +368,7 @@ bool RemoteAardvark::aa_find_devices_ext(Value &params, Value &result)
 	const char* paramsName = _aa_find_devices_ext.paramArray[0]._name;
 	Type paramType = _aa_find_devices_ext.paramArray[0]._type;
 
-	if(findParamsMember(params, paramsName, paramType))
+	if(findObjectMember(params, paramsName, paramType))
 	{
 		num_devices = params[paramsName].GetInt();
 		num_ids = num_devices;
@@ -421,7 +421,7 @@ bool RemoteAardvark::aa_open(rapidjson::Value &params , rapidjson::Value &result
 	int newHandle = 0;
 	int res = 0;
 
-	if(findParamsMember(params, "port"))
+	if(findObjectMember(params, "port"))
 	{
 		if(params["port"].IsInt())
 		{
@@ -433,7 +433,8 @@ bool RemoteAardvark::aa_open(rapidjson::Value &params , rapidjson::Value &result
 			else
 			{
 				newHandle = c_aa_open(port_number);
-				result.SetInt(newHandle);
+				result.SetObject();
+				result.AddMember("Aardvark",newHandle, dom.GetAllocator());
 				handle = newHandle;
 			}
 		}
@@ -456,7 +457,7 @@ bool RemoteAardvark::aa_open_ext(rapidjson::Value &params , rapidjson::Value &re
 	int res = 0;
 
 
-		if(findParamsMember(params, "port"))
+		if(findObjectMember(params, "port"))
 		{
 			if(params["port"].IsInt())
 			{
@@ -508,7 +509,7 @@ bool RemoteAardvark::aa_close(rapidjson::Value &params , rapidjson::Value &resul
 	Aardvark aardvark;
 	int res = 0;
 
-	if(findParamsMember(params, "handle"))
+	if(findObjectMember(params, "handle"))
 	{
 		if(params["handle"].IsInt())
 		{
@@ -539,7 +540,7 @@ bool RemoteAardvark::aa_port(Value &params, Value &result)
 	const char* paramsName = _aa_port.paramArray[0]._name;
 	Type paramType = _aa_port.paramArray[0]._type;
 
-	if(findParamsMember(params, paramsName, paramType))
+	if(findObjectMember(params, paramsName, paramType))
 	{
 
 		tempHandle = params[paramsName].GetInt();
@@ -569,7 +570,7 @@ bool RemoteAardvark::aa_features(Value &params, Value &result)
 	const char* paramsName = _aa_features.paramArray[0]._name;
 	Type paramType = _aa_features.paramArray[0]._type;
 
-	if(findParamsMember(params, paramsName, paramType))
+	if(findObjectMember(params, paramsName, paramType))
 	{
 
 		tempHandle = params[paramsName].GetInt();
@@ -602,7 +603,7 @@ bool RemoteAardvark::aa_unique_id(Value &params , Value &result)
 	const char* paramsName = _aa_unique_id.paramArray[0]._name;
 	Type paramType = _aa_unique_id.paramArray[0]._type;
 
-	if(findParamsMember(params, paramsName, paramType))
+	if(findObjectMember(params, paramsName, paramType))
 	{
 		aardvark = params[paramsName].GetInt();
 		if (!(c_aa_unique_id = reinterpret_cast<u32(*)(Aardvark)>(_loadFunction("c_aa_unique_id", &res))))
@@ -630,7 +631,7 @@ bool RemoteAardvark::aa_status_string(Value &params, Value &result)
 	const char* paramsName = _aa_status_string.paramArray[0]._name;
 	Type paramType = _aa_status_string.paramArray[0]._type;
 
-	if(findParamsMember(params, paramsName, paramType))
+	if(findObjectMember(params, paramsName, paramType))
 	{
 		status = params[paramsName].GetInt();
 		if (!(c_aa_status_string = reinterpret_cast<const char*(*)(Aardvark)>(_loadFunction("c_aa_status_string", &res))))
@@ -662,7 +663,7 @@ bool RemoteAardvark::aa_version(Value &params, Value &result)
 	const char* paramsName = _aa_version.paramArray[0]._name;
 	Type paramType = _aa_version.paramArray[0]._type;
 
-	if(findParamsMember(params, paramsName, paramType))
+	if(findObjectMember(params, paramsName, paramType))
 	{
 
 		tempHandle = params[paramsName].GetInt();
@@ -707,24 +708,26 @@ bool RemoteAardvark::aa_target_power(Value &params , Value &result)
 	const char* paramsName = _aa_target_power.paramArray[0]._name;
 	Type paramType = _aa_target_power.paramArray[0]._type;
 
-	if(findParamsMember(params, paramsName, paramType))
+	findObjectMember(params, paramsName, paramType);
+
+	aardvark = params[paramsName].GetInt();
+
+	paramsName = _aa_target_power.paramArray[1]._name;
+	paramType = _aa_target_power.paramArray[1]._type;
+	findObjectMember(params, paramsName, paramType);
+	power_mask = params[paramsName].GetInt();
+
+	if (!(c_aa_target_power = reinterpret_cast<int(*)(Aardvark, u08)>(_loadFunction("c_aa_target_power", &res))))
 	{
-		aardvark = params[paramsName].GetInt();
-
-		paramsName = _aa_target_power.paramArray[1]._name;
-		paramType = _aa_target_power.paramArray[1]._type;
-		power_mask = params[paramsName].GetInt();
-
-		if (!(c_aa_target_power = reinterpret_cast<int(*)(Aardvark, u08)>(_loadFunction("c_aa_target_power", &res))))
-		{
-			throw PluginError("Could not find symbol in shared library.",  __FILE__, __LINE__);
-		}
-		else
-		{
-			returnValue = c_aa_target_power(aardvark, power_mask);
-			result.SetUint(returnValue);
-		}
+		throw PluginError("Could not find symbol in shared library.",  __FILE__, __LINE__);
 	}
+	else
+	{
+		returnValue = c_aa_target_power(aardvark, power_mask);
+		result.SetObject();
+		result.AddMember("returnCode", returnValue, dom.GetAllocator());
+	}
+
 	return true;
 }
 
@@ -735,52 +738,65 @@ static int (*c_aa_i2c_write) (Aardvark, u16, AardvarkI2cFlags, u16, const u08 *)
 bool RemoteAardvark::aa_i2c_write(Value &params, Value &result)
 {
 	Aardvark aardvark;
-	Value array;
-	int res = 0;
-	u16 address = 0x0000;
+	u16 slaveAddress = 0x0000;
+	AardvarkI2cFlags flags = AA_I2C_NO_FLAGS;
 	u16 numberOfBytes = 0x0000;
 	u08* data = NULL;
 
+	Value array;
+	Value* tempValue = NULL;
+	int res = 0;
+	int returnValue = 0;
 
-	if(findParamsMember(params, "handle"))
+
+	//get handle
+	const char* paramName = _aa_i2c_write.paramArray[0]._name;
+	Type paramType = _aa_i2c_write.paramArray[0]._type;
+	tempValue = findObjectMember(params, paramName, paramType);
+	aardvark = tempValue->GetInt();
+
+	//get slave addr
+	paramName = _aa_i2c_write.paramArray[1]._name;
+	paramType = _aa_i2c_write.paramArray[1]._type;
+	tempValue = findObjectMember(params, paramName, paramType);
+	slaveAddress = tempValue->GetUint();
+
+	//get flags
+	paramName = _aa_i2c_write.paramArray[2]._name;
+	paramType = _aa_i2c_write.paramArray[2]._type;
+	tempValue = findObjectMember(params, paramName, paramType);
+	flags = getAardvarkI2cFlag(tempValue->GetUint());
+
+	//get num bytes
+	paramName = _aa_i2c_write.paramArray[3]._name;
+	paramType = _aa_i2c_write.paramArray[3]._type;
+	numberOfBytes = tempValue->GetUint();
+	data = new u08[numberOfBytes];
+
+
+	//get data_out
+	paramName = _aa_i2c_write.paramArray[4]._name;
+	paramType = _aa_i2c_write.paramArray[4]._type;
+	tempValue = findObjectMember(params, paramName, paramType);
+	for(int i = 0; i < numberOfBytes; i++)
+			data[i] = tempValue[i].GetInt();
+
+
+
+	if (!(c_aa_i2c_write = reinterpret_cast<int(*)(Aardvark, u16, AardvarkI2cFlags, u16, const u08 *)>(_loadFunction("c_aa_i2c_write", &res))))
 	{
-		if(params["handle"].IsInt() )
-		{
-			aardvark = params["handle"].GetInt();
-
-			//TODO: check appearance
-			address = params["slave_addr"].GetInt();
-
-			//TODO: check appearance
-			//flags = params["flags"].GetInt();
-
-			numberOfBytes = params["num_bytes"].GetInt();
-			data = new u08[numberOfBytes];
-
-
-			for(int i = 0; i < numberOfBytes; i++)
-			{
-				data[i] = params["data_out"][i].GetInt();
-			}
-
-
-			if (!(c_aa_i2c_write = reinterpret_cast<int(*)(Aardvark, u16, AardvarkI2cFlags, u16, const u08 *)>(_loadFunction("c_aa_i2c_write", &res))))
-			{
-				throw PluginError("Could not find symbol in shared library.",  __FILE__, __LINE__);
-			}
-			else
-			{
-				c_aa_i2c_write(aardvark, address, AA_I2C_NO_FLAGS, numberOfBytes, data);
-			}
-
-			delete[] data;
-
-		}
-		else
-			throw PluginError("Member \"handle\" has to be an integer.",  __FILE__, __LINE__);
+		throw PluginError("Could not find symbol in shared library.",  __FILE__, __LINE__);
 	}
+	else
+	{
+		returnValue = c_aa_i2c_write(aardvark, slaveAddress, flags, numberOfBytes, data);
+		result.SetObject();
+		result.AddMember("returnCode", returnValue, dom.GetAllocator());
+	}
+
+	delete[] data;
+
+
 	return true;
-
-
 }
 

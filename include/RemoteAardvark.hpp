@@ -510,6 +510,33 @@ enum AardvarkI2cFlags {
 typedef enum AardvarkI2cFlags AardvarkI2cFlags;
 #endif
 
+static AardvarkI2cFlags getAardvarkI2cFlag(u08 flag)
+{
+	AardvarkI2cFlags result = AA_I2C_NO_FLAGS;
+	switch(flag)
+	{
+	case AA_I2C_NO_FLAGS:
+		result = AA_I2C_NO_FLAGS;
+		break;
+	case AA_I2C_10_BIT_ADDR:
+		result = AA_I2C_10_BIT_ADDR;
+		break;
+	case AA_I2C_COMBINED_FMT:
+		result = AA_I2C_COMBINED_FMT;
+		break;
+	case AA_I2C_NO_STOP:
+		result = AA_I2C_NO_STOP;
+		break;
+	case AA_I2C_SIZED_READ:
+		result = AA_I2C_SIZED_READ;
+		break;
+	case AA_I2C_SIZED_READ_EXTRA1:
+		result = AA_I2C_SIZED_READ_EXTRA1;
+		break;
+	}
+	return result;
+}
+
 /* Read a stream of bytes from the I2C slave device. */
 int aa_i2c_read (
     Aardvark         aardvark,
@@ -966,10 +993,16 @@ struct _function
 static _param _num_devices = {"num_devices", kNumberType};
 static _param _devices = {"devices", kArrayType};
 static _param _port = {"port", kNumberType };
-static _param _handle = {"handle", kNumberType };
 static _param _aardvark = {"Aardvark", kNumberType};
 static _param _status = {"status", kNumberType};
 static _param _powerMmask = {"powerMask", kNumberType};
+
+
+static _param _slave_addr = {"slave_addr", kNumberType};
+static _param _flags = {"AardvarkI2cFlags", kNumberType};
+static _param _num_bytes = {"num_bytes", kNumberType};
+static _param _data_out = {"data_out", kArrayType};
+
 
 
 //Define which function uses which parameter
@@ -978,6 +1011,7 @@ static _param aa_open_params[1] = {_port};
 static _param aa_port_params[1] = {_aardvark};
 static _param aa_status_string_params[1] = {_status};
 static _param aa_target_power_params[2] = {_aardvark, _powerMmask};
+static _param aa_i2c_write_params[5] = {_aardvark,_slave_addr, _flags, _num_bytes, _data_out};
 
 
 //Connect functionname and _param struct
@@ -992,7 +1026,7 @@ static _function _aa_unique_id = {"Aardvark.aa_unique_id", NULL, 1, aa_port_para
 static _function _aa_status_string = {"Aardvark.aa_status_string", NULL, 1, aa_status_string_params};
 static _function _aa_target_power = {"Aardvark.aa_target_power", NULL, 2, aa_target_power_params};
 static _function _aa_version = {"Aardvark.aa_version", NULL, 1, aa_port_params};
-
+static _function _aa_i2c_write = {"Aardvark.aa_i2c_write", NULL, 5, aa_i2c_write_params};
 
 class RemoteAardvark : public DriverInterface<RemoteAardvark*, afptr>{
 
@@ -1042,8 +1076,8 @@ class RemoteAardvark : public DriverInterface<RemoteAardvark*, afptr>{
 				_aa_target_power._funcPtr = &RemoteAardvark::aa_target_power;
 				funcMap.insert(pair<const char*, afptr>(_aa_target_power._name, _aa_target_power._funcPtr));
 
-				temp = &RemoteAardvark::aa_i2c_write;
-				funcMap.insert(pair<const char*, afptr>("Aardvark.aa_i2c_write", temp));
+				_aa_i2c_write._funcPtr = &RemoteAardvark::aa_i2c_write;
+				funcMap.insert(pair<const char*, afptr>(_aa_i2c_write._name , _aa_i2c_write._funcPtr ));
 			}
 
 		};
@@ -1078,6 +1112,8 @@ class RemoteAardvark : public DriverInterface<RemoteAardvark*, afptr>{
 		bool aa_target_power(Value &params , Value &result);
 
 		bool aa_i2c_write(Value &params, Value &result);
+
+		bool aa_i2c_read(Value &params, Value &result);
 
 
 		int getPort(){return this->port;}
