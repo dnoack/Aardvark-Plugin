@@ -14,21 +14,6 @@ pthread_mutex_t AardvarkCareTaker::dLmutex;
 int AardvarkCareTaker::instanceCount = 0;
 pthread_mutex_t AardvarkCareTaker::instanceCountMutex;
 
-/*
-AardvarkCareTaker::AardvarkCareTaker()
-{
-	pthread_mutex_init(&dLmutex, NULL);
-	msgList = NULL;
-	this->udsworker = new UdsComWorker(0);
-	if(getInstanceCount() == 0)
-	{
-		pthread_mutex_init(&instanceCountMutex, NULL);
-	}
-	increaseInstanceCount();
-	json = new JsonRPC();
-	contextNumber = 0;
-	result = NULL;
-}*/
 
 
 AardvarkCareTaker::AardvarkCareTaker(UdsComWorker* udsWorker)
