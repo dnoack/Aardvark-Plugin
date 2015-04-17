@@ -20,13 +20,15 @@ UdsComWorker::UdsComWorker(int socket)
 	this->currentSocket = socket;
 	this->paard = new AardvarkCareTaker(this);
 
-	StartWorkerThread(currentSocket);
+	StartWorkerThread();
 }
 
 
 
 UdsComWorker::~UdsComWorker()
 {
+	worker_thread_active = false;
+	listen_thread_active = false;
 
 	pthread_cancel(getListener());
 	pthread_cancel(getWorker());
@@ -51,14 +53,12 @@ int UdsComWorker::uds_send(const char* data)
 
 
 
-void UdsComWorker::thread_work(int socket)
+void UdsComWorker::thread_work()
 {
 
 	worker_thread_active = true;
 
-	//start the listenerthread and remember the theadId of it
-	StartListenerThread(pthread_self(), currentSocket, receiveBuffer);
-
+	StartListenerThread();
 	configSignals();
 
 	while(worker_thread_active)
@@ -93,39 +93,39 @@ void UdsComWorker::thread_work(int socket)
 
 
 
-void UdsComWorker::thread_listen(pthread_t parent_th, int socket, char* workerBuffer)
+void UdsComWorker::thread_listen()
 {
 
 	listen_thread_active = true;
 	int retval;
 	fd_set rfds;
-
+	pthread_t worker_thread = getWorker();
 	configSignals();
 
 	FD_ZERO(&rfds);
-	FD_SET(socket, &rfds);
+	FD_SET(currentSocket, &rfds);
 
 	while(listen_thread_active)
 	{
 		memset(receiveBuffer, '\0', BUFFER_SIZE);
 		ready = true;
 
-		retval = pselect(socket+1, &rfds, NULL, NULL, NULL, &origmask);
+		retval = pselect(currentSocket+1, &rfds, NULL, NULL, NULL, &origmask);
 
 		if(retval < 0)
 		{
 			deletable = true;
 			listen_thread_active = false;
 		}
-		else if(FD_ISSET(socket, &rfds))
+		else if(FD_ISSET(currentSocket, &rfds))
 		{
-			recvSize = recv( socket , receiveBuffer, BUFFER_SIZE, MSG_DONTWAIT);
+			recvSize = recv(currentSocket , receiveBuffer, BUFFER_SIZE, MSG_DONTWAIT);
 
 			if(recvSize > 0)
 			{
 				//add received data in buffer to queue
 				pushReceiveQueue(new string(receiveBuffer, recvSize));
-				pthread_kill(parent_th, SIGUSR1);
+				pthread_kill(worker_thread, SIGUSR1);
 			}
 			//RSD invoked shutdown
 			else
