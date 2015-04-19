@@ -141,8 +141,6 @@ void UdsRegWorker::processRegistration()
 	string* request = receiveQueue.back();
 	const char* response = NULL;
 
-	printf("Received: %s \n", request->c_str());
-
 	try{
 
 		json->parse(request);
