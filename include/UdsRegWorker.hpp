@@ -32,6 +32,11 @@ class UdsRegWorker : public WorkerInterface<string>, public WorkerThreads{
 
 		bool isReady(){return ready;}
 
+		//TODO: correct implementation
+		int transmit(char* data, int size){};
+		int transmit(const char* data, int size){};
+		int transmit(string* msg){};
+
 	private:
 
 		virtual void thread_listen();

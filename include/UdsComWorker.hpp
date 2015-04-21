@@ -36,6 +36,11 @@ class UdsComWorker : public WorkerInterface<string>, public WorkerThreads{
 		int uds_send(string* data);
 		int uds_send(const char* data);
 
+		//TODO: correct implementation
+		int transmit(char* data, int size){};
+		int transmit(const char* data, int size){};
+		int transmit(string* msg){};
+
 	private:
 
 		virtual void thread_listen();
