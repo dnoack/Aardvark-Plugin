@@ -165,7 +165,7 @@ string* AardvarkCareTaker::processMsg(string* msg)
 					}
 					device->executeFunction((*dom)["method"], (*dom)["params"], responseValue);
 					result = new string(json->generateResponse((*dom)["id"], responseValue));
-					udsworker->uds_send(result);
+					udsworker->transmit(result);
 				}
 
 			}
@@ -184,7 +184,7 @@ string* AardvarkCareTaker::processMsg(string* msg)
 		}
 		catch(PluginError &e)
 		{
-			udsworker->uds_send(e.get());
+			udsworker->transmit(e.get(), strlen(e.get()));
 			delete *currentMsg;
 			currentMsg = msgList->erase(currentMsg);
 		}

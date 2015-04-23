@@ -1,10 +1,3 @@
-/*
- * UdsRegWorker.hpp
- *
- *  Created on: 	25.02.2015
- *  Last edited:	20.03.2015
- *  Author: 		dnoack
- */
 
 #ifndef UDSREGWORKER_HPP_
 #define UDSREGWORKER_HPP_
@@ -32,10 +25,9 @@ class UdsRegWorker : public WorkerInterface<string>, public WorkerThreads{
 
 		bool isReady(){return ready;}
 
-		//TODO: correct implementation
-		int transmit(char* data, int size){};
-		int transmit(const char* data, int size){};
-		int transmit(string* msg){};
+		int transmit(char* data, int size);
+		int transmit(const char* data, int size);
+		int transmit(string* msg);
 
 	private:
 
@@ -50,7 +42,6 @@ class UdsRegWorker : public WorkerInterface<string>, public WorkerThreads{
 		unsigned int state;
 
 
-		int uds_send(char* msg);
 		void processRegistration();
 		//createAnnounceMsg will be created by UdsRegClient
 		bool handleAnnounceACKMsg(string* msg);

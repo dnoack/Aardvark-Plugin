@@ -41,17 +41,6 @@ UdsComWorker::~UdsComWorker()
 }
 
 
-int UdsComWorker::uds_send(string* data)
-{
-	return send(currentSocket, data->c_str(), data->size(), 0);
-}
-
-int UdsComWorker::uds_send(const char* data)
-{
-	return send(currentSocket, data, strlen(data), 0);
-}
-
-
 
 void UdsComWorker::thread_work()
 {
@@ -72,12 +61,9 @@ void UdsComWorker::thread_work()
 			case SIGUSR1:
 				while(getReceiveQueueSize() > 0)
 				{
-
 					request = receiveQueue.back();
 					printf("Received: %s\n", request->c_str());
-
 					paard->processMsg(request);
-
 					popReceiveQueue();
 				}
 				break;
@@ -137,6 +123,25 @@ void UdsComWorker::thread_listen()
 		}
 	}
 }
+
+
+int UdsComWorker::transmit(char* data, int size)
+{
+	return send(currentSocket, data, size, 0);
+};
+
+
+int UdsComWorker::transmit(const char* data, int size)
+{
+	return send(currentSocket, data, size, 0);
+};
+
+
+int UdsComWorker::transmit(string* msg)
+{
+	return send(currentSocket, msg->c_str(), msg->size(), 0);
+};
+
 
 
 

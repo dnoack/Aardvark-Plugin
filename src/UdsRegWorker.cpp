@@ -122,20 +122,6 @@ void UdsRegWorker::thread_work()
 }
 
 
-int UdsRegWorker::uds_send(char* msg)
-{
-	int wrote = 0;
-
-	wrote = send(currentSocket, msg, strlen(msg), 0);
-	if(wrote == -1)
-	{
-		error = json->generateResponseError(*currentMsgId, -31013, "Could not send Data over UdsSocket.");
-		throw PluginError(error);
-	}
-	return wrote;
-}
-
-
 void UdsRegWorker::processRegistration()
 {
 	string* request = receiveQueue.back();
@@ -156,7 +142,7 @@ void UdsRegWorker::processRegistration()
 				{
 					state = ANNOUNCED;
 					response = createRegisterMsg();
-					send(currentSocket, response, strlen(response), 0);
+					transmit(response, strlen(response));
 				}
 				break;
 			case ANNOUNCED:
@@ -166,7 +152,7 @@ void UdsRegWorker::processRegistration()
 					//TODO: check if Plugin com part is ready, if yes -> state = active
 					//create pluginActive msg
 					response = createPluginActiveMsg();
-					send(currentSocket, response, strlen(response), 0);
+					transmit(response, strlen(response));
 				}
 				//check for register ack then switch state to active
 				break;
@@ -187,7 +173,7 @@ void UdsRegWorker::processRegistration()
 	{
 		state = BROKEN;
 		error = e.get();
-		send(currentSocket, error, strlen(error), 0);
+		transmit(e.get(), strlen(e.get()));
 	}
 	popReceiveQueue();
 }
@@ -290,9 +276,25 @@ const char* UdsRegWorker::createPluginActiveMsg()
 	const char* msg = NULL;
 
 	method.SetString("pluginActive");
-
 	msg = json->generateRequest(method, *params, *id);
 
 	return msg;
 }
+
+int UdsRegWorker::transmit(char* data, int size)
+{
+	return send(currentSocket, data, size, 0);
+};
+
+
+int UdsRegWorker::transmit(const char* data, int size)
+{
+	return send(currentSocket, data, size, 0);
+};
+
+
+int UdsRegWorker::transmit(string* msg)
+{
+	return send(currentSocket, msg->c_str(), msg->size(), 0);
+};
 
