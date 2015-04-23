@@ -21,6 +21,9 @@ UdsComWorker::UdsComWorker(int socket)
 	this->paard = new AardvarkCareTaker(this);
 
 	StartWorkerThread();
+
+	if(wait_for_listener_up() != 0)
+			throw PluginError("Creation of Listener/worker threads failed.");
 }
 
 
