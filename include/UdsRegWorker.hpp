@@ -24,6 +24,7 @@ class UdsRegWorker : public WorkerInterface<string>, public WorkerThreads{
 		~UdsRegWorker();
 
 		bool isReady(){return ready;}
+		void sendAnnounceMsg(const char* pluginName, int pluginNumber, const char* pluginPath);
 
 		int transmit(char* data, int size);
 		int transmit(const char* data, int size);
@@ -43,7 +44,6 @@ class UdsRegWorker : public WorkerInterface<string>, public WorkerThreads{
 
 
 		void processRegistration();
-		//createAnnounceMsg will be created by UdsRegClient
 		bool handleAnnounceACKMsg(string* msg);
 		const char* createRegisterMsg();
 		bool handleRegisterACKMsg(string* msg);

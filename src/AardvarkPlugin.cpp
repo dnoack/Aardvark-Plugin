@@ -28,41 +28,54 @@ AardvarkPlugin::AardvarkPlugin()
 
 	regClient = new UdsRegClient(PLUGIN_NAME, PLUGIN_NUMBER, REG_PATH, sizeof(REG_PATH), COM_PATH);
 	comServer = new UdsServer(COM_PATH, sizeof(COM_PATH));
-
 }
-
 
 
 AardvarkPlugin::~AardvarkPlugin()
 {
 	delete comServer;
 	delete regClient;
+	deleteFuncList();
 }
 
 
-
-
-void AardvarkPlugin::startCommunication()
+void AardvarkPlugin::start()
 {
-	pluginActive = regClient->connectToRSD();
-
-
-	while(pluginActive)
+	try
 	{
-		sleep(3);
-		comServer->checkForDeletableWorker();
+		regClient->connectToRSD();
+		regClient->registerToRSD();
+		pluginActive = true;
+		while(pluginActive)
+		{
+			sleep(3);
+			comServer->checkForDeletableWorker();
+		}
 	}
+	catch(PluginError &e)
+	{
+		printf("%s \n", e.get());
+	}
+}
 
+
+void AardvarkPlugin::deleteFuncList()
+{
+	list<string*>::iterator i = funcList->begin();
+	while(i != funcList->end())
+	{
+		delete *i;
+		i = funcList->erase(i);
+	}
 }
 
 
 #ifndef TESTMODE
-
 int main(int argc, const char** argv)
 {
 
 	AardvarkPlugin* plugin = new AardvarkPlugin();
-	plugin->startCommunication();
+	plugin->start();
 	delete plugin;
 	return 0;
 }

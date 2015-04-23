@@ -1,11 +1,3 @@
-/*
- * UdsRegWorker.cpp
- *
- *  Created on: 25.02.2015
- *      Author: Dave
- */
-
-
 #include <sys/select.h>
 #include <UdsRegWorker.hpp>
 #include "errno.h"
@@ -180,6 +172,33 @@ void UdsRegWorker::processRegistration()
 }
 
 
+void UdsRegWorker::sendAnnounceMsg(const char* pluginName, int pluginNumber, const char* pluginPath)
+{
+	Value method;
+	Value params;
+	Value id;
+	const char* announceMsg = NULL;
+	Document* dom = json->getRequestDOM();
+
+	try
+	{
+		method.SetString("announce");
+		params.SetObject();
+		params.AddMember("pluginName", StringRef(pluginName), dom->GetAllocator());
+		params.AddMember("pluginNumber", pluginNumber, dom->GetAllocator());
+		params.AddMember("udsFilePath", StringRef(pluginPath), dom->GetAllocator());
+		id.SetInt(1);
+
+		announceMsg = json->generateRequest(method, params, id);
+		transmit(announceMsg, strlen(announceMsg));
+	}
+	catch(PluginError &e)
+	{
+		printf("%s \n", e.get());
+	}
+}
+
+
 
 bool UdsRegWorker::handleAnnounceACKMsg(string* msg)
 {
@@ -217,7 +236,6 @@ const char* UdsRegWorker::createRegisterMsg()
 	Value params;
 	Value functionArray;
 
-	int count = 1;
 
 	list<string*>* funcList;
 	string* functionName;

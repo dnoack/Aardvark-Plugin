@@ -1,10 +1,3 @@
-/*
- * UdsRegClient.hpp
- *
- *  Created on: 25.02.2015
- *      Author: dnoack
- */
-
 #ifndef INCLUDE_UDSREGCLIENT_HPP_
 #define INCLUDE_UDSREGCLIENT_HPP_
 
@@ -16,12 +9,13 @@
 #include <cstdio>
 #include <list>
 #include <pthread.h>
-#include <UdsRegWorker.hpp>
 #include "signal.h"
 #include <string>
 
+#include <UdsRegWorker.hpp>
 #include "UdsRegClient.hpp"
 #include "JsonRPC.hpp"
+#include "Plugin_Error.h"
 
 using namespace std;
 
@@ -34,36 +28,23 @@ class UdsRegClient{
 		~UdsRegClient();
 
 
-		bool connectToRSD();
+		void connectToRSD();
+		void registerToRSD();
 		void unregisterFromRSD();
-
-
 
 	private:
 
-	UdsRegWorker* regWorker;
-	JsonRPC* json;
-	//client is ready if listener is recving
-	bool ready;
-	int optionflag;
-	int currentSocket;
+		static struct sockaddr_un address;
+		static socklen_t addrlen;
 
-	const char* pluginName;
-	int pluginNumber;
-	const char* pluginPath;
+		UdsRegWorker* regWorker;
+		bool ready;
+		int optionflag;
+		int currentSocket;
 
-
-
-	static struct sockaddr_un address;
-	static socklen_t addrlen;
-
-
-
-
-	int sendData(string* data);
+		const char* pluginName;
+		int pluginNumber;
+		const char* pluginPath;
 };
-
-
-
 
 #endif /* INCLUDE_UDSREGCLIENT_HPP_ */
