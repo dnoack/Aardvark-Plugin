@@ -1,7 +1,7 @@
 #ifndef INCLUDE_UDSSERVER_HPP_
 #define INCLUDE_UDSSERVER_HPP_
 
-//unix domain socket definition
+
 #include <sys/un.h>
 #include <sys/socket.h>
 #include <sys/types.h>

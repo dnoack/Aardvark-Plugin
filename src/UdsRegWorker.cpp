@@ -17,7 +17,6 @@
 UdsRegWorker::UdsRegWorker(int socket)
 {
 	memset(receiveBuffer, '\0', BUFFER_SIZE);
-
 	this->listen_thread_active = false;
 	this->worker_thread_active = false;
 	this->recvSize = 0;
@@ -28,6 +27,9 @@ UdsRegWorker::UdsRegWorker(int socket)
 	this->state = NOT_ACTIVE;
 
 	StartWorkerThread();
+
+	if(wait_for_listener_up() != 0)
+		throw PluginError("Creation of Listener/worker threads failed.");
 }
 
 
@@ -69,7 +71,7 @@ void UdsRegWorker::thread_listen()
 
 		if(retval < 0)
 		{
-			//error
+			//TODO: error
 		}
 		else if(FD_ISSET(currentSocket, &rfds))
 		{
@@ -77,7 +79,6 @@ void UdsRegWorker::thread_listen()
 
 			if(recvSize > 0)
 			{
-				printf("Received: %s", receiveBuffer);
 				pushReceiveQueue(new string(receiveBuffer, recvSize));
 				pthread_kill(worker_thread, SIGUSR1);
 			}
@@ -110,6 +111,7 @@ void UdsRegWorker::thread_work()
 		switch(currentSig)
 		{
 			case SIGUSR1:
+
 				processRegistration();
 				break;
 
@@ -127,11 +129,10 @@ void UdsRegWorker::processRegistration()
 	string* request = receiveQueue.back();
 	const char* response = NULL;
 
-	try{
-
+	try
+	{
 		json->parse(request);
 		currentMsgId = json->tryTogetId();
-		currentMsgId->SetInt(currentMsgId->GetInt()+1);
 
 		switch(state)
 		{
@@ -186,20 +187,25 @@ bool UdsRegWorker::handleAnnounceACKMsg(string* msg)
 	const char* resultString = NULL;
 	bool result = false;
 
-
-	resultValue = json->tryTogetResult();
-	if(resultValue->IsString())
+	try
 	{
-		resultString = resultValue->GetString();
-		if(strcmp(resultString, "announceACK") == 0)
-			result = true;
+		resultValue = json->tryTogetResult();
+		if(resultValue->IsString())
+		{
+			resultString = resultValue->GetString();
+			if(strcmp(resultString, "announceACK") == 0)
+				result = true;
+		}
+		else
+		{
+			error = json->generateResponseError(*currentMsgId, -31010, "Awaited \"announceACK\" but didn't receive it.");
+			throw PluginError(error);
+		}
 	}
-	else
+	catch(PluginError &e)
 	{
-		error = json->generateResponseError(*currentMsgId, -31010, "Awaited \"announceACK\" but didn't receive it.");
-		throw PluginError(error);
+		throw;
 	}
-
 	return result;
 }
 
@@ -209,35 +215,28 @@ const char* UdsRegWorker::createRegisterMsg()
 	Document dom;
 	Value method;
 	Value params;
-	Value f;
-	Value fNumber;
+	Value functionArray;
+
 	int count = 1;
-	char* buffer = NULL;
 
 	list<string*>* funcList;
-	string* tempString;
+	string* functionName;
 
 
 	//get methods from plugin
 	funcList = AardvarkPlugin::getFuncList();
 	method.SetString("register");
 	params.SetObject();
-	for(list<string*>::iterator i = funcList->begin(); i != funcList->end(); )
+	functionArray.SetArray();
+
+	for(list<string*>::iterator ifName = funcList->begin(); ifName != funcList->end(); )
 	{
-		memset(buffer, '\0', 0);
-		buffer = new char[10];
-		tempString = *i;
-
-		sprintf(buffer, "f%d", count);
-		fNumber.SetString(buffer, dom.GetAllocator());
-		f.SetString(tempString->c_str(), tempString->size());
-		params.AddMember(fNumber,f, dom.GetAllocator());
-
-		delete[] buffer;
-		i = funcList->erase(i);
-		count++;
+		functionName = *ifName;
+		functionArray.PushBack(StringRef(functionName->c_str()), dom.GetAllocator());
+		ifName = funcList->erase(ifName);
 	}
 	delete funcList;
+	params.AddMember("functions", functionArray, dom.GetAllocator());
 
 	return json->generateRequest(method, params, *currentMsgId);
 }
@@ -250,18 +249,24 @@ bool UdsRegWorker::handleRegisterACKMsg(string* msg)
 	Value* resultValue = NULL;
 	bool result = false;
 
-
-	resultValue = json->tryTogetResult();
-	if(resultValue->IsString())
+	try
 	{
-		resultString = resultValue->GetString();
-		if(strcmp(resultString, "registerACK") == 0)
-			result = true;
+		resultValue = json->tryTogetResult();
+		if(resultValue->IsString())
+		{
+			resultString = resultValue->GetString();
+			if(strcmp(resultString, "registerACK") == 0)
+				result = true;
+		}
+		else
+		{
+			error = json->generateResponseError(*currentMsgId, -31011, "Awaited \"registerACK\" but didn't receive it.");
+			throw PluginError(error);
+		}
 	}
-	else
+	catch(PluginError &e)
 	{
-		error = json->generateResponseError(*currentMsgId, -31011, "Awaited \"registerACK\" but didn't receive it.");
-		throw PluginError(error);
+		throw;
 	}
 	return result;
 }
