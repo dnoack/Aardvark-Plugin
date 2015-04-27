@@ -39,6 +39,7 @@ class UdsComWorker : public WorkerInterface<string>, public WorkerThreads{
 		int transmit(char* data, int size);
 		int transmit(const char* data, int size);
 		int transmit(string* msg);
+		int getSocket(){return this->currentSocket;}
 
 	private:
 
