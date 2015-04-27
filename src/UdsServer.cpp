@@ -1,6 +1,7 @@
 #include <UdsServer.hpp>
 #include "JsonRPC.hpp"
 #include "UdsComWorker.hpp"
+#include "Utils.h"
 
 
 int UdsServer::connection_socket;
@@ -46,7 +47,7 @@ void* UdsServer::uds_accept(void* param)
 	UdsComWorker* worker = NULL;
 	listen(connection_socket, MAX_CLIENTS);
 
-	printf("Accepter created\n");
+	dyn_print("Accepter created\n");
 	while(true)
 	{
 		ready = true;
@@ -54,6 +55,7 @@ void* UdsServer::uds_accept(void* param)
 		if(new_socket > 0)
 		{
 			worker = new UdsComWorker(new_socket);
+			dyn_print("Uds---> sNew UdsWorker with socket: %d \n", new_socket);
 			pushWorkerList(worker);
 		}
 	}
@@ -77,7 +79,7 @@ void UdsServer::pushWorkerList(UdsComWorker* newWorker)
 {
 	pthread_mutex_lock(&wLmutex);
 	workerList.push_back(newWorker);
-	printf("New UdsWorker : %d\n", workerList.size());
+	dyn_print("Uds---> Number of UdsWorker: %d \n", workerList.size());
 	pthread_mutex_unlock(&wLmutex);
 }
 
@@ -91,9 +93,9 @@ void UdsServer::checkForDeletableWorker()
 	{
 		if((*i)->isDeletable())
 		{
+			dyn_print("Uds---> Deleting UdsWorker with socket, %d. %d still left.\n", (*i)->getSocket(), workerList.size()-1);
 			delete *i;
 			i = workerList.erase(i);
-			printf("UdsWorker deleted from list, %d left.\n", workerList.size());
 		}
 		else
 			++i;

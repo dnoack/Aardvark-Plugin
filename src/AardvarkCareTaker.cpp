@@ -7,25 +7,18 @@
 
 #include "UdsComWorker.hpp"
 #include "AardvarkCareTaker.hpp"
+#include "Utils.h"
 
 
 list<RemoteAardvark*> AardvarkCareTaker::deviceList;
 pthread_mutex_t AardvarkCareTaker::dLmutex;
-int AardvarkCareTaker::instanceCount = 0;
-pthread_mutex_t AardvarkCareTaker::instanceCountMutex;
 
 
 
 AardvarkCareTaker::AardvarkCareTaker(UdsComWorker* udsWorker)
 {
-	pthread_mutex_init(&dLmutex, NULL);
 	msgList = NULL;
 	this->udsworker = udsWorker;
-	if(getInstanceCount() == 0)
-	{
-		pthread_mutex_init(&instanceCountMutex, NULL);
-	}
-	increaseInstanceCount();
 	json = new JsonRPC();
 	contextNumber = 0;
 	result = NULL;
@@ -33,21 +26,24 @@ AardvarkCareTaker::AardvarkCareTaker(UdsComWorker* udsWorker)
 }
 
 
-
 AardvarkCareTaker::~AardvarkCareTaker()
 {
-	decreaseInstanceCount();
 	delete json;
-	if(getInstanceCount() == 0)
-	{
-		deleteDeviceList();
-		pthread_mutex_destroy(&instanceCountMutex);
-
-	}
-	else
-		unlockAllUsedDevices();
-
+	unlockAllUsedDevices();
 	delete deviceLessFunctions;
+	pthread_mutex_destroy(&dLmutex);
+}
+
+
+void AardvarkCareTaker::init()
+{
+	pthread_mutex_init(&dLmutex, NULL);
+}
+
+
+void AardvarkCareTaker::deInit()
+{
+	deleteDeviceList();
 	pthread_mutex_destroy(&dLmutex);
 }
 
@@ -87,13 +83,14 @@ RemoteAardvark* AardvarkCareTaker::getDevice(int value, int valueType)
 	{
 		if(device->getContextNumber() == 0 || device->getContextNumber() == contextNumber)
 		{
-			printf("Found device and got access to it. context: %d \n", contextNumber);
+			dyn_print("Found device and got access to it. context: %d \n", contextNumber);
 			if(device->getContextNumber() == 0)
 				device->setContextNumber(contextNumber);
 		}
 		else
 		{
 			pthread_mutex_unlock(&dLmutex);
+			dyn_print("Requesting context %d.  using context: %d \n", contextNumber, device->getContextNumber());
 			error = json->generateResponseError(*(json->getId()), -99998, "Another user is using the requested hardware.");
 			throw PluginError(error);
 		}

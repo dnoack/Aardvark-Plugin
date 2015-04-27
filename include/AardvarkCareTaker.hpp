@@ -25,10 +25,13 @@ class AardvarkCareTaker{
 		AardvarkCareTaker(UdsComWorker* udsWorker);
 		~AardvarkCareTaker();
 
+		static void init();
+		static void deInit();
 		//valueType can be PORT or HANDLE
 		RemoteAardvark* getDevice(int value, int valueType);
 
 		string* processMsg(string* msg);
+
 
 
 	private:
@@ -40,43 +43,13 @@ class AardvarkCareTaker{
 		UdsComWorker* udsworker;
 		RemoteAardvark* deviceLessFunctions;
 
-		static int instanceCount;
+
 		static list<RemoteAardvark*> deviceList;
 		static pthread_mutex_t dLmutex;
-		static pthread_mutex_t instanceCountMutex;
+		static void deleteDeviceList();
 
 
-		void deleteDeviceList();
 		void unlockAllUsedDevices();
-
-
-		static void increaseInstanceCount()
-		{
-			pthread_mutex_lock(&instanceCountMutex);
-				++instanceCount;
-			pthread_mutex_unlock(&instanceCountMutex);
-		}
-
-
-		static void decreaseInstanceCount()
-		{
-			pthread_mutex_lock(&instanceCountMutex);
-				--instanceCount;
-			pthread_mutex_unlock(&instanceCountMutex);
-
-		}
-
-
-
-		static int getInstanceCount()
-		{
-			int result = 0;
-			pthread_mutex_lock(&instanceCountMutex);
-				result = instanceCount;
-			pthread_mutex_unlock(&instanceCountMutex);
-			return result;
-		}
-
 
 
 };

@@ -10,6 +10,7 @@
 #include "UdsServer.hpp"
 #include <sys/select.h>
 #include "errno.h"
+#include "Utils.h"
 
 
 
@@ -22,8 +23,8 @@ UdsComWorker::UdsComWorker(int socket)
 
 	StartWorkerThread();
 
-	if(wait_for_listener_up() != 0)
-			throw PluginError("Creation of Listener/worker threads failed.");
+	//if(wait_for_listener_up() != 0)
+		//	throw PluginError("Creation of Listener/worker threads failed.");
 }
 
 
@@ -39,7 +40,8 @@ UdsComWorker::~UdsComWorker()
 	WaitForListenerThreadToExit();
 	WaitForWorkerThreadToExit();
 
-	delete paard;
+	if(paard != NULL)
+		delete paard;
 	deleteReceiveQueue();
 }
 
@@ -65,7 +67,7 @@ void UdsComWorker::thread_work()
 				while(getReceiveQueueSize() > 0)
 				{
 					request = receiveQueue.back();
-					printf("Received: %s\n", request->c_str());
+					dyn_print("Received: %s\n", request->c_str());
 					paard->processMsg(request);
 					popReceiveQueue();
 				}
@@ -114,13 +116,17 @@ void UdsComWorker::thread_listen()
 			{
 				//add received data in buffer to queue
 				pushReceiveQueue(new string(receiveBuffer, recvSize));
+				dyn_print("Received: %s\n", receiveBuffer);
 				pthread_kill(worker_thread, SIGUSR1);
 			}
 			//RSD invoked shutdown
 			else
 			{
+				dyn_print("Error receiveSize < 0 , Errno: %s\n", strerror(errno));
 				deletable = true;
 				listen_thread_active = false;
+				delete paard;
+				paard = NULL;
 			}
 
 		}

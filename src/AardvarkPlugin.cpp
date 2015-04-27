@@ -9,6 +9,7 @@
 #include <AardvarkPlugin.hpp>
 #include "UdsServer.hpp"
 #include "RemoteAardvark.hpp"
+#include "AardvarkCareTaker.hpp"
 
 
 list<string*>* AardvarkPlugin::funcList;
@@ -26,6 +27,8 @@ AardvarkPlugin::AardvarkPlugin()
 	funcList = tempDriver->getAllFunctionNames();
 	delete tempDriver;
 
+	AardvarkCareTaker::init();
+
 	regClient = new UdsRegClient(PLUGIN_NAME, PLUGIN_NUMBER, REG_PATH, sizeof(REG_PATH), COM_PATH);
 	comServer = new UdsServer(COM_PATH, sizeof(COM_PATH));
 }
@@ -33,6 +36,7 @@ AardvarkPlugin::AardvarkPlugin()
 
 AardvarkPlugin::~AardvarkPlugin()
 {
+	AardvarkCareTaker::deInit();
 	delete comServer;
 	delete regClient;
 	deleteFuncList();

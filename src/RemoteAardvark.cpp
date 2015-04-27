@@ -524,6 +524,8 @@ bool RemoteAardvark::aa_close(rapidjson::Value &params , rapidjson::Value &resul
 				returnValue = c_aa_close(aardvark);
 				result.SetObject();
 				result.AddMember("returnCode", returnValue, dom.GetAllocator());
+				this->handle = 0;
+				this->contextNumber = 0;
 			}
 		}
 		else throw PluginError("Member \"handle\" has to be an integer type.",  __FILE__, __LINE__);
