@@ -29,6 +29,8 @@ class AardvarkPlugin {
 
 		UdsServer* comServer;
 		UdsRegClient* regClient;
+		sigset_t sigmask;
+		sigset_t origmask;
 
 		bool regClientReady;
 		bool comServerReady;
