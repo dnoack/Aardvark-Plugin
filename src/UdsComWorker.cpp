@@ -23,8 +23,8 @@ UdsComWorker::UdsComWorker(int socket)
 
 	StartWorkerThread();
 
-	//if(wait_for_listener_up() != 0)
-		//	throw PluginError("Creation of Listener/worker threads failed.");
+	if(wait_for_listener_up() != 0)
+		throw PluginError("Creation of Listener/worker threads failed.");
 }
 
 
@@ -52,8 +52,9 @@ void UdsComWorker::thread_work()
 
 	worker_thread_active = true;
 
-	StartListenerThread();
 	configSignals();
+	StartListenerThread();
+
 
 	while(worker_thread_active)
 	{
@@ -61,13 +62,14 @@ void UdsComWorker::thread_work()
 		//wait for signals from listenerthread
 
 		sigwait(&sigmask, &currentSig);
+		printf("Signal received\n");
 		switch(currentSig)
 		{
 			case SIGUSR1:
 				while(getReceiveQueueSize() > 0)
 				{
 					request = receiveQueue.back();
-					dyn_print("Received: %s\n", request->c_str());
+					dyn_print("Worker Received: %s\n", request->c_str());
 					paard->processMsg(request);
 					popReceiveQueue();
 				}
@@ -77,7 +79,6 @@ void UdsComWorker::thread_work()
 				printf("UdsComWorker: unkown signal \n");
 				break;
 		}
-
 	}
 	close(currentSocket);
 }
@@ -91,7 +92,6 @@ void UdsComWorker::thread_listen()
 	int retval;
 	fd_set rfds;
 	pthread_t worker_thread = getWorker();
-	configSignals();
 
 	FD_ZERO(&rfds);
 	FD_SET(currentSocket, &rfds);
@@ -116,7 +116,7 @@ void UdsComWorker::thread_listen()
 			{
 				//add received data in buffer to queue
 				pushReceiveQueue(new string(receiveBuffer, recvSize));
-				dyn_print("Received: %s\n", receiveBuffer);
+				dyn_print("Listener Received: %s\n", receiveBuffer);
 				pthread_kill(worker_thread, SIGUSR1);
 			}
 			//RSD invoked shutdown

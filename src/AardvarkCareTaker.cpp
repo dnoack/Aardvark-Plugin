@@ -31,7 +31,6 @@ AardvarkCareTaker::~AardvarkCareTaker()
 	delete json;
 	unlockAllUsedDevices();
 	delete deviceLessFunctions;
-	pthread_mutex_destroy(&dLmutex);
 }
 
 
@@ -54,9 +53,10 @@ RemoteAardvark* AardvarkCareTaker::getDevice(int value, int valueType)
 	RemoteAardvark* device = NULL;
 	bool found = false;
 	const char* error = NULL;
-	list<RemoteAardvark*>::iterator tempDevice = deviceList.begin();
 
 	pthread_mutex_lock(&dLmutex);
+	list<RemoteAardvark*>::iterator tempDevice = deviceList.begin();
+
 	while(tempDevice != deviceList.end() && !found)
 	{
 		if(valueType == HANDLE)
@@ -143,6 +143,8 @@ string* AardvarkCareTaker::processMsg(string* msg)
 			{
 				if(json->hasParams())
 				{
+					dyn_print("Request incomming, gettin device...\n");
+
 					if((*dom)["params"].HasMember("port"))
 					{
 						device = getDevice((*dom)["params"]["port"].GetInt(), PORT);
@@ -170,6 +172,7 @@ string* AardvarkCareTaker::processMsg(string* msg)
 			{
 				paramValue = json->tryTogetParam("contextNumber");
 				contextNumber = paramValue->GetInt();
+				dyn_print("Received Notification for context: %d", contextNumber);
 			}
 			else
 			{

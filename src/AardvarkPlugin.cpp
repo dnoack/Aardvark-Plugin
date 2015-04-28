@@ -22,6 +22,12 @@ AardvarkPlugin::AardvarkPlugin()
 	comServerReady = false;
 	pluginActive = true;
 
+	sigemptyset(&origmask);
+	sigemptyset(&sigmask);
+	sigaddset(&sigmask, SIGUSR1);
+	sigaddset(&sigmask, SIGUSR2);
+	pthread_sigmask(SIG_BLOCK, &sigmask, &origmask);
+
 	//get List of key, which are supported by the driver
 	RemoteAardvark* tempDriver = new RemoteAardvark(0);
 	funcList = tempDriver->getAllFunctionNames();
