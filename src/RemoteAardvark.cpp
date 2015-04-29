@@ -1319,3 +1319,16 @@ bool RemoteAardvark::aa_spi_master_ss_polarity(Value &params, Value &result)
 
 	return true;
 }
+
+
+void RemoteAardvark::close()
+{
+	Value params;
+	Value currentParam;
+	Value result;
+
+	params.SetObject();
+	currentParam.SetString(_aa_close.paramArray[0]._name, dom.GetAllocator());
+	params.AddMember(currentParam, this->handle, dom.GetAllocator());
+	aa_close(params, result);
+}

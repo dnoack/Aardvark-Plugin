@@ -968,7 +968,7 @@ static _param _num_devices = {"num_devices", kNumberType};
 static _param _port = {"port", kNumberType };
 static _param _aardvark = {"Aardvark", kNumberType};
 static _param _status = {"status", kNumberType};
-static _param _powerMmask = {"powerMask", kNumberType};
+static _param _powerMask = {"powerMask", kNumberType};
 static _param _slave_addr = {"slave_addr", kNumberType};
 static _param _flags = {"AardvarkI2cFlags", kNumberType};
 static _param _num_bytes = {"num_bytes", kNumberType};
@@ -990,7 +990,7 @@ static _param aa_find_devices_params[1] = {_num_devices};
 static _param aa_open_params[1] = {_port};
 static _param aa_port_params[1] = {_aardvark};
 static _param aa_status_string_params[1] = {_status};
-static _param aa_target_power_params[2] = {_aardvark, _powerMmask};
+static _param aa_target_power_params[2] = {_aardvark, _powerMask};
 static _param aa_i2c_write_params[4] = {_aardvark,_slave_addr, _flags, _data_out};
 static _param aa_i2c_read_params[4] = {_aardvark, _slave_addr, _flags, _num_bytes};
 static _param aa_configure_params[2] = {_aardvark, _config};
@@ -1170,7 +1170,7 @@ class RemoteAardvark : public DriverInterface<RemoteAardvark*, afptr>{
 
 		bool aa_spi_master_ss_polarity(Value &params, Value &result);
 
-
+		void close();
 		int getPort(){return this->port;}
 		int getHandle(){return this->handle;}
 		int getContextNumber(){return this->contextNumber;}

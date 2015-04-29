@@ -218,7 +218,10 @@ void AardvarkCareTaker::unlockAllUsedDevices()
 	while(device != deviceList.end())
 	{
 		if((*device)->getContextNumber() == contextNumber)
+		{
 			(*device)->setContextNumber(0);
+			(*device)->close();
+		}
 		++device;
 	}
 
