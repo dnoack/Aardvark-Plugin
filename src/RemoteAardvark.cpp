@@ -1046,12 +1046,6 @@ bool RemoteAardvark::aa_i2c_slave_read(Value &params, Value &result)
 	tempValue = findObjectMember(params, paramName, paramType);
 	aardvark = tempValue->GetInt();
 
-	//get slave addr
-	paramName = _aa_i2c_slave_read.paramArray[1]._name;
-	paramType = _aa_i2c_slave_read.paramArray[1]._type;
-	tempValue = findObjectMember(params, paramName, paramType);
-	address = tempValue->GetUint();
-
 
 	//get num bytes
 	paramName = _aa_i2c_slave_read.paramArray[2]._name;
@@ -1076,6 +1070,7 @@ bool RemoteAardvark::aa_i2c_slave_read(Value &params, Value &result)
 			resultArray.PushBack(data[i], dom.GetAllocator());
 		}
 		result.AddMember("data_in", resultArray, dom.GetAllocator());
+		result.AddMember("slave_addr", address, dom.GetAllocator());
 	}
 	delete[] data;
 
