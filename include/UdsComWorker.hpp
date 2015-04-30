@@ -27,41 +27,30 @@
 class UdsServer;
 
 
-#define BUFFER_SIZE 1024
-#define ADD_WORKER true
-#define DELETE_WORKER false
-
-
-
-class UdsComWorker : public WorkerInterface, public WorkerThreads{
+class UdsComWorker : public WorkerInterface<string>, public WorkerThreads{
 
 	public:
 		UdsComWorker(int socket);
 		~UdsComWorker();
 
+		int uds_send(string* data);
+		int uds_send(const char* data);
+
+		int transmit(char* data, int size);
+		int transmit(const char* data, int size);
+		int transmit(string* msg);
+		int getSocket(){return this->currentSocket;}
 
 	private:
 
+		virtual void thread_listen();
 
-		//variables for listener
-		bool listen_thread_active;
-		bool worker_thread_active;
-		char receiveBuffer[BUFFER_SIZE];
-		int recvSize;
-
-
+		virtual void thread_work();
 
 		AardvarkCareTaker* paard;
 		string* request;
 		string* response;
 		int currentSocket;
-
-
-
-		virtual void thread_listen(pthread_t partent_th, int socket, char* workerBuffer);
-
-		virtual void thread_work(int socket);
-
 
 };
 
