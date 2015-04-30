@@ -5,8 +5,8 @@
  *      Author: dnoack
  */
 
-#ifndef INCLUDE_UDSCOMWORKER_HPP_
-#define INCLUDE_UDSCOMWORKER_HPP_
+#ifndef AARDVARK_PLUGIN_INCLUDE_UDSCOMWORKER_HPP_
+#define AARDVARK_PLUGIN_INCLUDE_UDSCOMWORKER_HPP_
 
 //unix domain socket definition
 #include <sys/un.h>
