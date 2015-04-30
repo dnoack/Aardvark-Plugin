@@ -1,11 +1,3 @@
-/*
- * UdsRegWorker.cpp
- *
- *  Created on: 25.02.2015
- *      Author: Dave
- */
-
-
 #include <sys/select.h>
 #include <UdsRegWorker.hpp>
 #include "errno.h"
@@ -17,7 +9,6 @@
 UdsRegWorker::UdsRegWorker(int socket)
 {
 	memset(receiveBuffer, '\0', BUFFER_SIZE);
-
 	this->listen_thread_active = false;
 	this->worker_thread_active = false;
 	this->recvSize = 0;
@@ -27,7 +18,10 @@ UdsRegWorker::UdsRegWorker(int socket)
 	this->json = new JsonRPC();
 	this->state = NOT_ACTIVE;
 
-	StartWorkerThread(currentSocket);
+	StartWorkerThread();
+
+	if(wait_for_listener_up() != 0)
+		throw PluginError("Creation of Listener/worker threads failed.");
 }
 
 
@@ -48,37 +42,36 @@ UdsRegWorker::~UdsRegWorker()
 
 
 
-void UdsRegWorker::thread_listen(pthread_t parent_th, int socket, char* workerBuffer)
+void UdsRegWorker::thread_listen()
 {
 	listen_thread_active = true;
 	fd_set rfds;
 	int retval;
 
-	configSignals();
+	pthread_t worker_thread = getWorker();
 
 	FD_ZERO(&rfds);
-	FD_SET(socket, &rfds);
+	FD_SET(currentSocket, &rfds);
 
 	while(listen_thread_active)
 	{
 		memset(receiveBuffer, '\0', BUFFER_SIZE);
 		ready = true;
 
-		retval = pselect(socket+1, &rfds, NULL, NULL, NULL, &origmask);
+		retval = pselect(currentSocket+1, &rfds, NULL, NULL, NULL, &origmask);
 
 		if(retval < 0)
 		{
-			//error
+			//TODO: error
 		}
-		else if(FD_ISSET(socket, &rfds))
+		else if(FD_ISSET(currentSocket, &rfds))
 		{
-			recvSize = recv( socket , receiveBuffer, BUFFER_SIZE, 0);
+			recvSize = recv(currentSocket , receiveBuffer, BUFFER_SIZE, 0);
 
 			if(recvSize > 0)
 			{
-				printf("Received: %s", receiveBuffer);
 				pushReceiveQueue(new string(receiveBuffer, recvSize));
-				pthread_kill(parent_th, SIGUSR1);
+				pthread_kill(worker_thread, SIGUSR1);
 			}
 			//RSD invoked shutdown
 			else
@@ -92,15 +85,17 @@ void UdsRegWorker::thread_listen(pthread_t parent_th, int socket, char* workerBu
 }
 
 
-void UdsRegWorker::thread_work(int socket)
+void UdsRegWorker::thread_work()
 {
 	memset(receiveBuffer, '\0', BUFFER_SIZE);
 	worker_thread_active = true;
 
 	//start the listenerthread and remember the theadId of it
-	StartListenerThread(pthread_self(), currentSocket, receiveBuffer);
 
 	configSignals();
+	StartListenerThread();
+
+
 
 	while(worker_thread_active)
 	{
@@ -109,6 +104,7 @@ void UdsRegWorker::thread_work(int socket)
 		switch(currentSig)
 		{
 			case SIGUSR1:
+
 				processRegistration();
 				break;
 
@@ -121,32 +117,15 @@ void UdsRegWorker::thread_work(int socket)
 }
 
 
-int UdsRegWorker::uds_send(char* msg)
-{
-	int wrote = 0;
-
-	wrote = send(currentSocket, msg, strlen(msg), 0);
-	if(wrote == -1)
-	{
-		error = json->generateResponseError(*currentMsgId, -31013, "Could not send Data over UdsSocket.");
-		throw PluginError(error);
-	}
-	return wrote;
-}
-
-
 void UdsRegWorker::processRegistration()
 {
 	string* request = receiveQueue.back();
-	char* response = NULL;
+	const char* response = NULL;
 
-	printf("Received: %s \n", request->c_str());
-
-	try{
-
+	try
+	{
 		json->parse(request);
 		currentMsgId = json->tryTogetId();
-		currentMsgId->SetInt(currentMsgId->GetInt()+1);
 
 		switch(state)
 		{
@@ -157,7 +136,7 @@ void UdsRegWorker::processRegistration()
 				{
 					state = ANNOUNCED;
 					response = createRegisterMsg();
-					send(currentSocket, response, strlen(response), 0);
+					transmit(response, strlen(response));
 				}
 				break;
 			case ANNOUNCED:
@@ -167,7 +146,7 @@ void UdsRegWorker::processRegistration()
 					//TODO: check if Plugin com part is ready, if yes -> state = active
 					//create pluginActive msg
 					response = createPluginActiveMsg();
-					send(currentSocket, response, strlen(response), 0);
+					transmit(response, strlen(response));
 				}
 				//check for register ack then switch state to active
 				break;
@@ -187,10 +166,37 @@ void UdsRegWorker::processRegistration()
 	catch(PluginError &e)
 	{
 		state = BROKEN;
-		error = (char*)e.get();
-		send(currentSocket, error, strlen(error), 0);
+		error = e.get();
+		transmit(e.get(), strlen(e.get()));
 	}
 	popReceiveQueue();
+}
+
+
+void UdsRegWorker::sendAnnounceMsg(const char* pluginName, int pluginNumber, const char* pluginPath)
+{
+	Value method;
+	Value params;
+	Value id;
+	const char* announceMsg = NULL;
+	Document* dom = json->getRequestDOM();
+
+	try
+	{
+		method.SetString("announce");
+		params.SetObject();
+		params.AddMember("pluginName", StringRef(pluginName), dom->GetAllocator());
+		params.AddMember("pluginNumber", pluginNumber, dom->GetAllocator());
+		params.AddMember("udsFilePath", StringRef(pluginPath), dom->GetAllocator());
+		id.SetInt(1);
+
+		announceMsg = json->generateRequest(method, params, id);
+		transmit(announceMsg, strlen(announceMsg));
+	}
+	catch(PluginError &e)
+	{
+		printf("%s \n", e.get());
+	}
 }
 
 
@@ -201,57 +207,55 @@ bool UdsRegWorker::handleAnnounceACKMsg(string* msg)
 	const char* resultString = NULL;
 	bool result = false;
 
-
-	resultValue = json->tryTogetResult();
-	if(resultValue->IsString())
+	try
 	{
-		resultString = resultValue->GetString();
-		if(strcmp(resultString, "announceACK") == 0)
-			result = true;
+		resultValue = json->tryTogetResult();
+		if(resultValue->IsString())
+		{
+			resultString = resultValue->GetString();
+			if(strcmp(resultString, "announceACK") == 0)
+				result = true;
+		}
+		else
+		{
+			error = json->generateResponseError(*currentMsgId, -31010, "Awaited \"announceACK\" but didn't receive it.");
+			throw PluginError(error);
+		}
 	}
-	else
+	catch(PluginError &e)
 	{
-		error = json->generateResponseError(*currentMsgId, -31010, "Awaited \"announceACK\" but didn't receive it.");
-		throw PluginError(error);
+		throw;
 	}
-
 	return result;
 }
 
 
-char* UdsRegWorker::createRegisterMsg()
+const char* UdsRegWorker::createRegisterMsg()
 {
 	Document dom;
 	Value method;
 	Value params;
-	Value f;
-	Value fNumber;
-	int count = 1;
-	char* buffer = NULL;
+	Value functionArray;
+
 
 	list<string*>* funcList;
-	string* tempString;
+	string* functionName;
 
 
 	//get methods from plugin
 	funcList = AardvarkPlugin::getFuncList();
 	method.SetString("register");
 	params.SetObject();
-	for(list<string*>::const_iterator i = funcList->begin(); i != funcList->end(); ++i)
+	functionArray.SetArray();
+
+	for(list<string*>::iterator ifName = funcList->begin(); ifName != funcList->end(); )
 	{
-		memset(buffer, '\0', 0);
-		buffer = new char[10];
-		tempString = *i;
-
-		sprintf(buffer, "f%d", count);
-		fNumber.SetString(buffer, dom.GetAllocator());
-		f.SetString(tempString->c_str(), tempString->size());
-		params.AddMember(fNumber,f, dom.GetAllocator());
-
-		delete[] buffer;
-		count++;
+		functionName = *ifName;
+		functionArray.PushBack(StringRef(functionName->c_str()), dom.GetAllocator());
+		ifName = funcList->erase(ifName);
 	}
-
+	delete funcList;
+	params.AddMember("functions", functionArray, dom.GetAllocator());
 
 	return json->generateRequest(method, params, *currentMsgId);
 }
@@ -264,35 +268,57 @@ bool UdsRegWorker::handleRegisterACKMsg(string* msg)
 	Value* resultValue = NULL;
 	bool result = false;
 
-
-	resultValue = json->tryTogetResult();
-	if(resultValue->IsString())
+	try
 	{
-		resultString = resultValue->GetString();
-		if(strcmp(resultString, "registerACK") == 0)
-			result = true;
+		resultValue = json->tryTogetResult();
+		if(resultValue->IsString())
+		{
+			resultString = resultValue->GetString();
+			if(strcmp(resultString, "registerACK") == 0)
+				result = true;
+		}
+		else
+		{
+			error = json->generateResponseError(*currentMsgId, -31011, "Awaited \"registerACK\" but didn't receive it.");
+			throw PluginError(error);
+		}
 	}
-	else
+	catch(PluginError &e)
 	{
-		error = json->generateResponseError(*currentMsgId, -31011, "Awaited \"registerACK\" but didn't receive it.");
-		throw PluginError(error);
+		throw;
 	}
 	return result;
 }
 
 
 
-char* UdsRegWorker::createPluginActiveMsg()
+const char* UdsRegWorker::createPluginActiveMsg()
 {
 	Value method;
 	Value* params = NULL;
 	Value* id = NULL;
-	char* msg = NULL;
+	const char* msg = NULL;
 
 	method.SetString("pluginActive");
-
 	msg = json->generateRequest(method, *params, *id);
 
 	return msg;
 }
+
+int UdsRegWorker::transmit(char* data, int size)
+{
+	return send(currentSocket, data, size, 0);
+};
+
+
+int UdsRegWorker::transmit(const char* data, int size)
+{
+	return send(currentSocket, data, size, 0);
+};
+
+
+int UdsRegWorker::transmit(string* msg)
+{
+	return send(currentSocket, msg->c_str(), msg->size(), 0);
+};
 

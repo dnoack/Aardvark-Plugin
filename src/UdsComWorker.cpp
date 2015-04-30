@@ -10,21 +10,21 @@
 #include "UdsServer.hpp"
 #include <sys/select.h>
 #include "errno.h"
+#include "Utils.h"
 
 
 
 UdsComWorker::UdsComWorker(int socket)
 {
-	memset(receiveBuffer, '\0', BUFFER_SIZE);
-	this->listen_thread_active = false;
-	this->worker_thread_active = false;
-	this->recvSize = 0;
 	this->request = 0;
 	this->response = 0;
 	this->currentSocket = socket;
-	this->paard = new AardvarkCareTaker();
+	this->paard = new AardvarkCareTaker(this);
 
-	StartWorkerThread(currentSocket);
+	StartWorkerThread();
+
+	if(wait_for_listener_up() != 0)
+		throw PluginError("Creation of Listener/worker threads failed.");
 }
 
 
@@ -34,28 +34,27 @@ UdsComWorker::~UdsComWorker()
 	worker_thread_active = false;
 	listen_thread_active = false;
 
-
 	pthread_cancel(getListener());
 	pthread_cancel(getWorker());
 
 	WaitForListenerThreadToExit();
 	WaitForWorkerThreadToExit();
 
-	delete paard;
+	if(paard != NULL)
+		delete paard;
+	deleteReceiveQueue();
 }
 
 
 
-
-void UdsComWorker::thread_work(int socket)
+void UdsComWorker::thread_work()
 {
 
 	worker_thread_active = true;
 
-	//start the listenerthread and remember the theadId of it
-	StartListenerThread(pthread_self(), currentSocket, receiveBuffer);
-
 	configSignals();
+	StartListenerThread();
+
 
 	while(worker_thread_active)
 	{
@@ -63,93 +62,95 @@ void UdsComWorker::thread_work(int socket)
 		//wait for signals from listenerthread
 
 		sigwait(&sigmask, &currentSig);
+		printf("Signal received\n");
 		switch(currentSig)
 		{
 			case SIGUSR1:
 				while(getReceiveQueueSize() > 0)
 				{
-
 					request = receiveQueue.back();
-					printf("Received: %s\n", request->c_str());
-
-					try
-					{
-						response = paard->processMsg(request);
-					}
-					catch(PluginError &e)
-					{
-						response = new string(e.get());
-					}
-					catch(...)
-					{
-						printf("Unkown exception.\n");
-					}
-
-					send(currentSocket, response->c_str(), response->size(), 0);
-
+					dyn_print("Worker Received: %s\n", request->c_str());
+					paard->processMsg(request);
 					popReceiveQueue();
-					delete response;
 				}
 				break;
 
-			case SIGUSR2:
-				printf("UdsComWorker: SIGUSR2\n");
-				break;
 			default:
 				printf("UdsComWorker: unkown signal \n");
 				break;
 		}
-
 	}
 	close(currentSocket);
 }
 
 
 
-void UdsComWorker::thread_listen(pthread_t parent_th, int socket, char* workerBuffer)
+void UdsComWorker::thread_listen()
 {
 
 	listen_thread_active = true;
 	int retval;
 	fd_set rfds;
-
-	configSignals();
+	pthread_t worker_thread = getWorker();
 
 	FD_ZERO(&rfds);
-	FD_SET(socket, &rfds);
+	FD_SET(currentSocket, &rfds);
 
 	while(listen_thread_active)
 	{
 		memset(receiveBuffer, '\0', BUFFER_SIZE);
 		ready = true;
 
-		retval = pselect(socket+1, &rfds, NULL, NULL, NULL, &origmask);
+		retval = pselect(currentSocket+1, &rfds, NULL, NULL, NULL, &origmask);
 
 		if(retval < 0)
 		{
 			deletable = true;
 			listen_thread_active = false;
 		}
-		else if(FD_ISSET(socket, &rfds))
+		else if(FD_ISSET(currentSocket, &rfds))
 		{
-			recvSize = recv( socket , receiveBuffer, BUFFER_SIZE, MSG_DONTWAIT);
+			recvSize = recv(currentSocket , receiveBuffer, BUFFER_SIZE, MSG_DONTWAIT);
 
 			if(recvSize > 0)
 			{
 				//add received data in buffer to queue
 				pushReceiveQueue(new string(receiveBuffer, recvSize));
-				pthread_kill(parent_th, SIGUSR1);
+				dyn_print("Listener Received: %s\n", receiveBuffer);
+				pthread_kill(worker_thread, SIGUSR1);
 			}
 			//RSD invoked shutdown
 			else
 			{
+				dyn_print("Error receiveSize < 0 , Errno: %s\n", strerror(errno));
 				deletable = true;
 				listen_thread_active = false;
+				delete paard;
+				paard = NULL;
 			}
 
 		}
 	}
 }
+
+
+int UdsComWorker::transmit(char* data, int size)
+{
+	return send(currentSocket, data, size, 0);
+};
+
+
+int UdsComWorker::transmit(const char* data, int size)
+{
+	return send(currentSocket, data, size, 0);
+};
+
+
+int UdsComWorker::transmit(string* msg)
+{
+	return send(currentSocket, msg->c_str(), msg->size(), 0);
+};
+
 
 
 

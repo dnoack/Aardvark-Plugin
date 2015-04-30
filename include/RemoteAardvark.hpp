@@ -510,6 +510,7 @@ enum AardvarkI2cFlags {
 typedef enum AardvarkI2cFlags AardvarkI2cFlags;
 #endif
 
+
 /* Read a stream of bytes from the I2C slave device. */
 int aa_i2c_read (
     Aardvark         aardvark,
@@ -954,71 +955,236 @@ class RemoteAardvark;
 typedef bool (RemoteAardvark::*afptr)(Value&, Value&);
 
 
+struct _function
+{
+	const char* _name;
+	afptr _funcPtr;
+	int paramCount;
+	_param* paramArray;
+};
+
+//Definition of all known parameters
+static _param _num_devices = {"num_devices", kNumberType};
+static _param _port = {"port", kNumberType };
+static _param _aardvark = {"Aardvark", kNumberType};
+static _param _status = {"status", kNumberType};
+static _param _powerMask = {"powerMask", kNumberType};
+static _param _slave_addr = {"slave_addr", kNumberType};
+static _param _flags = {"AardvarkI2cFlags", kNumberType};
+static _param _num_bytes = {"num_bytes", kNumberType};
+static _param _data_out = {"data_out", kArrayType};
+static _param _config = {"AardvarkConfig", kNumberType};
+static _param _bitrate = {"bitrate", kNumberType};
+static _param _pullup_mask = {"pullup_mask", kNumberType};
+static _param _maxTxBytes = {"maxTxBytes", kNumberType};
+static _param _maxRxBytes = {"maxRxBytes", kNumberType};
+static _param _timeout = {"timeout", kNumberType};
+static _param _polarity = {"polarity", kNumberType};
+static _param _phase = {"phase", kNumberType};
+static _param _bitorder = {"bitorder", kNumberType};
+
+
+
+//Define which function uses which parameter
+static _param aa_find_devices_params[1] = {_num_devices};
+static _param aa_open_params[1] = {_port};
+static _param aa_port_params[1] = {_aardvark};
+static _param aa_status_string_params[1] = {_status};
+static _param aa_target_power_params[2] = {_aardvark, _powerMask};
+static _param aa_i2c_write_params[4] = {_aardvark,_slave_addr, _flags, _data_out};
+static _param aa_i2c_read_params[4] = {_aardvark, _slave_addr, _flags, _num_bytes};
+static _param aa_configure_params[2] = {_aardvark, _config};
+static _param aa_i2c_bitrate_params[2] = {_aardvark, _bitrate};
+static _param aa_i2c_pullup_params[2] = {_aardvark, _pullup_mask};
+static _param aa_i2c_slave_enable_params[4] = {_aardvark, _slave_addr, _maxTxBytes, _maxRxBytes};
+static _param aa_i2c_slave_read_params[2] = {_aardvark, _num_bytes};
+static _param aa_async_poll_params[2] = {_aardvark, _timeout};
+static _param aa_spi_bitrate_params[2] = {_aardvark, _bitrate};
+static _param aa_spi_configure_params[4] = {_aardvark, _polarity, _phase, _bitorder};
+static _param aa_spi_write_params[3] = {_aardvark, _data_out, _num_bytes};
+static _param aa_spi_master_ss_polarity_params[2] = {_aardvark, _polarity};
+
+
+//Connect functionname and _param struct
+static _function _aa_find_devices = {"Aardvark.aa_find_devices", NULL, 1, aa_find_devices_params};
+static _function _aa_find_devices_ext = {"Aardvark.aa_find_devices_ext", NULL, 1, aa_find_devices_params};
+static _function _aa_open = {"Aardvark.aa_open", NULL, 1, aa_open_params};
+static _function _aa_open_ext = {"Aardvark.aa_open_ext", NULL, 1 , aa_open_params};
+static _function _aa_close = {"Aardvark.aa_close", NULL, 1, aa_port_params};
+static _function _aa_port = {"Aardvark.aa_port", NULL, 1 , aa_port_params};
+static _function _aa_features = {"Aardvark.aa_features", NULL, 1, aa_port_params};
+static _function _aa_unique_id = {"Aardvark.aa_unique_id", NULL, 1, aa_port_params};
+static _function _aa_status_string = {"Aardvark.aa_status_string", NULL, 1, aa_status_string_params};
+static _function _aa_target_power = {"Aardvark.aa_target_power", NULL, 2, aa_target_power_params};
+static _function _aa_version = {"Aardvark.aa_version", NULL, 1, aa_port_params};
+static _function _aa_i2c_write = {"Aardvark.aa_i2c_write", NULL, 4, aa_i2c_write_params};
+static _function _aa_i2c_read = {"Aardvark.aa_i2c_read", NULL, 4, aa_i2c_read_params};
+static _function _aa_configure = {"Aardvark.aa_configure", NULL, 2, aa_configure_params};
+static _function _aa_i2c_bitrate = {"Aardvark.aa_i2c_bitrate", NULL, 2, aa_i2c_bitrate_params};
+static _function _aa_i2c_pullup = {"Aardvark.aa_i2c_pullup", NULL, 2, aa_i2c_pullup_params};
+static _function _aa_i2c_slave_enable = {"Aardvark.aa_i2c_slave_enable", NULL, 4, aa_i2c_slave_enable_params};
+static _function _aa_i2c_slave_read = {"Aardvark.aa_i2c_slave_read", NULL, 2, aa_i2c_slave_read_params};
+static _function _aa_async_poll = {"Aardvark.aa_async_poll", NULL, 2, aa_async_poll_params};
+static _function _aa_spi_bitrate = {"Aardvark.aa_spi_bitrate", NULL, 2, aa_spi_bitrate_params};
+static _function _aa_spi_configure = {"Aardvark.aa_spi_configure", NULL, 4, aa_spi_configure_params};
+static _function _aa_spi_write = {"Aardvark.aa_spi_write", NULL, 3, aa_spi_write_params};
+static _function _aa_spi_master_ss_polarity = {"Aardvark.aa_spi_master_ss_polarity", NULL, 2, aa_spi_master_ss_polarity_params};
+
 
 class RemoteAardvark : public DriverInterface<RemoteAardvark*, afptr>{
 
 	public:
 		RemoteAardvark(int port) : DriverInterface<RemoteAardvark*, afptr>(this)
 		{
-			afptr temp;
 			this->port = port;
 			uniqueId = 0;
 			handle = 0;
-			user = new string();
+			contextNumber = 0;
 
 			//get relativ address of function
-			temp = &RemoteAardvark::aa_open;
+			_aa_find_devices._funcPtr = &RemoteAardvark::aa_find_devices;
 			//save the relativ address to the map with the corresponding key for rpc
-			funcMap.insert(pair<const char* , afptr>("Aardvark.aa_open", temp));
+			funcMap.insert(pair<const char*, afptr>(_aa_find_devices._name, _aa_find_devices._funcPtr));
 
-			temp = &RemoteAardvark::aa_close;
-			funcMap.insert(pair<const char* , afptr>("Aardvark.aa_close", temp));
+			_aa_find_devices_ext._funcPtr = &RemoteAardvark::aa_find_devices_ext;
+			funcMap.insert(pair<const char*, afptr>(_aa_find_devices_ext._name, _aa_find_devices_ext._funcPtr));
 
-			temp = &RemoteAardvark::aa_unique_id;
-			funcMap.insert(pair<const char* , afptr>("Aardvark.aa_unique_id", temp));
+			_aa_status_string._funcPtr = &RemoteAardvark::aa_status_string;
+			funcMap.insert(pair<const char*, afptr>(_aa_status_string._name, _aa_status_string._funcPtr));
 
-			temp = &RemoteAardvark::aa_target_power;
-			funcMap.insert(pair<const char*, afptr>("Aardvark.aa_target_power", temp));
+			if(port > -1)
+			{
+				_aa_open._funcPtr = &RemoteAardvark::aa_open;
+				funcMap.insert(pair<const char*, afptr>(_aa_open._name, _aa_open._funcPtr));
 
-			temp = &RemoteAardvark::aa_i2c_write;
-			funcMap.insert(pair<const char*, afptr>("Aardvark.aa_i2c_write", temp));
+				_aa_open_ext._funcPtr = &RemoteAardvark::aa_open_ext;
+				funcMap.insert(pair<const char*, afptr>(_aa_open_ext._name, _aa_open_ext._funcPtr));
+
+				_aa_close._funcPtr = &RemoteAardvark::aa_close;
+				funcMap.insert(pair<const char* , afptr>(_aa_close._name, _aa_close._funcPtr));
+
+				_aa_port._funcPtr = &RemoteAardvark::aa_port;
+				funcMap.insert(pair<const char* , afptr>(_aa_port._name, _aa_port._funcPtr));
+
+				_aa_features._funcPtr = &RemoteAardvark::aa_features;
+				funcMap.insert(pair<const char* , afptr>(_aa_features._name, _aa_features._funcPtr));
+
+				_aa_unique_id._funcPtr = &RemoteAardvark::aa_unique_id;
+				funcMap.insert(pair<const char* , afptr>(_aa_unique_id._name, _aa_unique_id._funcPtr));
+
+				_aa_version._funcPtr = &RemoteAardvark::aa_version;
+				funcMap.insert(pair<const char* , afptr>(_aa_version._name, _aa_version._funcPtr));
+
+				_aa_target_power._funcPtr = &RemoteAardvark::aa_target_power;
+				funcMap.insert(pair<const char*, afptr>(_aa_target_power._name, _aa_target_power._funcPtr));
+
+				_aa_i2c_write._funcPtr = &RemoteAardvark::aa_i2c_write;
+				funcMap.insert(pair<const char*, afptr>(_aa_i2c_write._name , _aa_i2c_write._funcPtr ));
+
+				_aa_i2c_read._funcPtr = &RemoteAardvark::aa_i2c_read;
+				funcMap.insert(pair<const char*, afptr>(_aa_i2c_read._name, _aa_i2c_read._funcPtr));
+
+				_aa_configure._funcPtr = &RemoteAardvark::aa_configure;
+				funcMap.insert(pair<const char*, afptr>(_aa_configure._name, _aa_configure._funcPtr));
+
+				_aa_i2c_bitrate._funcPtr = &RemoteAardvark::aa_i2c_bitrate;
+				funcMap.insert(pair<const char*, afptr>(_aa_i2c_bitrate._name, _aa_i2c_bitrate._funcPtr));
+
+				_aa_i2c_pullup._funcPtr = &RemoteAardvark::aa_i2c_pullup;
+				funcMap.insert(pair<const char*, afptr>(_aa_i2c_pullup._name, _aa_i2c_pullup._funcPtr));
+
+				_aa_i2c_slave_enable._funcPtr = &RemoteAardvark::aa_i2c_slave_enable;
+				funcMap.insert(pair<const char*, afptr>(_aa_i2c_slave_enable._name, _aa_i2c_slave_enable._funcPtr));
+
+				_aa_i2c_slave_read._funcPtr = &RemoteAardvark::aa_i2c_slave_read;
+				funcMap.insert(pair<const char*, afptr>(_aa_i2c_slave_read._name, _aa_i2c_slave_read._funcPtr));
+
+				_aa_async_poll._funcPtr = &RemoteAardvark::aa_async_poll;
+				funcMap.insert(pair<const char*, afptr>(_aa_async_poll._name, _aa_async_poll._funcPtr));
+
+				_aa_spi_bitrate._funcPtr = &RemoteAardvark::aa_spi_bitrate;
+				funcMap.insert(pair<const char*, afptr>(_aa_spi_bitrate._name, _aa_spi_bitrate._funcPtr));
+
+				_aa_spi_configure._funcPtr = &RemoteAardvark::aa_spi_configure;
+				funcMap.insert(pair<const char*, afptr>(_aa_spi_configure._name, _aa_spi_configure._funcPtr));
+
+				_aa_spi_write._funcPtr = &RemoteAardvark::aa_spi_write;
+				funcMap.insert(pair<const char*, afptr>(_aa_spi_write._name, _aa_spi_write._funcPtr));
+
+				_aa_spi_master_ss_polarity._funcPtr = &RemoteAardvark::aa_spi_master_ss_polarity;
+				funcMap.insert(pair<const char*, afptr>(_aa_spi_master_ss_polarity._name, _aa_spi_master_ss_polarity._funcPtr));
+			}
 
 		};
 
 
 
-		~RemoteAardvark()
-		{
-			delete user;
-		};
+		~RemoteAardvark(){};
 
 
 
 		//impelemt the driver functions !
+		bool aa_find_devices(Value &params, Value &result);
+
+		bool aa_find_devices_ext(Value &params, Value &result);
 
 		bool aa_open(Value &params, Value &result);
 
+		bool aa_open_ext(Value &params, Value &result);
+
 		bool aa_close(Value &params, Value &result);
 
+		bool aa_port(Value &params, Value &result);
+
+		bool aa_features(Value &params, Value &result);
+
 		bool aa_unique_id(Value &params, Value &result);
+
+		bool aa_status_string(Value &params, Value &result);
+
+		bool aa_version(Value &params, Value &result);
 
 		bool aa_target_power(Value &params , Value &result);
 
 		bool aa_i2c_write(Value &params, Value &result);
 
+		bool aa_i2c_read(Value &params, Value &result);
 
+		bool aa_configure(Value &params, Value &result);
+
+		bool aa_i2c_bitrate(Value &params, Value &result);
+
+		bool aa_i2c_pullup(Value &params, Value &result);
+
+		bool aa_i2c_slave_enable(Value &params, Value &result);
+
+		bool aa_i2c_slave_read(Value &params, Value &result);
+
+		bool aa_async_poll(Value &params, Value &result);
+
+		bool aa_spi_bitrate(Value &params, Value &result);
+
+		bool aa_spi_configure(Value &params, Value &result);
+
+		bool aa_spi_write(Value &params, Value &result);
+
+		bool aa_spi_master_ss_polarity(Value &params, Value &result);
+
+		void close();
 		int getPort(){return this->port;}
 		int getHandle(){return this->handle;}
-		string* getUser(){return this->user;}
+		int getContextNumber(){return this->contextNumber;}
+		void setContextNumber(int contextNumber){this->contextNumber = contextNumber;}
 
 
 
 	private:
 
+		Document dom;
 		int port;
 		unsigned int uniqueId;
 		int handle;
-		string* user;
+		int contextNumber;
 
 };
 

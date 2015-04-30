@@ -89,7 +89,6 @@ TEST_GROUP(Plugin_UdsComWorker)
 		createServerAcceptSocket();
 		connectClientToServer(clientSocket, server_accept_socket);
 		test_udsWorker = new UdsComWorker(serverSocket);
-		while(!test_udsWorker->isReady()){};
 	}
 
 	void teardown()
@@ -135,6 +134,7 @@ TEST(Plugin_UdsComWorker, sendCorrectMsg_and_getAnswer)
 			{
 				printf("Empfangen: %s \n", buffer);
 			}
+
 		}
 	}
 	else if(retval == 0)

@@ -16,29 +16,40 @@
 #include "JsonRPC.hpp"
 #include "RemoteAardvark.hpp"
 
+class UdsComWorker;
 
 class AardvarkCareTaker{
 
 	public:
 		AardvarkCareTaker();
+		AardvarkCareTaker(UdsComWorker* udsWorker);
 		~AardvarkCareTaker();
 
+		static void init();
+		static void deInit();
 		//valueType can be PORT or HANDLE
 		RemoteAardvark* getDevice(int value, int valueType);
 
 		string* processMsg(string* msg);
 
+
+
 	private:
 
 		JsonRPC* json;
 		string* result;
-		string* user;
+		int contextNumber;
+		list<string*>* msgList;
+		UdsComWorker* udsworker;
+		RemoteAardvark* deviceLessFunctions;
 
-		list<RemoteAardvark*> deviceList;
+
+		static list<RemoteAardvark*> deviceList;
 		static pthread_mutex_t dLmutex;
+		static void deleteDeviceList();
 
-		void deleteDeviceList();
 
+		void unlockAllUsedDevices();
 
 
 };

@@ -46,13 +46,13 @@ TEST(RemoteAardvark, aa_openOK)
 
 TEST(RemoteAardvark, aa_unique_idOK)
 {
-	params->AddMember("handle", 1, dom->GetAllocator());
+	params->AddMember("Aardvark", 1, dom->GetAllocator());
 	CHECK_EQUAL(true, testInterface->aa_unique_id(*params, *result));
 }
 
 TEST(RemoteAardvark, aa_target_powerOK)
 {
-	params->AddMember("handle", 1, dom->GetAllocator());
+	params->AddMember("Aardvark", 1, dom->GetAllocator());
 	params->AddMember("powerMask", 0x03, dom->GetAllocator());
 	CHECK_EQUAL(true, testInterface->aa_target_power(*params, *result));
 }
@@ -60,28 +60,28 @@ TEST(RemoteAardvark, aa_target_powerOK)
 TEST(RemoteAardvark, aa_closeOK)
 {
 
-	params->AddMember("handle", 1, dom->GetAllocator());
+	params->AddMember("Aardvark", 1, dom->GetAllocator());
 	CHECK_EQUAL(false, testInterface->aa_close(*params, *result));
 }
 
 
 TEST(RemoteAardvark, aa_closeFAIL)
 {
-	params->AddMember("handle", "notAnInteger", dom->GetAllocator());
+	params->AddMember("Aardvark", "notAnInteger", dom->GetAllocator());
 	CHECK_THROWS(PluginError, testInterface->aa_close(*params, *result));
 }
 
 
 TEST(RemoteAardvark, aa_unique_idFAIL)
 {
-	params->AddMember("handle", "notAnInteger", dom->GetAllocator());
+	params->AddMember("Aardvark", "notAnInteger", dom->GetAllocator());
 	CHECK_THROWS(PluginError, testInterface->aa_unique_id(*params, *result));
 }
 
 
 TEST(RemoteAardvark, aa_target_power_handle_FAIL)
 {
-	params->AddMember("handle", "NotAnInteger", dom->GetAllocator());
+	params->AddMember("Aardvark", "NotAnInteger", dom->GetAllocator());
 	params->AddMember("powerMask", 0x03, dom->GetAllocator());
 	CHECK_THROWS(PluginError, testInterface->aa_target_power(*params, *result));
 }
@@ -89,7 +89,7 @@ TEST(RemoteAardvark, aa_target_power_handle_FAIL)
 
 TEST(RemoteAardvark, aa_target_power_powerMask_FAIL)
 {
-	params->AddMember("handle", 1, dom->GetAllocator());
+	params->AddMember("Aardvark", 1, dom->GetAllocator());
 	params->AddMember("powerMask", "NotAnUInteger", dom->GetAllocator());
 	CHECK_THROWS(PluginError, testInterface->aa_target_power(*params, *result));
 }
