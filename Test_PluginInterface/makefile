@@ -39,19 +39,19 @@ endif
 # Add inputs and outputs from these tool invocations to the build variables 
 
 # All Target
-all: Plugin-Server
+all: Aardvark-Plugin
 
 # Tool invocations
-Plugin-Server: $(OBJS) $(USER_OBJS)
+Aardvark-Plugin: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C++ Linker'
-	g++ ${LDFLAGS} -o "Plugin-Server" $(OBJS) $(USER_OBJS) $(LIBS)
+	g++ ${LDFLAGS} -o "Aardvark-Plugin" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
 # Other Targets
 clean:
-	-$(RM) $(CC_DEPS)$(C++_DEPS)$(EXECUTABLES)$(C_UPPER_DEPS)$(CXX_DEPS)$(OBJS)$(CPP_DEPS)$(C_DEPS) Plugin-Server
+	-$(RM) $(CC_DEPS)$(C++_DEPS)$(EXECUTABLES)$(C_UPPER_DEPS)$(CXX_DEPS)$(OBJS)$(CPP_DEPS)$(C_DEPS) Aardvark-Plugin
 	-@echo ' '
 
 .PHONY: all clean dependents
