@@ -62,7 +62,7 @@ void UdsComWorker::thread_work()
 		//wait for signals from listenerthread
 
 		sigwait(&sigmask, &currentSig);
-		printf("Signal received\n");
+
 		switch(currentSig)
 		{
 			case SIGUSR1:
@@ -99,7 +99,6 @@ void UdsComWorker::thread_listen()
 	while(listen_thread_active)
 	{
 		memset(receiveBuffer, '\0', BUFFER_SIZE);
-		ready = true;
 
 		retval = pselect(currentSocket+1, &rfds, NULL, NULL, NULL, &origmask);
 
@@ -133,11 +132,6 @@ void UdsComWorker::thread_listen()
 	}
 }
 
-
-int UdsComWorker::transmit(char* data, int size)
-{
-	return send(currentSocket, data, size, 0);
-};
 
 
 int UdsComWorker::transmit(const char* data, int size)

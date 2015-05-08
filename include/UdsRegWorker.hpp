@@ -1,6 +1,6 @@
 
-#ifndef UDSREGWORKER_HPP_
-#define UDSREGWORKER_HPP_
+#ifndef INCLUDE_UDSREGWORKER_HPP_
+#define INCLUDE_UDSREGWORKER_HPP_
 
 #include <sys/un.h>
 #include <sys/socket.h>
@@ -23,10 +23,9 @@ class UdsRegWorker : public WorkerInterface<string>, public WorkerThreads{
 		UdsRegWorker(int socket);
 		~UdsRegWorker();
 
-		bool isReady(){return ready;}
+
 		void sendAnnounceMsg(const char* pluginName, int pluginNumber, const char* pluginPath);
 
-		int transmit(char* data, int size);
 		int transmit(const char* data, int size);
 		int transmit(string* msg);
 
@@ -38,7 +37,7 @@ class UdsRegWorker : public WorkerInterface<string>, public WorkerThreads{
 		JsonRPC* json;
 		const char* error;
 		Value* currentMsgId;
-		int currentSocket;
+
 		enum REG_STATE{NOT_ACTIVE, ANNOUNCED, REGISTERED, ACTIVE, BROKEN};
 		unsigned int state;
 
@@ -51,4 +50,4 @@ class UdsRegWorker : public WorkerInterface<string>, public WorkerThreads{
 
 };
 
-#endif /* UDSREGWORKER_HPP_ */
+#endif /* INCLUDE_UDSREGWORKER_HPP_ */
