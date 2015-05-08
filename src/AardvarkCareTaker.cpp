@@ -92,7 +92,7 @@ RemoteAardvark* AardvarkCareTaker::getDevice(int value, int valueType)
 			pthread_mutex_unlock(&dLmutex);
 			dyn_print("Requesting context %d.  using context: %d \n", contextNumber, device->getContextNumber());
 			error = json->generateResponseError(*(json->getId()), -99998, "Another user is using the requested hardware.");
-			throw PluginError(error);
+			throw Error(error);
 		}
 	}
 	else //didnt found the device
@@ -107,7 +107,7 @@ RemoteAardvark* AardvarkCareTaker::getDevice(int value, int valueType)
 		{
 			pthread_mutex_unlock(&dLmutex);
 			error = json->generateResponseError(*(json->getId()), -99999, "No device with this handle available.");
-			throw PluginError(error);
+			throw Error(error);
 		}
 	}
 
@@ -176,13 +176,13 @@ string* AardvarkCareTaker::processMsg(string* msg)
 			}
 			else
 			{
-				throw PluginError("Aardvark-Plugin received: NO Request.\n");
+				throw Error("Aardvark-Plugin received: NO Request.\n");
 			}
 			delete *currentMsg;
 			currentMsg = msgList->erase(currentMsg);
 
 		}
-		catch(PluginError &e)
+		catch(Error &e)
 		{
 			udsworker->transmit(e.get(), strlen(e.get()));
 			delete *currentMsg;

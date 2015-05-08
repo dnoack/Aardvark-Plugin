@@ -24,7 +24,7 @@ UdsComWorker::UdsComWorker(int socket)
 	StartWorkerThread();
 
 	if(wait_for_listener_up() != 0)
-		throw PluginError("Creation of Listener/worker threads failed.");
+		throw Error("Creation of Listener/worker threads failed.");
 }
 
 

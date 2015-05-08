@@ -9,7 +9,7 @@
 #define private public
 
 #include "JsonRPC.hpp"
-#include "Plugin_Error.h"
+#include "Error.hpp"
 #include "TestHarness.h"
 
 static Document* dom;
@@ -56,7 +56,7 @@ TEST_GROUP(Plugin_JsonRPC)
 
 TEST(Plugin_JsonRPC, checkParse_FAIL)
 {
-	CHECK_THROWS(PluginError, json->parse(&PARSE_ERROR_STRING));
+	CHECK_THROWS(Error, json->parse(&PARSE_ERROR_STRING));
 }
 
 
@@ -70,7 +70,7 @@ TEST(Plugin_JsonRPC, checkJsonRpc_RequestFormat_OK)
 TEST(Plugin_JsonRPC, checkJsonRpc_RequestFormat_FAIL)
 {
 	json->parse(&REQ_FROMAT_ERROR_STRING);
-	CHECK_THROWS(PluginError, json->checkJsonRpc_RequestFormat());
+	CHECK_THROWS(Error, json->checkJsonRpc_RequestFormat());
 }
 
 
@@ -86,9 +86,9 @@ TEST(Plugin_JsonRPC, hasJsonRpcVersion_FAIL)
 	string noVersion = "{\"params\": { \"handle\": 1}, \"method\": \"aa_close\", \"id\": 3}";
 	string noString = "{\"jsonrpc\": 2.0, \"params\": { \"handle\": 1}, \"method\": \"aa_close\", \"id\": 3}";
 	json->parse(&noVersion);
-	CHECK_THROWS(PluginError, json->hasJsonRPCVersion());
+	CHECK_THROWS(Error, json->hasJsonRPCVersion());
 	json->parse(&noString);
-	CHECK_THROWS(PluginError, json->hasJsonRPCVersion());
+	CHECK_THROWS(Error, json->hasJsonRPCVersion());
 }
 
 
@@ -96,7 +96,7 @@ TEST(Plugin_JsonRPC, checkJsonRpcVersion_FAIL)
 {
 	string wrongVersion = "{\"jsonrpc\": \"3.0\", \"params\": { \"handle\": 1}, \"method\": \"aa_close\", \"id\": 3}";
 	json->parse(&wrongVersion);
-	CHECK_THROWS(PluginError, json->checkJsonRpcVersion());
+	CHECK_THROWS(Error, json->checkJsonRpcVersion());
 }
 
 
@@ -121,7 +121,7 @@ TEST(Plugin_JsonRPC, hasMemberId_FAIL)
 {
 	string idNOTAvailable = "{\"jsonrpc\": \"2.0\", \"params\": { \"handle\": 1}, \"method\": \"aa_close\"}";
 	json->parse(&idNOTAvailable);
-	CHECK_THROWS(PluginError, json->hasId());
+	CHECK_THROWS(Error, json->hasId());
 }
 
 
@@ -138,9 +138,9 @@ TEST(Plugin_JsonRPC, hasMemberMethod_FAIL)
 	string methodNOTAvailable = "{\"jsonrpc\": \"2.0\", \"params\": { \"handle\": 1}, \"id\": 1}";
 	string methodNOString = "{\"jsonrpc\": \"2.0\", \"params\": { \"handle\": 1}, \"method\": 4563456 , \"id\": 1}";
 	json->parse(&methodNOTAvailable);
-	CHECK_THROWS(PluginError, json->hasMethod());
+	CHECK_THROWS(Error, json->hasMethod());
 	json->parse(&methodNOString);
-	CHECK_THROWS(PluginError, json->hasMethod());
+	CHECK_THROWS(Error, json->hasMethod());
 
 }
 
@@ -159,11 +159,11 @@ TEST(Plugin_JsonRPC, hasParams_FAIL)
 	string paramsIsString = "{\"jsonrpc\": \"2.0\", \"params\":  \"handle : 1\", \"method\": \"aa_close\", \"id\": 1}";
 	string paramsIsInt = "{\"jsonrpc\": \"2.0\", \"params\": 3425345, \"method\": \"aa_close\", \"id\": 1}";
 	json->parse(&paramsNOTAvailable);
-	CHECK_THROWS(PluginError, json->hasParams());
+	CHECK_THROWS(Error, json->hasParams());
 	json->parse(&paramsIsString);
-	CHECK_THROWS(PluginError, json->hasParams());
+	CHECK_THROWS(Error, json->hasParams());
 	json->parse(&paramsIsInt);
-	CHECK_THROWS(PluginError, json->hasParams());
+	CHECK_THROWS(Error, json->hasParams());
 
 }
 
@@ -181,7 +181,7 @@ TEST(Plugin_JsonRPC, hasResult_FAIL)
 {
 	string resultNOTAvailable = "{\"jsonrpc\": \"2.0\", \"id\": 1}";
 	json->parse(&resultNOTAvailable);
-	CHECK_THROWS(PluginError, json->hasResult());
+	CHECK_THROWS(Error, json->hasResult());
 
 }
 
@@ -199,7 +199,7 @@ TEST(Plugin_JsonRPC, hasError_FAIL)
 {
 	string errorNOTAvailable = "{\"jsonrpc\": \"2.0\", \"id\": 1}";
 	json->parse(&errorNOTAvailable);
-	CHECK_THROWS(PluginError, json->hasError());
+	CHECK_THROWS(Error, json->hasError());
 
 }
 
@@ -220,7 +220,7 @@ TEST(Plugin_JsonRPC, tryTogetParam_FAIL)
 
 	string paramNOTAvailable = "{\"jsonrpc\": \"2.0\", \"params\": { \"handle\": 1}, \"method\": \"aa_close\", \"id\": 3}";
 	json->parse(&paramNOTAvailable);
-	CHECK_THROWS(PluginError, json->tryTogetParam("totalRandomNumber"));
+	CHECK_THROWS(Error, json->tryTogetParam("totalRandomNumber"));
 
 }
 
@@ -237,7 +237,7 @@ TEST(Plugin_JsonRPC, tryTogetResult_FAIL)
 {
 	string resultAvailable = "{\"jsonrpc\": \"2.0\", \"id\": 1}";
 	json->parse(&resultAvailable);
-	CHECK_THROWS(PluginError, json->tryTogetResult());
+	CHECK_THROWS(Error, json->tryTogetResult());
 
 }
 
@@ -254,7 +254,7 @@ TEST(Plugin_JsonRPC, tryTogetMethod_FAIL)
 {
 	string methodNOTAvailable = "{\"jsonrpc\": \"2.0\", \"params\": { \"handle\": 1}, \"id\": 1}";
 	json->parse(&methodNOTAvailable);
-	CHECK_THROWS(PluginError, json->tryTogetMethod());
+	CHECK_THROWS(Error, json->tryTogetMethod());
 
 }
 

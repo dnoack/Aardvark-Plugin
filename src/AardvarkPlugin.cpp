@@ -62,7 +62,7 @@ void AardvarkPlugin::start()
 			comServer->checkForDeletableWorker();
 		}
 	}
-	catch(PluginError &e)
+	catch(Error &e)
 	{
 		printf("%s \n", e.get());
 	}

@@ -327,7 +327,7 @@ bool RemoteAardvark::aa_find_devices(Value &params, Value &result)
 
 		if (!(c_aa_find_devices = reinterpret_cast<int(*)(int,u16*)>(_loadFunction("c_aa_find_devices", &res))))
 		{
-			throw PluginError("Could not find symbol in shared library.",  __FILE__, __LINE__);
+			throw Error("Could not find symbol in shared library.",  __FILE__, __LINE__);
 		}
 		else
 		{
@@ -376,7 +376,7 @@ bool RemoteAardvark::aa_find_devices_ext(Value &params, Value &result)
 
 		if (!(c_aa_find_devices_ext = reinterpret_cast<int(*)(int,u16*, int, u32*)>(_loadFunction("c_aa_find_devices_ext", &res))))
 		{
-			throw PluginError("Could not find symbol in shared library.",  __FILE__, __LINE__);
+			throw Error("Could not find symbol in shared library.",  __FILE__, __LINE__);
 		}
 		else
 		{
@@ -428,7 +428,7 @@ bool RemoteAardvark::aa_open(rapidjson::Value &params , rapidjson::Value &result
 			port_number = params["port"].GetInt();
 			if (!(c_aa_open = reinterpret_cast<Aardvark(*)(int)>(_loadFunction("c_aa_open", &res))))
 			{
-				throw PluginError("Could not find symbol in shared library.",  __FILE__, __LINE__);
+				throw Error("Could not find symbol in shared library.",  __FILE__, __LINE__);
 			}
 			else
 			{
@@ -438,7 +438,7 @@ bool RemoteAardvark::aa_open(rapidjson::Value &params , rapidjson::Value &result
 				handle = newHandle;
 			}
 		}
-		else throw PluginError("Member \"port\" has to be an integer type.",  __FILE__, __LINE__);
+		else throw Error("Member \"port\" has to be an integer type.",  __FILE__, __LINE__);
 	}
 	return true;
 }
@@ -464,7 +464,7 @@ bool RemoteAardvark::aa_open_ext(rapidjson::Value &params , rapidjson::Value &re
 				port_number = params["port"].GetInt();
 				if (!(c_aa_open_ext = reinterpret_cast<Aardvark(*)(int, AardvarkExt*)>(_loadFunction("c_aa_open_ext", &res))))
 				{
-					throw PluginError("Could not find symbol in shared library.",  __FILE__, __LINE__);
+					throw Error("Could not find symbol in shared library.",  __FILE__, __LINE__);
 				}
 				else
 				{
@@ -494,7 +494,7 @@ bool RemoteAardvark::aa_open_ext(rapidjson::Value &params , rapidjson::Value &re
 					result.AddMember("AardvarkExt", aardvarkExtValue, dom.GetAllocator());
 				}
 			}
-			else throw PluginError("Member \"port\" has to be an integer type.",  __FILE__, __LINE__);
+			else throw Error("Member \"port\" has to be an integer type.",  __FILE__, __LINE__);
 		}
 	return true;
 }
@@ -517,7 +517,7 @@ bool RemoteAardvark::aa_close(rapidjson::Value &params , rapidjson::Value &resul
 			aardvark = params["Aardvark"].GetInt();
 			if (!(c_aa_close = reinterpret_cast<int(*)(Aardvark)>(_loadFunction("c_aa_close", &res))))
 			{
-				throw PluginError("Could not find symbol in shared library.",  __FILE__, __LINE__);
+				throw Error("Could not find symbol in shared library.",  __FILE__, __LINE__);
 			}
 			else
 			{
@@ -528,7 +528,7 @@ bool RemoteAardvark::aa_close(rapidjson::Value &params , rapidjson::Value &resul
 				this->contextNumber = 0;
 			}
 		}
-		else throw PluginError("Member \"handle\" has to be an integer type.",  __FILE__, __LINE__);
+		else throw Error("Member \"handle\" has to be an integer type.",  __FILE__, __LINE__);
 	}
 	return false;
 }
@@ -551,7 +551,7 @@ bool RemoteAardvark::aa_port(Value &params, Value &result)
 		tempHandle = params[paramsName].GetInt();
 		if (!(c_aa_port = reinterpret_cast<int(*)(Aardvark)>(_loadFunction("c_aa_port", &res))))
 		{
-			throw PluginError("Could not find symbol in shared library.",  __FILE__, __LINE__);
+			throw Error("Could not find symbol in shared library.",  __FILE__, __LINE__);
 		}
 		else
 		{
@@ -581,7 +581,7 @@ bool RemoteAardvark::aa_features(Value &params, Value &result)
 		tempHandle = params[paramsName].GetInt();
 		if (!(c_aa_features = reinterpret_cast<int(*)(Aardvark)>(_loadFunction("c_aa_features", &res))))
 		{
-			throw PluginError("Could not find symbol in shared library.",  __FILE__, __LINE__);
+			throw Error("Could not find symbol in shared library.",  __FILE__, __LINE__);
 		}
 		else
 		{
@@ -613,7 +613,7 @@ bool RemoteAardvark::aa_unique_id(Value &params , Value &result)
 		aardvark = params[paramsName].GetInt();
 		if (!(c_aa_unique_id = reinterpret_cast<u32(*)(Aardvark)>(_loadFunction("c_aa_unique_id", &res))))
 		{
-			throw PluginError("Could not find symbol in shared library.",  __FILE__, __LINE__);
+			throw Error("Could not find symbol in shared library.",  __FILE__, __LINE__);
 		}
 		else
 		{
@@ -641,7 +641,7 @@ bool RemoteAardvark::aa_status_string(Value &params, Value &result)
 		status = params[paramsName].GetInt();
 		if (!(c_aa_status_string = reinterpret_cast<const char*(*)(Aardvark)>(_loadFunction("c_aa_status_string", &res))))
 		{
-			throw PluginError("Could not find symbol in shared library.",  __FILE__, __LINE__);
+			throw Error("Could not find symbol in shared library.",  __FILE__, __LINE__);
 		}
 		else
 		{
@@ -673,7 +673,7 @@ bool RemoteAardvark::aa_version(Value &params, Value &result)
 		tempHandle = params[paramsName].GetInt();
 		if (!(c_aa_version = reinterpret_cast<int(*)(Aardvark, AardvarkVersion*)>(_loadFunction("c_aa_version", &res))))
 		{
-			throw PluginError("Could not find symbol in shared library.",  __FILE__, __LINE__);
+			throw Error("Could not find symbol in shared library.",  __FILE__, __LINE__);
 		}
 		else
 		{
@@ -723,7 +723,7 @@ bool RemoteAardvark::aa_target_power(Value &params , Value &result)
 
 	if (!(c_aa_target_power = reinterpret_cast<int(*)(Aardvark, u08)>(_loadFunction("c_aa_target_power", &res))))
 	{
-		throw PluginError("Could not find symbol in shared library.",  __FILE__, __LINE__);
+		throw Error("Could not find symbol in shared library.",  __FILE__, __LINE__);
 	}
 	else
 	{
@@ -783,7 +783,7 @@ bool RemoteAardvark::aa_i2c_write(Value &params, Value &result)
 
 	if (!(c_aa_i2c_write = reinterpret_cast<int(*)(Aardvark, u16, AardvarkI2cFlags, u16, const u08 *)>(_loadFunction("c_aa_i2c_write", &res))))
 	{
-		throw PluginError("Could not find symbol in shared library.",  __FILE__, __LINE__);
+		throw Error("Could not find symbol in shared library.",  __FILE__, __LINE__);
 	}
 	else
 	{
@@ -840,7 +840,7 @@ bool RemoteAardvark::aa_i2c_read(Value &params, Value &result)
 
 	if (!(c_aa_i2c_read = reinterpret_cast<int(*)(Aardvark, u16, AardvarkI2cFlags, u16, const u08 *)>(_loadFunction("c_aa_i2c_read", &res))))
 	{
-		throw PluginError("Could not find symbol in shared library.",  __FILE__, __LINE__);
+		throw Error("Could not find symbol in shared library.",  __FILE__, __LINE__);
 	}
 	else
 	{
@@ -886,7 +886,7 @@ bool RemoteAardvark::aa_configure(Value &params, Value &result)
 
 	if (!(c_aa_configure = reinterpret_cast<int(*)(Aardvark, AardvarkConfig)>(_loadFunction("c_aa_configure", &res))))
 	{
-		throw PluginError("Could not find symbol in shared library.",  __FILE__, __LINE__);
+		throw Error("Could not find symbol in shared library.",  __FILE__, __LINE__);
 	}
 	else
 	{
@@ -923,7 +923,7 @@ bool RemoteAardvark::aa_i2c_bitrate(Value &params, Value &result)
 
 	if (!(c_aa_i2c_bitrate = reinterpret_cast<int(*)(Aardvark, int)>(_loadFunction("c_aa_i2c_bitrate", &res))))
 	{
-		throw PluginError("Could not find symbol in shared library.",  __FILE__, __LINE__);
+		throw Error("Could not find symbol in shared library.",  __FILE__, __LINE__);
 	}
 	else
 	{
@@ -961,7 +961,7 @@ bool RemoteAardvark::aa_i2c_pullup(Value &params, Value &result)
 
 	if (!(c_aa_i2c_pullup = reinterpret_cast<int(*)(Aardvark, u08)>(_loadFunction("c_aa_i2c_pullup", &res))))
 	{
-		throw PluginError("Could not find symbol in shared library.",  __FILE__, __LINE__);
+		throw Error("Could not find symbol in shared library.",  __FILE__, __LINE__);
 	}
 	else
 	{
@@ -1013,7 +1013,7 @@ bool RemoteAardvark::aa_i2c_slave_enable(Value &params, Value &result)
 
 	if (!(c_aa_i2c_slave_enable = reinterpret_cast<int(*)(Aardvark, u08, u16, u16)>(_loadFunction("c_aa_i2c_slave_enable", &res))))
 	{
-		throw PluginError("Could not find symbol in shared library.",  __FILE__, __LINE__);
+		throw Error("Could not find symbol in shared library.",  __FILE__, __LINE__);
 	}
 	else
 	{
@@ -1056,7 +1056,7 @@ bool RemoteAardvark::aa_i2c_slave_read(Value &params, Value &result)
 
 	if (!(c_aa_i2c_slave_read = reinterpret_cast<int(*)(Aardvark, u08*, u16, u08*)>(_loadFunction("c_aa_i2c_slave_read", &res))))
 	{
-		throw PluginError("Could not find symbol in shared library.",  __FILE__, __LINE__);
+		throw Error("Could not find symbol in shared library.",  __FILE__, __LINE__);
 	}
 	else
 	{
@@ -1104,7 +1104,7 @@ bool RemoteAardvark::aa_async_poll(Value &params, Value &result)
 
 	if (!(c_aa_async_poll = reinterpret_cast<int(*)(Aardvark, int)>(_loadFunction("c_aa_async_poll", &res))))
 	{
-		throw PluginError("Could not find symbol in shared library.",  __FILE__, __LINE__);
+		throw Error("Could not find symbol in shared library.",  __FILE__, __LINE__);
 	}
 	else
 	{
@@ -1142,7 +1142,7 @@ bool RemoteAardvark::aa_spi_bitrate(Value &params, Value &result)
 
 	if (!(c_aa_spi_bitrate = reinterpret_cast<int(*)(Aardvark, int)>(_loadFunction("c_aa_spi_bitrate", &res))))
 	{
-		throw PluginError("Could not find symbol in shared library.",  __FILE__, __LINE__);
+		throw Error("Could not find symbol in shared library.",  __FILE__, __LINE__);
 	}
 	else
 	{
@@ -1194,7 +1194,7 @@ bool RemoteAardvark::aa_spi_configure(Value &params, Value &result)
 
 	if (!(c_aa_spi_configure = reinterpret_cast<int(*)(Aardvark, AardvarkSpiPolarity, AardvarkSpiPhase, AardvarkSpiBitorder)>(_loadFunction("c_aa_spi_configure", &res))))
 	{
-		throw PluginError("Could not find symbol in shared library.",  __FILE__, __LINE__);
+		throw Error("Could not find symbol in shared library.",  __FILE__, __LINE__);
 	}
 	else
 	{
@@ -1254,7 +1254,7 @@ bool RemoteAardvark::aa_spi_write(Value &params, Value &result)
 
 	if (!(c_aa_spi_write = reinterpret_cast<int(*)(Aardvark, u16, const u08*, u16, u08*)>(_loadFunction("c_aa_spi_write", &res))))
 	{
-		throw PluginError("Could not find symbol in shared library.",  __FILE__, __LINE__);
+		throw Error("Could not find symbol in shared library.",  __FILE__, __LINE__);
 	}
 	else
 	{
@@ -1303,7 +1303,7 @@ bool RemoteAardvark::aa_spi_master_ss_polarity(Value &params, Value &result)
 
 	if (!(c_aa_spi_master_ss_polarity = reinterpret_cast<int(*)(Aardvark, AardvarkSpiSSPolarity)>(_loadFunction("c_aa_spi_master_ss_polarity", &res))))
 	{
-		throw PluginError("Could not find symbol in shared library.",  __FILE__, __LINE__);
+		throw Error("Could not find symbol in shared library.",  __FILE__, __LINE__);
 	}
 	else
 	{

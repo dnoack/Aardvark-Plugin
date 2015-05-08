@@ -37,7 +37,7 @@ TEST_GROUP(Plugin_Interface)
 TEST(Plugin_Interface, findObjectMember_noObject)
 {
 	testValue.SetInt(3005);
-	CHECK_THROWS(PluginError, testInterface->findObjectMember(testValue, memberValue));
+	CHECK_THROWS(Error, testInterface->findObjectMember(testValue, memberValue));
 }
 
 
@@ -53,7 +53,7 @@ TEST(Plugin_Interface, findParams_MemberNOTFound) //is object
 {
 	testValue.SetObject();
 	testValue.AddMember("GOOD", 0, dom->GetAllocator());
-	CHECK_THROWS(PluginError, testInterface->findObjectMember(testValue, memberValue));
+	CHECK_THROWS(Error, testInterface->findObjectMember(testValue, memberValue));
 }
 
 
@@ -69,6 +69,6 @@ TEST(Plugin_Interface, executeFunction_FunctionNOTfound)
 	params.SetObject();
 	params.AddMember("port", 0, dom->GetAllocator());
 
-	CHECK_THROWS(PluginError, testInterface->executeFunction(method, params, result));
+	CHECK_THROWS(Error, testInterface->executeFunction(method, params, result));
 }
 

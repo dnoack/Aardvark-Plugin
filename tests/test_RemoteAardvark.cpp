@@ -68,14 +68,14 @@ TEST(RemoteAardvark, aa_closeOK)
 TEST(RemoteAardvark, aa_closeFAIL)
 {
 	params->AddMember("Aardvark", "notAnInteger", dom->GetAllocator());
-	CHECK_THROWS(PluginError, testInterface->aa_close(*params, *result));
+	CHECK_THROWS(Error, testInterface->aa_close(*params, *result));
 }
 
 
 TEST(RemoteAardvark, aa_unique_idFAIL)
 {
 	params->AddMember("Aardvark", "notAnInteger", dom->GetAllocator());
-	CHECK_THROWS(PluginError, testInterface->aa_unique_id(*params, *result));
+	CHECK_THROWS(Error, testInterface->aa_unique_id(*params, *result));
 }
 
 
@@ -83,7 +83,7 @@ TEST(RemoteAardvark, aa_target_power_handle_FAIL)
 {
 	params->AddMember("Aardvark", "NotAnInteger", dom->GetAllocator());
 	params->AddMember("powerMask", 0x03, dom->GetAllocator());
-	CHECK_THROWS(PluginError, testInterface->aa_target_power(*params, *result));
+	CHECK_THROWS(Error, testInterface->aa_target_power(*params, *result));
 }
 
 
@@ -91,12 +91,12 @@ TEST(RemoteAardvark, aa_target_power_powerMask_FAIL)
 {
 	params->AddMember("Aardvark", 1, dom->GetAllocator());
 	params->AddMember("powerMask", "NotAnUInteger", dom->GetAllocator());
-	CHECK_THROWS(PluginError, testInterface->aa_target_power(*params, *result));
+	CHECK_THROWS(Error, testInterface->aa_target_power(*params, *result));
 }
 
 TEST(RemoteAardvark, aa_openFAIL)
 {
 	params->AddMember("port", "notAnInteger", dom->GetAllocator());
-	CHECK_THROWS(PluginError, testInterface->aa_open(*params, *result));
+	CHECK_THROWS(Error, testInterface->aa_open(*params, *result));
 }
 

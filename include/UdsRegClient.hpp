@@ -15,7 +15,7 @@
 #include <UdsRegWorker.hpp>
 #include "UdsRegClient.hpp"
 #include "JsonRPC.hpp"
-#include "Plugin_Error.h"
+#include "Error.hpp"
 
 using namespace std;
 

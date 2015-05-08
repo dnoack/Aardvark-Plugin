@@ -35,7 +35,7 @@ void UdsRegClient::connectToRSD()
 	if(status > -1)
 		regWorker = new UdsRegWorker(currentSocket);
 	else
-		throw PluginError("Fehler beim Verbinden zu RSD.\n");
+		throw Error("Fehler beim Verbinden zu RSD.\n");
 }
 
 

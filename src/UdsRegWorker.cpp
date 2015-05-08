@@ -3,7 +3,7 @@
 #include "errno.h"
 
 #include "AardvarkPlugin.hpp"
-#include "Plugin_Error.h"
+#include "Error.hpp"
 
 
 UdsRegWorker::UdsRegWorker(int socket)
@@ -21,7 +21,7 @@ UdsRegWorker::UdsRegWorker(int socket)
 	StartWorkerThread();
 
 	if(wait_for_listener_up() != 0)
-		throw PluginError("Creation of Listener/worker threads failed.");
+		throw Error("Creation of Listener/worker threads failed.");
 }
 
 
@@ -164,7 +164,7 @@ void UdsRegWorker::processRegistration()
 				break;
 		}
 	}
-	catch(PluginError &e)
+	catch(Error &e)
 	{
 		state = BROKEN;
 		error = e.get();
@@ -194,7 +194,7 @@ void UdsRegWorker::sendAnnounceMsg(const char* pluginName, int pluginNumber, con
 		announceMsg = json->generateRequest(method, params, id);
 		transmit(announceMsg, strlen(announceMsg));
 	}
-	catch(PluginError &e)
+	catch(Error &e)
 	{
 		printf("%s \n", e.get());
 	}
@@ -220,10 +220,10 @@ bool UdsRegWorker::handleAnnounceACKMsg(string* msg)
 		else
 		{
 			error = json->generateResponseError(*currentMsgId, -31010, "Awaited \"announceACK\" but didn't receive it.");
-			throw PluginError(error);
+			throw Error(error);
 		}
 	}
-	catch(PluginError &e)
+	catch(Error &e)
 	{
 		throw;
 	}
@@ -281,10 +281,10 @@ bool UdsRegWorker::handleRegisterACKMsg(string* msg)
 		else
 		{
 			error = json->generateResponseError(*currentMsgId, -31011, "Awaited \"registerACK\" but didn't receive it.");
-			throw PluginError(error);
+			throw Error(error);
 		}
 	}
-	catch(PluginError &e)
+	catch(Error &e)
 	{
 		throw;
 	}
