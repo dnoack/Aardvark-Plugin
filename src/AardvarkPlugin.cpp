@@ -1,15 +1,5 @@
-/*
- * AardvarkPlugin.cpp
- *
- *  Created on: 25.02.2015
- *      Author: Dave
- */
 
-
-#include <AardvarkPlugin.hpp>
-#include "UdsServer.hpp"
-#include "RemoteAardvark.hpp"
-#include "AardvarkCareTaker.hpp"
+#include "AardvarkPlugin.hpp"
 
 
 list<string*>* AardvarkPlugin::funcList;
@@ -17,9 +7,6 @@ list<string*>* AardvarkPlugin::funcList;
 
 AardvarkPlugin::AardvarkPlugin()
 {
-
-	regClientReady = false;
-	comServerReady = false;
 	pluginActive = true;
 
 	sigemptyset(&origmask);
@@ -54,12 +41,15 @@ void AardvarkPlugin::start()
 	try
 	{
 		regClient->connectToRSD();
-		regClient->registerToRSD();
+		regClient->sendAnnounceMsg();
+
 		pluginActive = true;
 		while(pluginActive)
 		{
 			sleep(3);
 			comServer->checkForDeletableWorker();
+			if(regClient->isDeletable())
+				pluginActive = false;
 		}
 	}
 	catch(Error &e)
@@ -77,6 +67,7 @@ void AardvarkPlugin::deleteFuncList()
 		delete *i;
 		i = funcList->erase(i);
 	}
+	delete funcList;
 }
 
 
