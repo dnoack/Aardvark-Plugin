@@ -244,48 +244,8 @@ typedef struct AardvarkVersion AardvarkVersion;
  * array size.
  */
 #define AA_PORT_NOT_FREE 0x8000
-int aa_find_devices (
-    int   num_devices,
-    u16 * devices
-);
 
 
-/*
- * Get a list of ports to which Aardvark devices are attached.
- *
- * This function is the same as aa_find_devices() except that
- * it returns the unique IDs of each Aardvark device.  The IDs
- * are guaranteed to be non-zero if valid.
- *
- * The IDs are the unsigned integer representation of the 10-digit
- * serial numbers.
- */
-int aa_find_devices_ext (
-    int   num_devices,
-    u16 * devices,
-    int   num_ids,
-    u32 * unique_ids
-);
-
-
-/*
- * Open the Aardvark port.
- *
- * The port number is a zero-indexed integer.
- *
- * The port number is the same as that obtained from the
- * aa_find_devices() function above.
- *
- * Returns an Aardvark handle, which is guaranteed to be
- * greater than zero if it is valid.
- *
- * This function is recommended for use in simple applications
- * where extended information is not required.  For more complex
- * applications, the use of aa_open_ext() is recommended.
- */
-Aardvark aa_open (
-    int port_number
-);
 
 
 /*
@@ -315,27 +275,6 @@ struct AardvarkExt {
 typedef struct AardvarkExt AardvarkExt;
 #endif
 
-Aardvark aa_open_ext (
-    int           port_number,
-    AardvarkExt * aa_ext
-);
-
-
-/* Close the Aardvark port. */
-int aa_close (
-    Aardvark aardvark
-);
-
-
-/*
- * Return the port for this Aardvark handle.
- *
- * The port number is a zero-indexed integer.
- */
-int aa_port (
-    Aardvark aardvark
-);
-
 
 /*
  * Return the device features as a bit-mask of values, or
@@ -345,30 +284,6 @@ int aa_port (
 #define AA_FEATURE_I2C 0x00000002
 #define AA_FEATURE_GPIO 0x00000008
 #define AA_FEATURE_I2C_MONITOR 0x00000010
-int aa_features (
-    Aardvark aardvark
-);
-
-
-/*
- * Return the unique ID for this Aardvark adapter.
- * IDs are guaranteed to be non-zero if valid.
- * The ID is the unsigned integer representation of the
- * 10-digit serial number.
- */
-u32 aa_unique_id (
-    Aardvark aardvark
-);
-
-
-/*
- * Return the status string for the given status code.
- * If the code is not valid or the library function cannot
- * be loaded, return a NULL string.
- */
-const char * aa_status_string (
-    int status
-);
 
 
 /*
@@ -381,22 +296,6 @@ const char * aa_status_string (
  */
 #define AA_LOG_STDOUT 1
 #define AA_LOG_STDERR 2
-int aa_log (
-    Aardvark aardvark,
-    int      level,
-    int      handle
-);
-
-
-/*
- * Return the version matrix for the device attached to the
- * given handle.  If the handle is 0 or invalid, only the
- * software and required api versions are set.
- */
-int aa_version (
-    Aardvark          aardvark,
-    AardvarkVersion * version
-);
 
 
 /*
@@ -416,10 +315,7 @@ typedef enum AardvarkConfig AardvarkConfig;
 
 #define AA_CONFIG_SPI_MASK 0x00000001
 #define AA_CONFIG_I2C_MASK 0x00000002
-int aa_configure (
-    Aardvark       aardvark,
-    AardvarkConfig config
-);
+
 
 
 /*
@@ -429,20 +325,6 @@ int aa_configure (
 #define AA_TARGET_POWER_NONE 0x00
 #define AA_TARGET_POWER_BOTH 0x03
 #define AA_TARGET_POWER_QUERY 0x80
-int aa_target_power (
-    Aardvark aardvark,
-    u08      power_mask
-);
-
-
-/*
- * Sleep for the specified number of milliseconds
- * Accuracy depends on the operating system scheduler
- * Returns the number of milliseconds slept
- */
-u32 aa_sleep_ms (
-    u32 milliseconds
-);
 
 
 
@@ -461,43 +343,10 @@ u32 aa_sleep_ms (
 #define AA_ASYNC_I2C_WRITE 0x00000002
 #define AA_ASYNC_SPI 0x00000004
 #define AA_ASYNC_I2C_MONITOR 0x00000008
-int aa_async_poll (
-    Aardvark aardvark,
-    int      timeout
-);
-
-
 
 /*=========================================================================
 | I2C API
  ========================================================================*/
-/* Free the I2C bus. */
-int aa_i2c_free_bus (
-    Aardvark aardvark
-);
-
-
-/*
- * Set the I2C bit rate in kilohertz.  If a zero is passed as the
- * bitrate, the bitrate is unchanged and the current bitrate is
- * returned.
- */
-int aa_i2c_bitrate (
-    Aardvark aardvark,
-    int      bitrate_khz
-);
-
-
-/*
- * Set the bus lock timeout.  If a zero is passed as the timeout,
- * the timeout is unchanged and the current timeout is returned.
- */
-int aa_i2c_bus_timeout (
-    Aardvark aardvark,
-    u16      timeout_ms
-);
-
-
 enum AardvarkI2cFlags {
     AA_I2C_NO_FLAGS          = 0x00,
     AA_I2C_10_BIT_ADDR       = 0x01,
@@ -509,16 +358,6 @@ enum AardvarkI2cFlags {
 #ifndef __cplusplus
 typedef enum AardvarkI2cFlags AardvarkI2cFlags;
 #endif
-
-
-/* Read a stream of bytes from the I2C slave device. */
-int aa_i2c_read (
-    Aardvark         aardvark,
-    u16              slave_addr,
-    AardvarkI2cFlags flags,
-    u16              num_bytes,
-    u08 *            data_in
-);
 
 
 enum AardvarkI2cStatus {
@@ -535,157 +374,12 @@ enum AardvarkI2cStatus {
 typedef enum AardvarkI2cStatus AardvarkI2cStatus;
 #endif
 
-/*
- * Read a stream of bytes from the I2C slave device.
- * This API function returns the number of bytes read into
- * the num_read variable.  The return value of the function
- * is a status code.
- */
-int aa_i2c_read_ext (
-    Aardvark         aardvark,
-    u16              slave_addr,
-    AardvarkI2cFlags flags,
-    u16              num_bytes,
-    u08 *            data_in,
-    u16 *            num_read
-);
-
-
-/* Write a stream of bytes to the I2C slave device. */
-int aa_i2c_write (
-    Aardvark         aardvark,
-    u16              slave_addr,
-    AardvarkI2cFlags flags,
-    u16              num_bytes,
-    const u08 *      data_out
-);
-
-
-/*
- * Write a stream of bytes to the I2C slave device.
- * This API function returns the number of bytes written into
- * the num_written variable.  The return value of the function
- * is a status code.
- */
-int aa_i2c_write_ext (
-    Aardvark         aardvark,
-    u16              slave_addr,
-    AardvarkI2cFlags flags,
-    u16              num_bytes,
-    const u08 *      data_out,
-    u16 *            num_written
-);
-
-
-/*
- * Do an atomic write+read to an I2C slave device by first
- * writing a stream of bytes to the I2C slave device and then
- * reading a stream of bytes back from the same slave device.
- * This API function returns the number of bytes written into
- * the num_written variable and the number of bytes read into
- * the num_read variable.  The return value of the function is
- * the status given as (read_status << 8) | (write_status).
- */
-int aa_i2c_write_read (
-    Aardvark         aardvark,
-    u16              slave_addr,
-    AardvarkI2cFlags flags,
-    u16              out_num_bytes,
-    const u08 *      out_data,
-    u16 *            num_written,
-    u16              in_num_bytes,
-    u08 *            in_data,
-    u16 *            num_read
-);
-
-
-/* Enable/Disable the Aardvark as an I2C slave device */
-int aa_i2c_slave_enable (
-    Aardvark aardvark,
-    u08      addr,
-    u16      maxTxBytes,
-    u16      maxRxBytes
-);
-
-
-int aa_i2c_slave_disable (
-    Aardvark aardvark
-);
-
-
-/*
- * Set the slave response in the event the Aardvark is put
- * into slave mode and contacted by a Master.
- */
-int aa_i2c_slave_set_response (
-    Aardvark    aardvark,
-    u08         num_bytes,
-    const u08 * data_out
-);
-
-
-/*
- * Return number of bytes written from a previous
- * Aardvark->I2C_master transmission.  Since the transmission is
- * happening asynchronously with respect to the PC host
- * software, there could be responses queued up from many
- * previous write transactions.
- */
-int aa_i2c_slave_write_stats (
-    Aardvark aardvark
-);
-
-
-/* Read the bytes from an I2C slave reception */
-int aa_i2c_slave_read (
-    Aardvark aardvark,
-    u08 *    addr,
-    u16      num_bytes,
-    u08 *    data_in
-);
-
-
-/* Extended functions that return status code */
-int aa_i2c_slave_write_stats_ext (
-    Aardvark aardvark,
-    u16 *    num_written
-);
-
-
-int aa_i2c_slave_read_ext (
-    Aardvark aardvark,
-    u08 *    addr,
-    u16      num_bytes,
-    u08 *    data_in,
-    u16 *    num_read
-);
-
-
-/*
- * Enable the I2C bus monitor
- * This disables all other functions on the Aardvark adapter
- */
-int aa_i2c_monitor_enable (
-    Aardvark aardvark
-);
-
-
-/* Disable the I2C bus monitor */
-int aa_i2c_monitor_disable (
-    Aardvark aardvark
-);
-
 
 /* Read the data collected by the bus monitor */
 #define AA_I2C_MONITOR_DATA 0x00ff
 #define AA_I2C_MONITOR_NACK 0x0100
 #define AA_I2C_MONITOR_CMD_START 0xff00
 #define AA_I2C_MONITOR_CMD_STOP 0xff01
-int aa_i2c_monitor_read (
-    Aardvark aardvark,
-    u16      num_bytes,
-    u16 *    data
-);
 
 
 /*
@@ -695,27 +389,12 @@ int aa_i2c_monitor_read (
 #define AA_I2C_PULLUP_NONE 0x00
 #define AA_I2C_PULLUP_BOTH 0x03
 #define AA_I2C_PULLUP_QUERY 0x80
-int aa_i2c_pullup (
-    Aardvark aardvark,
-    u08      pullup_mask
-);
 
 
 
 /*=========================================================================
 | SPI API
  ========================================================================*/
-/*
- * Set the SPI bit rate in kilohertz.  If a zero is passed as the
- * bitrate, the bitrate is unchanged and the current bitrate is
- * returned.
- */
-int aa_spi_bitrate (
-    Aardvark aardvark,
-    int      bitrate_khz
-);
-
-
 /*
  * These configuration parameters specify how to clock the
  * bits that are sent and received on the Aardvark SPI
@@ -747,6 +426,7 @@ enum AardvarkSpiPolarity {
 typedef enum AardvarkSpiPolarity AardvarkSpiPolarity;
 #endif
 
+
 enum AardvarkSpiPhase {
     AA_SPI_PHASE_SAMPLE_SETUP = 0,
     AA_SPI_PHASE_SETUP_SAMPLE = 1
@@ -754,6 +434,7 @@ enum AardvarkSpiPhase {
 #ifndef __cplusplus
 typedef enum AardvarkSpiPhase AardvarkSpiPhase;
 #endif
+
 
 enum AardvarkSpiBitorder {
     AA_SPI_BITORDER_MSB = 0,
@@ -763,53 +444,6 @@ enum AardvarkSpiBitorder {
 typedef enum AardvarkSpiBitorder AardvarkSpiBitorder;
 #endif
 
-/* Configure the SPI master or slave interface */
-int aa_spi_configure (
-    Aardvark            aardvark,
-    AardvarkSpiPolarity polarity,
-    AardvarkSpiPhase    phase,
-    AardvarkSpiBitorder bitorder
-);
-
-
-/* Write a stream of bytes to the downstream SPI slave device. */
-int aa_spi_write (
-    Aardvark    aardvark,
-    u16         out_num_bytes,
-    const u08 * data_out,
-    u16         in_num_bytes,
-    u08 *       data_in
-);
-
-
-/* Enable/Disable the Aardvark as an SPI slave device */
-int aa_spi_slave_enable (
-    Aardvark aardvark
-);
-
-
-int aa_spi_slave_disable (
-    Aardvark aardvark
-);
-
-
-/*
- * Set the slave response in the event the Aardvark is put
- * into slave mode and contacted by a Master.
- */
-int aa_spi_slave_set_response (
-    Aardvark    aardvark,
-    u08         num_bytes,
-    const u08 * data_out
-);
-
-
-/* Read the bytes from an SPI slave reception */
-int aa_spi_slave_read (
-    Aardvark aardvark,
-    u16      num_bytes,
-    u08 *    data_in
-);
 
 
 /*
@@ -827,10 +461,7 @@ enum AardvarkSpiSSPolarity {
 typedef enum AardvarkSpiSSPolarity AardvarkSpiSSPolarity;
 #endif
 
-int aa_spi_master_ss_polarity (
-    Aardvark              aardvark,
-    AardvarkSpiSSPolarity polarity
-);
+
 
 
 
@@ -898,55 +529,6 @@ int aa_gpio_pullup (
 );
 
 
-/*
- * Read the current digital values on the GPIO input lines.
- *
- * The bits will be ordered as described by AA_GPIO_BITS.  If a
- * line is configured as an output, its corresponding bit
- * position in the mask will be undefined.
- */
-int aa_gpio_get (
-    Aardvark aardvark
-);
-
-
-/*
- * Set the outputs on the GPIO lines.
- *
- * Note: If a line is configured as an input, it will not be
- * affected by this call, but the output value for that line
- * will be cached in the event that the line is later
- * configured as an output.
- */
-int aa_gpio_set (
-    Aardvark aardvark,
-    u08      value
-);
-
-
-/*
- * Block until there is a change on the GPIO input lines.
- * Pins configured as outputs will be ignored.
- *
- * The function will return either when a change has occurred or
- * the timeout expires.  The timeout, specified in millisecods, has
- * a precision of ~16 ms. The maximum allowable timeout is
- * approximately 4 seconds. If the timeout expires, this function
- * will return the current state of the GPIO lines.
- *
- * This function will return immediately with the current value
- * of the GPIO lines for the first invocation after any of the
- * following functions are called: aa_configure,
- * aa_gpio_direction, or aa_gpio_pullup.
- *
- * If the function aa_gpio_get is called before calling
- * aa_gpio_change, aa_gpio_change will only register any changes
- * from the value last returned by aa_gpio_get.
- */
-int aa_gpio_change (
-    Aardvark aardvark,
-    u16      timeout
-);
 
 //predfine symbol RemoteAardvark for our typedef
 class RemoteAardvark;
@@ -1187,7 +769,6 @@ class RemoteAardvark : public DriverInterface<RemoteAardvark*, afptr>{
 		int contextNumber;
 
 };
-
 
 
 

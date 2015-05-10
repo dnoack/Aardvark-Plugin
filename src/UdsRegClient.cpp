@@ -5,19 +5,22 @@ struct sockaddr_un UdsRegClient::address;
 socklen_t UdsRegClient::addrlen;
 
 
-UdsRegClient::UdsRegClient(const char* pluginName, int pluginNumber, const char* regPath, int size, const char* comPath)
+UdsRegClient::UdsRegClient(const char* pluginName, int pluginNumber, const char* regPath, const char* comPath)
 {
 	this->regPath = regPath;
 	regWorker = NULL;
 	optionflag = 1;
 	currentMsgId = NULL;
-	error = NULL;
 	state = NOT_ACTIVE;
+	address.sun_family = AF_UNIX;
+	strncpy(address.sun_path, regPath, strlen(regPath));
+	addrlen = sizeof(address);
 
 	connection_socket = socket(AF_UNIX, SOCK_STREAM, 0);
-	address.sun_family = AF_UNIX;
-	strncpy(address.sun_path, regPath, size);
-	addrlen = sizeof(address);
+
+	if(connection_socket < 0)
+		throw Error(-1100, "Could not create connection_socket");
+
 
 	plugin = new Plugin(pluginName, pluginNumber ,comPath);
 	json = new JsonRPC();
@@ -36,15 +39,11 @@ UdsRegClient::~UdsRegClient()
 
 void UdsRegClient::connectToRSD()
 {
-	int status = connect(connection_socket, (struct sockaddr*)&address, addrlen);
-
-	if(status > -1)
-		regWorker = new UdsRegWorker(this, connection_socket);
+	if( connect(connection_socket, (struct sockaddr*)&address, addrlen) != 0 )
+		throw Error(-1101, "Could not connect to RSD.\n");
 	else
-		throw Error("Fehler beim Verbinden zu RSD.\n");
+		regWorker = new UdsRegWorker(this, connection_socket);
 }
-
-
 
 
 void UdsRegClient::unregisterFromRSD()
@@ -64,7 +63,7 @@ void UdsRegClient::processRegistration(string* msg)
 		currentMsgId = json->tryTogetId();
 
 		if(json->isError())
-			throw Error("Unable to register.\n");
+			throw Error(-1102, "Received json rpc error response.");
 
 		switch(state)
 		{
@@ -107,7 +106,6 @@ void UdsRegClient::processRegistration(string* msg)
 	{
 		delete msg;
 		state = BROKEN;
-		error = e.get();
 		close(connection_socket);
 	}
 }
@@ -135,7 +133,7 @@ void UdsRegClient::sendAnnounceMsg()
 	}
 	catch(Error &e)
 	{
-		printf("%s \n", e.get());
+		throw;
 	}
 }
 
@@ -158,8 +156,7 @@ bool UdsRegClient::handleAnnounceACKMsg(string* msg)
 		}
 		else
 		{
-			error = json->generateResponseError(*currentMsgId, -31010, "Awaited \"announceACK\" but didn't receive it.");
-			throw Error(error);
+			throw Error(-1103, "Awaited announceACK.");
 		}
 	}
 	catch(Error &e)
@@ -201,7 +198,6 @@ const char* UdsRegClient::createRegisterMsg()
 }
 
 
-
 bool UdsRegClient::handleRegisterACKMsg(string* msg)
 {
 	const char* resultString = NULL;
@@ -219,8 +215,7 @@ bool UdsRegClient::handleRegisterACKMsg(string* msg)
 		}
 		else
 		{
-			error = json->generateResponseError(*currentMsgId, -31011, "Awaited \"registerACK\" but didn't receive it.");
-			throw Error(error);
+			throw Error(-1104, "Awaited registerACK.");
 		}
 	}
 	catch(Error &e)
@@ -229,7 +224,6 @@ bool UdsRegClient::handleRegisterACKMsg(string* msg)
 	}
 	return result;
 }
-
 
 
 const char* UdsRegClient::createPluginActiveMsg()

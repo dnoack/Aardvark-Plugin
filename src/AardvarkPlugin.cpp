@@ -3,11 +3,13 @@
 
 
 list<string*>* AardvarkPlugin::funcList;
+int LogUnit::globalLogLevel = 4;
 
 
 AardvarkPlugin::AardvarkPlugin()
 {
 	pluginActive = true;
+	logInfo.logName = "AardvarkPlugin: ";
 
 	sigemptyset(&origmask);
 	sigemptyset(&sigmask);
@@ -22,7 +24,7 @@ AardvarkPlugin::AardvarkPlugin()
 
 	AardvarkCareTaker::init();
 
-	regClient = new UdsRegClient(PLUGIN_NAME, PLUGIN_NUMBER, REG_PATH, sizeof(REG_PATH), COM_PATH);
+	regClient = new UdsRegClient(PLUGIN_NAME, PLUGIN_NUMBER, REG_PATH, COM_PATH);
 	comServer = new UdsServer(COM_PATH, sizeof(COM_PATH));
 }
 
@@ -54,7 +56,8 @@ void AardvarkPlugin::start()
 	}
 	catch(Error &e)
 	{
-		printf("%s \n", e.get());
+		log(logInfo, e.get());
+		pluginActive = false;
 	}
 }
 
