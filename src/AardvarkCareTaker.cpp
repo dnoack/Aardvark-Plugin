@@ -20,6 +20,7 @@ AardvarkCareTaker::AardvarkCareTaker(UdsComWorker* udsWorker)
 	msgList = NULL;
 	this->udsworker = udsWorker;
 	json = new JsonRPC();
+	currentDom = NULL;
 	contextNumber = 0;
 	result = NULL;
 	deviceLessFunctions = new RemoteAardvark(-1);
@@ -47,33 +48,12 @@ void AardvarkCareTaker::deInit()
 }
 
 
-RemoteAardvark* AardvarkCareTaker::getDevice(Document* dom)
+RemoteAardvark* AardvarkCareTaker::getDevice(int value, int valueType)
 {
+
 	RemoteAardvark* device = NULL;
 	bool found = false;
 	const char* error = NULL;
-	int value = 0;
-	int valueType = -1;
-
-	if((*dom)["params"].HasMember("port"))
-	{
-		valueType = PORT;
-		value = (*dom)["params"]["port"].GetInt();
-	}
-	else if((*dom)["params"].HasMember("handle") )
-	{
-		valueType = HANDLE;
-		value = (*dom)["params"]["handle"].GetInt();
-	}
-	else if((*dom)["params"].HasMember("Aardvark") )
-	{
-		valueType = HANDLE;
-		value = (*dom)["params"]["Aardvark"].GetInt();
-	}
-	else
-	{
-		device = deviceLessFunctions;
-	}
 
 	pthread_mutex_lock(&dLmutex);
 	list<RemoteAardvark*>::iterator tempDevice = deviceList.begin();
@@ -112,7 +92,7 @@ RemoteAardvark* AardvarkCareTaker::getDevice(Document* dom)
 		{
 			pthread_mutex_unlock(&dLmutex);
 			dyn_print("Requesting context %d.  using context: %d \n", contextNumber, device->getContextNumber());
-			error = json->generateResponseError(*(json->getId(dom)), -99998, "Another user is using the requested hardware.");
+			error = json->generateResponseError(*(json->getId(currentDom)), -99998, "Another user is using the requested hardware.");
 			throw Error(error);
 		}
 	}
@@ -127,7 +107,7 @@ RemoteAardvark* AardvarkCareTaker::getDevice(Document* dom)
 		else // cant create new devices with handle as value
 		{
 			pthread_mutex_unlock(&dLmutex);
-			error = json->generateResponseError(*(json->getId(dom)), -99999, "No device with this handle available.");
+			error = json->generateResponseError(*(json->getId(currentDom)), -99999, "No device with this handle available.");
 			throw Error(error);
 		}
 	}
@@ -141,16 +121,16 @@ RemoteAardvark* AardvarkCareTaker::getDevice(Document* dom)
 
 
 //main method for processing new json rpc msgs
-void AardvarkCareTaker::processMsg(string* msg)
+string* AardvarkCareTaker::processMsg(string* msg)
 {
-	Document* dom = new Document();
+
 	Value responseValue;
 	Value* paramValue;
 	RemoteAardvark* device;
 	list<string*>::iterator currentMsg;
 
-
-	msgList = json->splitMsg(dom, msg);
+	currentDom = new Document();
+	msgList = json->splitMsg(currentDom, msg);
 	currentMsg = msgList->begin();
 
 
@@ -158,25 +138,40 @@ void AardvarkCareTaker::processMsg(string* msg)
 	{
 		try
 		{
-			dom = json->parse(*currentMsg);
+			currentDom = json->parse(*currentMsg);
 
-			if(json->isRequest(dom))
+			if(json->isRequest(currentDom))
 			{
-				if(json->hasParams(dom))
+				if(json->hasParams(currentDom))
 				{
 					dyn_print("Request incomming, gettin device...\n");
 
-					device = getDevice(dom);
-					device->executeFunction((*dom)["method"], (*dom)["params"], responseValue);
-					result = new string(json->generateResponse((*dom)["id"], responseValue));
+					if((*currentDom)["params"].HasMember("port"))
+					{
+						device = getDevice((*currentDom)["params"]["port"].GetInt(), PORT);
+
+					}
+					else if((*currentDom)["params"].HasMember("handle") )
+					{
+						device = getDevice((*currentDom)["params"]["handle"].GetInt(), HANDLE);
+					}
+					else if((*currentDom)["params"].HasMember("Aardvark") )
+					{
+						device = getDevice((*currentDom)["params"]["Aardvark"].GetInt(), HANDLE);
+					}
+					else
+					{
+						device = deviceLessFunctions;
+					}
+					device->executeFunction((*currentDom)["method"], (*currentDom)["params"], responseValue);
+					result = new string(json->generateResponse((*currentDom)["id"], responseValue));
 					udsworker->transmit(result);
-					delete result;
 				}
 
 			}
-			else if(json->isNotification(dom))
+			else if(json->isNotification(currentDom))
 			{
-				paramValue = json->tryTogetParam(dom, "contextNumber");
+				paramValue = json->tryTogetParam(currentDom, "contextNumber");
 				contextNumber = paramValue->GetInt();
 				dyn_print("Received Notification for context: %d", contextNumber);
 			}
@@ -193,13 +188,13 @@ void AardvarkCareTaker::processMsg(string* msg)
 			udsworker->transmit(e.get(), strlen(e.get()));
 			delete *currentMsg;
 			currentMsg = msgList->erase(currentMsg);
-
 		}
 
 	}
 	delete msgList;
-	delete dom;
+	delete currentDom;
 
+	return result;
 }
 
 
@@ -234,5 +229,3 @@ void AardvarkCareTaker::unlockAllUsedDevices()
 
 	pthread_mutex_unlock(&dLmutex);
 }
-
-
