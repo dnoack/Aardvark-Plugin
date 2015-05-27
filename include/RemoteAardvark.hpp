@@ -614,11 +614,7 @@ static _function _aa_spi_configure = {"Aardvark.aa_spi_configure", NULL, 4, aa_s
 static _function _aa_spi_write = {"Aardvark.aa_spi_write", NULL, 3, aa_spi_write_params};
 static _function _aa_spi_master_ss_polarity = {"Aardvark.aa_spi_master_ss_polarity", NULL, 2, aa_spi_master_ss_polarity_params};
 
-static _function functions[NUMBER_OF_FUNCTIONS] = {_aa_find_devices, _aa_find_devices_ext, _aa_open, _aa_open_ext,
-		_aa_close, _aa_port, _aa_features, _aa_unique_id, _aa_status_string, _aa_target_power, _aa_version,
-		_aa_i2c_write, _aa_i2c_read, _aa_configure, _aa_i2c_bitrate, _aa_i2c_pullup, _aa_i2c_slave_enable,
-		_aa_i2c_slave_enable, _aa_async_poll, _aa_spi_bitrate, _aa_spi_configure, _aa_spi_write,
-		_aa_spi_master_ss_polarity};
+
 
 class RemoteAardvark : public DriverInterface<RemoteAardvark*, afptr>{
 
@@ -630,33 +626,79 @@ class RemoteAardvark : public DriverInterface<RemoteAardvark*, afptr>{
 			handle = 0;
 			contextNumber = 0;
 
+			//get relativ address of function
 			_aa_find_devices._funcPtr = &RemoteAardvark::aa_find_devices;
+			//save the relativ address to the map with the corresponding key for rpc
+			funcMap.insert(pair<const char*, afptr>(_aa_find_devices._name, _aa_find_devices._funcPtr));
+
 			_aa_find_devices_ext._funcPtr = &RemoteAardvark::aa_find_devices_ext;
+			funcMap.insert(pair<const char*, afptr>(_aa_find_devices_ext._name, _aa_find_devices_ext._funcPtr));
+
 			_aa_status_string._funcPtr = &RemoteAardvark::aa_status_string;
-			_aa_open._funcPtr = &RemoteAardvark::aa_open;
-			_aa_open_ext._funcPtr = &RemoteAardvark::aa_open_ext;
-			_aa_close._funcPtr = &RemoteAardvark::aa_close;
-			_aa_port._funcPtr = &RemoteAardvark::aa_port;
-			_aa_features._funcPtr = &RemoteAardvark::aa_features;
-			_aa_unique_id._funcPtr = &RemoteAardvark::aa_unique_id;
-			_aa_version._funcPtr = &RemoteAardvark::aa_version;
-			_aa_target_power._funcPtr = &RemoteAardvark::aa_target_power;
-			_aa_i2c_write._funcPtr = &RemoteAardvark::aa_i2c_write;
-			_aa_i2c_read._funcPtr = &RemoteAardvark::aa_i2c_read;
-			_aa_configure._funcPtr = &RemoteAardvark::aa_configure;
-			_aa_i2c_bitrate._funcPtr = &RemoteAardvark::aa_i2c_bitrate;
-			_aa_i2c_pullup._funcPtr = &RemoteAardvark::aa_i2c_pullup;
-			_aa_i2c_slave_enable._funcPtr = &RemoteAardvark::aa_i2c_slave_enable;
-			_aa_i2c_slave_read._funcPtr = &RemoteAardvark::aa_i2c_slave_read;
-			_aa_async_poll._funcPtr = &RemoteAardvark::aa_async_poll;
-			_aa_spi_bitrate._funcPtr = &RemoteAardvark::aa_spi_bitrate;
-			_aa_spi_configure._funcPtr = &RemoteAardvark::aa_spi_configure;
-			_aa_spi_write._funcPtr = &RemoteAardvark::aa_spi_write;
-			_aa_spi_master_ss_polarity._funcPtr = &RemoteAardvark::aa_spi_master_ss_polarity;
+			funcMap.insert(pair<const char*, afptr>(_aa_status_string._name, _aa_status_string._funcPtr));
 
+			if(port > -1)
+			{
+				_aa_open._funcPtr = &RemoteAardvark::aa_open;
+				funcMap.insert(pair<const char*, afptr>(_aa_open._name, _aa_open._funcPtr));
 
-			for(int i = 0; i < NUMBER_OF_FUNCTIONS ; i++)
-				funcMap.insert(pair<const char*, afptr>(functions[i]._name, functions[i]._funcPtr));
+				_aa_open_ext._funcPtr = &RemoteAardvark::aa_open_ext;
+				funcMap.insert(pair<const char*, afptr>(_aa_open_ext._name, _aa_open_ext._funcPtr));
+
+				_aa_close._funcPtr = &RemoteAardvark::aa_close;
+				funcMap.insert(pair<const char* , afptr>(_aa_close._name, _aa_close._funcPtr));
+
+				_aa_port._funcPtr = &RemoteAardvark::aa_port;
+				funcMap.insert(pair<const char* , afptr>(_aa_port._name, _aa_port._funcPtr));
+
+				_aa_features._funcPtr = &RemoteAardvark::aa_features;
+				funcMap.insert(pair<const char* , afptr>(_aa_features._name, _aa_features._funcPtr));
+
+				_aa_unique_id._funcPtr = &RemoteAardvark::aa_unique_id;
+				funcMap.insert(pair<const char* , afptr>(_aa_unique_id._name, _aa_unique_id._funcPtr));
+
+				_aa_version._funcPtr = &RemoteAardvark::aa_version;
+				funcMap.insert(pair<const char* , afptr>(_aa_version._name, _aa_version._funcPtr));
+
+				_aa_target_power._funcPtr = &RemoteAardvark::aa_target_power;
+				funcMap.insert(pair<const char*, afptr>(_aa_target_power._name, _aa_target_power._funcPtr));
+
+				_aa_i2c_write._funcPtr = &RemoteAardvark::aa_i2c_write;
+				funcMap.insert(pair<const char*, afptr>(_aa_i2c_write._name , _aa_i2c_write._funcPtr ));
+
+				_aa_i2c_read._funcPtr = &RemoteAardvark::aa_i2c_read;
+				funcMap.insert(pair<const char*, afptr>(_aa_i2c_read._name, _aa_i2c_read._funcPtr));
+
+				_aa_configure._funcPtr = &RemoteAardvark::aa_configure;
+				funcMap.insert(pair<const char*, afptr>(_aa_configure._name, _aa_configure._funcPtr));
+
+				_aa_i2c_bitrate._funcPtr = &RemoteAardvark::aa_i2c_bitrate;
+				funcMap.insert(pair<const char*, afptr>(_aa_i2c_bitrate._name, _aa_i2c_bitrate._funcPtr));
+
+				_aa_i2c_pullup._funcPtr = &RemoteAardvark::aa_i2c_pullup;
+				funcMap.insert(pair<const char*, afptr>(_aa_i2c_pullup._name, _aa_i2c_pullup._funcPtr));
+
+				_aa_i2c_slave_enable._funcPtr = &RemoteAardvark::aa_i2c_slave_enable;
+				funcMap.insert(pair<const char*, afptr>(_aa_i2c_slave_enable._name, _aa_i2c_slave_enable._funcPtr));
+
+				_aa_i2c_slave_read._funcPtr = &RemoteAardvark::aa_i2c_slave_read;
+				funcMap.insert(pair<const char*, afptr>(_aa_i2c_slave_read._name, _aa_i2c_slave_read._funcPtr));
+
+				_aa_async_poll._funcPtr = &RemoteAardvark::aa_async_poll;
+				funcMap.insert(pair<const char*, afptr>(_aa_async_poll._name, _aa_async_poll._funcPtr));
+
+				_aa_spi_bitrate._funcPtr = &RemoteAardvark::aa_spi_bitrate;
+				funcMap.insert(pair<const char*, afptr>(_aa_spi_bitrate._name, _aa_spi_bitrate._funcPtr));
+
+				_aa_spi_configure._funcPtr = &RemoteAardvark::aa_spi_configure;
+				funcMap.insert(pair<const char*, afptr>(_aa_spi_configure._name, _aa_spi_configure._funcPtr));
+
+				_aa_spi_write._funcPtr = &RemoteAardvark::aa_spi_write;
+				funcMap.insert(pair<const char*, afptr>(_aa_spi_write._name, _aa_spi_write._funcPtr));
+
+				_aa_spi_master_ss_polarity._funcPtr = &RemoteAardvark::aa_spi_master_ss_polarity;
+				funcMap.insert(pair<const char*, afptr>(_aa_spi_master_ss_polarity._name, _aa_spi_master_ss_polarity._funcPtr));
+			}
 
 		};
 

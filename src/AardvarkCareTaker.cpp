@@ -138,7 +138,7 @@ string* AardvarkCareTaker::processMsg(string* msg)
 	{
 		try
 		{
-			currentDom = json->parse(*currentMsg);
+			json->parse(currentDom, *currentMsg);
 
 			if(json->isRequest(currentDom))
 			{
