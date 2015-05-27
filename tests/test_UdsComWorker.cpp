@@ -1,5 +1,4 @@
 
-#include "UdsServer.hpp"
 #include "UdsComWorker.hpp"
 #include "sys/socket.h"
 #include <sys/select.h>
@@ -166,7 +165,7 @@ TEST(Plugin_UdsComWorker, sendCorrectMsg_and_getAnswer)
 
 
 
-TEST(Plugin_UdsComWorker, correctMsg_x50)
+IGNORE_TEST(Plugin_UdsComWorker, correctMsg_x50)
 {
 	char buffer[RECEIVE_BUFFER_SIZE];
 	bool active = true;

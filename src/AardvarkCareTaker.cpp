@@ -141,7 +141,7 @@ RemoteAardvark* AardvarkCareTaker::getDevice(Document* dom)
 
 
 //main method for processing new json rpc msgs
-string* AardvarkCareTaker::processMsg(string* msg)
+void AardvarkCareTaker::processMsg(string* msg)
 {
 	Document* dom = new Document();
 	Value responseValue;
@@ -170,6 +170,7 @@ string* AardvarkCareTaker::processMsg(string* msg)
 					device->executeFunction((*dom)["method"], (*dom)["params"], responseValue);
 					result = new string(json->generateResponse((*dom)["id"], responseValue));
 					udsworker->transmit(result);
+					delete result;
 				}
 
 			}
@@ -192,14 +193,13 @@ string* AardvarkCareTaker::processMsg(string* msg)
 			udsworker->transmit(e.get(), strlen(e.get()));
 			delete *currentMsg;
 			currentMsg = msgList->erase(currentMsg);
-			delete dom;
+
 		}
 
 	}
 	delete msgList;
 	delete dom;
 
-	return result;
 }
 
 
