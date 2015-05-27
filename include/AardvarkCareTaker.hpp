@@ -28,7 +28,7 @@ class AardvarkCareTaker{
 		static void init();
 		static void deInit();
 		//valueType can be PORT or HANDLE
-		RemoteAardvark* getDevice(int value, int valueType);
+		RemoteAardvark* getDevice(Document* dom);
 
 		string* processMsg(string* msg);
 
