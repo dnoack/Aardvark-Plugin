@@ -28,15 +28,16 @@ class AardvarkCareTaker{
 		static void init();
 		static void deInit();
 		//valueType can be PORT or HANDLE
-		RemoteAardvark* getDevice(Document* dom);
+		RemoteAardvark* getDevice(int value, int valueType);
 
-		void processMsg(string* msg);
+		string* processMsg(string* msg);
 
 
 
 	private:
 
 		JsonRPC* json;
+		Document* currentDom;
 		string* result;
 		int contextNumber;
 		list<string*>* msgList;
