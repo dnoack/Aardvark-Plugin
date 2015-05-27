@@ -19,7 +19,7 @@ static socklen_t addrlen;
 static int server_accept_socket;
 static int clientSocket;
 static int serverSocket;
-static int lfd;
+
 
 static string OK_STRING =
 		"{\"jsonrpc\": \"2.0\", \"params\": { \"handle\": 1}, \"method\": \"aa_unique_id\", \"id\": 1}";

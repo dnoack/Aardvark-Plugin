@@ -108,6 +108,9 @@ class UdsRegClient{
 		Plugin* plugin;
 		/*! Instance of json rpc parser, using rapidjson.*/
 		JsonRPC* json;
+
+		Document* dom;
+
 		/*! Path to unix domain socket file for registering the plugin to RSD.*/
 		const char* regPath;
 		/*! Contains the json rpc message id of the last received message.*/

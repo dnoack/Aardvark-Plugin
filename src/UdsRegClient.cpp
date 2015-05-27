@@ -59,10 +59,10 @@ void UdsRegClient::processRegistration(string* msg)
 
 	try
 	{
-		json->parse(msg);
-		currentMsgId = json->tryTogetId();
+		dom = json->parse(msg);
+		currentMsgId = json->tryTogetId(dom);
 
-		if(json->isError())
+		if(json->isError(dom))
 			throw Error(-1102, "Received json rpc error response.");
 
 		switch(state)
@@ -147,7 +147,7 @@ bool UdsRegClient::handleAnnounceACKMsg(string* msg)
 
 	try
 	{
-		resultValue = json->tryTogetResult();
+		resultValue = json->tryTogetResult(dom);
 		if(resultValue->IsString())
 		{
 			resultString = resultValue->GetString();
@@ -206,7 +206,7 @@ bool UdsRegClient::handleRegisterACKMsg(string* msg)
 
 	try
 	{
-		resultValue = json->tryTogetResult();
+		resultValue = json->tryTogetResult(dom);
 		if(resultValue->IsString())
 		{
 			resultString = resultValue->GetString();

@@ -308,6 +308,7 @@ static void *_loadFunction (const char *name, int *result) {
 
 
 
+
 static int (*c_aa_find_devices) (int, u16*) = 0;
 
 bool RemoteAardvark::aa_find_devices(Value &params, Value &result)
