@@ -30,7 +30,7 @@ class AardvarkCareTaker{
 		//valueType can be PORT or HANDLE
 		RemoteAardvark* getDevice(Document* dom);
 
-		string* processMsg(string* msg);
+		void processMsg(string* msg);
 
 
 
