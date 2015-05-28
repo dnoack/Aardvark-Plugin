@@ -59,7 +59,8 @@ void UdsRegClient::processRegistration(string* msg)
 
 	try
 	{
-		dom = json->parse(msg);
+		dom = new Document();
+		json->parse(dom, msg);
 		currentMsgId = json->tryTogetId(dom);
 
 		if(json->isError(dom))

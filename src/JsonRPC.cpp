@@ -4,16 +4,6 @@
 #include "Error.hpp"
 
 
-Document* JsonRPC::parse(string* msg)
-{
-	Document* result = new Document();
-
-	result->Parse(msg->c_str());
-	if(result->HasParseError())
-		throw Error(-32700, "Error while parsing json rpc.");
-
-	return result;
-}
 
 
 void JsonRPC::parse( Document* dom, string* msg)
