@@ -26,8 +26,17 @@ static int serverSocket;
 static string OK_STRING =
 		"{\"jsonrpc\": \"2.0\", \"params\": { \"handle\": 1}, \"method\": \"aa_unique_id\", \"id\": 1}";
 
+static string OK_STRING2 =
+		"{\"jsonrpc\": \"2.0\", \"params\": { \"handle\": 1}, \"method\": \"aa_close\", \"id\": 30}";
+
 static string FAIL_STRING =
 		"{\"jsonrpc\": \"2.0\", \"params\":  \"handle\": 1}, \"method\": \"aa_close\", \"id\": 3}";
+
+static string SPLIT1_MSG =
+		"{\"jsonrpc\": \"2.0\", \"params\": { \"handle\": 1}, \"met";
+
+static string SPLIT2_MSG =
+		"hod\": \"aa_unique_id\", \"id\": 1}";
 
 
 static int createServerAcceptSocket()
@@ -155,12 +164,10 @@ TEST(WorkerInterface, convertInt_to_binaryCharArray)
 }
 
 
-
-
-
-TEST(Plugin_UdsComWorker, sendCorrectMsg_and_getAnswer)
+TEST(Plugin_UdsComWorker, send_splitted_Msg_with_splitted_Header)
 {
 	char buffer[RECEIVE_BUFFER_SIZE];
+	char* header = NULL;
 	int received = 0;
 	int retval = 0;
 	int sendCount = 0;
@@ -176,7 +183,267 @@ TEST(Plugin_UdsComWorker, sendCorrectMsg_and_getAnswer)
 
 	memset(buffer, '\0', RECEIVE_BUFFER_SIZE);
 
+	header = new char[HEADER_SIZE];
+	test_udsWorker->createHeader(header, SPLIT1_MSG.size() + SPLIT2_MSG.size());
+
+	sendCount = send(clientSocket, header, 2, 0);
+	sleep(1);
+	sendCount = send(clientSocket, &header[2], 3, 0);
+
+
+	sendCount = send(clientSocket, SPLIT1_MSG.c_str(), SPLIT1_MSG.size(), 0);
+	sleep(1);
+	sendCount = send(clientSocket, SPLIT2_MSG.c_str(), SPLIT2_MSG.size(), 0);
+
+
+
+	delete[] header;
+
+	if(sendCount < 0)
+		FAIL("Could not send TestMessage");
+
+
+		retval = select(clientSocket+1, &fds, NULL, NULL, &timeout);
+		if(retval > 0)
+		{
+			if(FD_ISSET(clientSocket, &fds))
+			{
+				received = recv(clientSocket, &buffer, RECEIVE_BUFFER_SIZE, 0);
+				if(received > 0)
+				{
+					printf("Empfangen: %s \n", buffer);
+				}
+
+			}
+		}
+		else if(retval == 0)
+		{
+			printf("Timeout.\n");
+			FAIL("TIMEOUT");
+		}
+
+}
+
+
+
+
+TEST(Plugin_UdsComWorker, send_Msg_with_splittedHeader)
+{
+	char buffer[RECEIVE_BUFFER_SIZE];
+	char* header = NULL;
+	int received = 0;
+	int retval = 0;
+	int sendCount = 0;
+	struct timeval timeout;
+
+	timeout.tv_sec = 3;
+	timeout.tv_usec = 0;
+
+	fd_set fds;
+	FD_ZERO(&fds);
+	FD_SET(clientSocket, &fds);
+
+
+	memset(buffer, '\0', RECEIVE_BUFFER_SIZE);
+
+	header = new char[HEADER_SIZE];
+	test_udsWorker->createHeader(header, OK_STRING.size());
+
+
+	sendCount = send(clientSocket, header, 2, 0);
+	sleep(1);
+	sendCount = send(clientSocket, &header[2], 3, 0);
+
 	sendCount = send(clientSocket, OK_STRING.c_str(), OK_STRING.size(), 0);
+
+
+
+	delete[] header;
+
+	if(sendCount < 0)
+		FAIL("Could not send TestMessage");
+
+
+		retval = select(clientSocket+1, &fds, NULL, NULL, &timeout);
+		if(retval > 0)
+		{
+			if(FD_ISSET(clientSocket, &fds))
+			{
+				received = recv(clientSocket, &buffer, RECEIVE_BUFFER_SIZE, 0);
+				if(received > 0)
+				{
+					printf("Empfangen: %s \n", buffer);
+				}
+
+			}
+		}
+		else if(retval == 0)
+		{
+			printf("Timeout.\n");
+			FAIL("TIMEOUT");
+		}
+
+}
+
+
+
+
+TEST(Plugin_UdsComWorker, send_splitted_Msg)
+{
+	char buffer[RECEIVE_BUFFER_SIZE];
+	char* header = NULL;
+	int received = 0;
+	int retval = 0;
+	int sendCount = 0;
+	struct timeval timeout;
+
+	timeout.tv_sec = 0;
+	timeout.tv_usec = 300000;
+
+	fd_set fds;
+	FD_ZERO(&fds);
+	FD_SET(clientSocket, &fds);
+
+
+	memset(buffer, '\0', RECEIVE_BUFFER_SIZE);
+
+	header = new char[HEADER_SIZE];
+	test_udsWorker->createHeader(header, SPLIT1_MSG.size() + SPLIT2_MSG.size());
+
+
+	sendCount = send(clientSocket, header, HEADER_SIZE, 0);
+	sendCount = send(clientSocket, SPLIT1_MSG.c_str(), SPLIT1_MSG.size(), 0);
+	sleep(1);
+	sendCount = send(clientSocket, SPLIT2_MSG.c_str(), SPLIT2_MSG.size(), 0);
+
+
+
+	delete[] header;
+
+	if(sendCount < 0)
+		FAIL("Could not send TestMessage");
+
+
+		retval = select(clientSocket+1, &fds, NULL, NULL, &timeout);
+		if(retval > 0)
+		{
+			if(FD_ISSET(clientSocket, &fds))
+			{
+				received = recv(clientSocket, &buffer, RECEIVE_BUFFER_SIZE, 0);
+				if(received > 0)
+				{
+					printf("Empfangen: %s \n", buffer);
+				}
+
+			}
+		}
+		else if(retval == 0)
+		{
+			printf("Timeout.\n");
+			FAIL("TIMEOUT");
+		}
+
+}
+
+
+
+
+TEST(Plugin_UdsComWorker, sendMultipleMessages)
+{
+	char buffer[RECEIVE_BUFFER_SIZE];
+	char* header = NULL;
+	char* header2 = NULL;
+	int received = 0;
+	int retval = 0;
+	int sendCount = 0;
+	struct timeval timeout;
+	int messageCount = 2;
+
+	timeout.tv_sec = 0;
+	timeout.tv_usec = 300000;
+
+	fd_set fds;
+	FD_ZERO(&fds);
+	FD_SET(clientSocket, &fds);
+
+
+	memset(buffer, '\0', RECEIVE_BUFFER_SIZE);
+
+	header = new char[HEADER_SIZE];
+	test_udsWorker->createHeader(header, OK_STRING.size());
+	header2 = new char[HEADER_SIZE];
+	test_udsWorker->createHeader(header2, OK_STRING2.size());
+
+
+	sendCount = send(clientSocket, header, 5, 0);
+	sendCount = send(clientSocket, OK_STRING.c_str(), OK_STRING.size(), 0);
+
+
+	sendCount = send(clientSocket, header2, 5, 0);
+	sendCount = send(clientSocket, OK_STRING2.c_str(), OK_STRING2.size(), 0);
+
+
+	delete[] header;
+	delete[] header2;
+
+	if(sendCount < 0)
+		FAIL("Could not send TestMessage");
+
+	while(messageCount != 0)
+	{
+		retval = select(clientSocket+1, &fds, NULL, NULL, &timeout);
+		if(retval > 0)
+		{
+			if(FD_ISSET(clientSocket, &fds))
+			{
+				received = recv(clientSocket, &buffer, RECEIVE_BUFFER_SIZE, 0);
+				if(received > 0)
+				{
+					printf("Empfangen: %s \n", buffer);
+				}
+
+			}
+		}
+		else if(retval == 0)
+		{
+			printf("Timeout.\n");
+		}
+		messageCount--;
+	}
+
+}
+
+
+
+
+TEST(Plugin_UdsComWorker, sendCorrectMsg_and_getAnswer)
+{
+	char buffer[RECEIVE_BUFFER_SIZE];
+	char* header = NULL;
+	int received = 0;
+	int retval = 0;
+	int sendCount = 0;
+	struct timeval timeout;
+
+	timeout.tv_sec = 0;
+	timeout.tv_usec = 300000;
+
+	fd_set fds;
+	FD_ZERO(&fds);
+	FD_SET(clientSocket, &fds);
+
+
+	memset(buffer, '\0', RECEIVE_BUFFER_SIZE);
+
+	header = new char[5];
+	test_udsWorker->createHeader(header, OK_STRING.size());
+
+
+	sendCount = send(clientSocket, header, 5, 0);
+	sendCount = send(clientSocket, OK_STRING.c_str(), OK_STRING.size(), 0);
+
+
+	delete[] header;
 
 	if(sendCount < 0)
 		FAIL("Could not send TestMessage");
@@ -223,7 +490,7 @@ TEST(Plugin_UdsComWorker, sendCorrectMsg_and_getAnswer)
 
 
 
-TEST(Plugin_UdsComWorker, correctMsg_x50)
+IGNORE_TEST(Plugin_UdsComWorker, correctMsg_x50)
 {
 	char buffer[RECEIVE_BUFFER_SIZE];
 	bool active = true;
