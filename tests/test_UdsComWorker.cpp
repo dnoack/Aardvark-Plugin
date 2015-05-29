@@ -143,12 +143,33 @@ TEST(WorkerInterface, makeHeader_negativeValue)
 
 TEST(WorkerInterface, makeHeader_and_convertBack)
 {
-	int testValue = 27654;
 	char* header = new char[HEADER_SIZE];
 
-	test_udsWorker->createHeader(header, testValue);
+	test_udsWorker->createHeader(header, 14);
+	CHECK_EQUAL(14, test_udsWorker->readHeader(header));
+	memset(header, '\0', HEADER_SIZE);
 
-	CHECK_EQUAL(testValue, test_udsWorker->readHeader(header));
+	test_udsWorker->createHeader(header, 127);
+	CHECK_EQUAL(127, test_udsWorker->readHeader(header));
+	memset(header, '\0', HEADER_SIZE);
+
+	test_udsWorker->createHeader(header, 144);
+	CHECK_EQUAL(144, test_udsWorker->readHeader(header));
+	memset(header, '\0', HEADER_SIZE);
+
+	test_udsWorker->createHeader(header, 254);
+	CHECK_EQUAL(254, test_udsWorker->readHeader(header));
+	memset(header, '\0', HEADER_SIZE);
+
+
+	test_udsWorker->createHeader(header, 258);
+	CHECK_EQUAL(258, test_udsWorker->readHeader(header));
+	memset(header, '\0', HEADER_SIZE);
+
+	test_udsWorker->createHeader(header, 24567);
+	CHECK_EQUAL(24567, test_udsWorker->readHeader(header));
+	memset(header, '\0', HEADER_SIZE);
+
 
 	delete[] header;
 
@@ -221,7 +242,6 @@ TEST(Plugin_UdsComWorker, send_splitted_Msg_with_splitted_Header)
 			printf("Timeout.\n");
 			FAIL("TIMEOUT");
 		}
-
 }
 
 
@@ -490,11 +510,12 @@ TEST(Plugin_UdsComWorker, sendCorrectMsg_and_getAnswer)
 
 
 
-IGNORE_TEST(Plugin_UdsComWorker, correctMsg_x50)
+TEST(Plugin_UdsComWorker, correctMsg_x50)
 {
 	char buffer[RECEIVE_BUFFER_SIZE];
 	bool active = true;
 	int received = 0;
+	char* header = NULL;
 	int sendCount = 0;
 	int repeats = 50;
 	int retval = 0;
@@ -513,8 +534,14 @@ IGNORE_TEST(Plugin_UdsComWorker, correctMsg_x50)
 	for(int i = 0; i < repeats; i++)
 	{
 
+		header = new char[5];
+		test_udsWorker->createHeader(header, OK_STRING.size());
+
+
+		sendCount = send(clientSocket, header, 5, 0);
 		active = true;
 		sendCount = send(clientSocket, OK_STRING.c_str(), OK_STRING.size(), 0);
+		delete[] header;
 
 		if(sendCount < 0)
 			FAIL("Could not send TestMessage");
@@ -542,7 +569,3 @@ IGNORE_TEST(Plugin_UdsComWorker, correctMsg_x50)
 	}
 
 }
-
-
-
-
