@@ -1,3 +1,4 @@
+#define protected public
 
 #include "UdsComWorker.hpp"
 #include "sys/socket.h"
@@ -6,6 +7,8 @@
 #include <fcntl.h>
 #include "errno.h"
 #include "TestHarness.h"
+
+
 
 #define TEST_UDSFILE "/tmp/test_com.uds"
 #define RECEIVE_BUFFER_SIZE 1024
@@ -79,6 +82,21 @@ static void connectClientToServer(int clientSocket, int serverAcceptSocket)
 }
 
 
+TEST_GROUP(WorkerInterface)
+{
+	void setup()
+	{
+		test_udsWorker = new UdsComWorker(serverSocket);
+	}
+
+	void teardown()
+	{
+		while(!test_udsWorker->isDeletable()){}
+		delete test_udsWorker;
+	}
+};
+
+
 
 TEST_GROUP(Plugin_UdsComWorker)
 {
@@ -93,11 +111,51 @@ TEST_GROUP(Plugin_UdsComWorker)
 	void teardown()
 	{
 		close(clientSocket);
-		//close(server_accept_socket);
 		while(!test_udsWorker->isDeletable()){}
 		delete test_udsWorker;
 	}
 };
+
+
+TEST(WorkerInterface, makeHeader_negativeValue)
+{
+	int testValue = -30001;
+	char* header = new char[HEADER_SIZE];
+
+	test_udsWorker->createHeader(header, testValue);
+
+	CHECK_EQUAL(0, test_udsWorker->readHeader(header));
+
+	delete[] header;
+
+}
+
+
+
+TEST(WorkerInterface, makeHeader_and_convertBack)
+{
+	int testValue = 27654;
+	char* header = new char[HEADER_SIZE];
+
+	test_udsWorker->createHeader(header, testValue);
+
+	CHECK_EQUAL(testValue, test_udsWorker->readHeader(header));
+
+	delete[] header;
+
+}
+
+
+TEST(WorkerInterface, convertInt_to_binaryCharArray)
+{
+	char* header = new char[HEADER_SIZE];
+	test_udsWorker->createHeader(header, 1024);
+
+	delete[] header;
+}
+
+
+
 
 
 TEST(Plugin_UdsComWorker, sendCorrectMsg_and_getAnswer)
