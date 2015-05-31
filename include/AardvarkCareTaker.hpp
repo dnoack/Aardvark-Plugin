@@ -13,16 +13,16 @@
 #define HANDLE 1
 
 #include <vector>
+#include "ProcessInterface.hpp"
 #include "JsonRPC.hpp"
 #include "RemoteAardvark.hpp"
 
 class UdsComWorker;
 
-class AardvarkCareTaker{
+class AardvarkCareTaker : public ProcessInterface{
 
 	public:
 		AardvarkCareTaker();
-		AardvarkCareTaker(UdsComWorker* udsWorker);
 		~AardvarkCareTaker();
 
 		static void init();
@@ -30,9 +30,7 @@ class AardvarkCareTaker{
 		//valueType can be PORT or HANDLE
 		RemoteAardvark* getDevice(int value, int valueType);
 
-		string* processMsg(string* msg);
-
-
+		void process(RPCMsg* msg);
 
 	private:
 
@@ -41,7 +39,6 @@ class AardvarkCareTaker{
 		string* result;
 		int contextNumber;
 		list<string*>* msgList;
-		UdsComWorker* udsworker;
 		RemoteAardvark* deviceLessFunctions;
 
 
@@ -49,13 +46,8 @@ class AardvarkCareTaker{
 		static pthread_mutex_t dLmutex;
 		static void deleteDeviceList();
 
-
 		void unlockAllUsedDevices();
-
-
 };
-
-
 
 
 #endif /* INCLUDE_PLUGINAARDVARK_HPP_ */
