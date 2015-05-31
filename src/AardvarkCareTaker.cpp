@@ -5,7 +5,6 @@
  *      Author: dnoack
  */
 
-#include "UdsComWorker.hpp"
 #include "AardvarkCareTaker.hpp"
 #include "Utils.h"
 #include "ProcessInterface.hpp"
@@ -16,10 +15,9 @@ pthread_mutex_t AardvarkCareTaker::dLmutex;
 
 
 
-AardvarkCareTaker::AardvarkCareTaker(UdsComWorker* udsWorker)
+AardvarkCareTaker::AardvarkCareTaker()
 {
 	msgList = NULL;
-	this->udsworker = udsWorker;
 	json = new JsonRPC();
 	currentDom = NULL;
 	contextNumber = 0;
@@ -122,7 +120,7 @@ RemoteAardvark* AardvarkCareTaker::getDevice(int value, int valueType)
 
 
 //main method for processing new json rpc msgs
-string* AardvarkCareTaker::processMsg(string* msg)
+void AardvarkCareTaker::process(RPCMsg* msg)
 {
 
 	Value responseValue;
@@ -131,7 +129,7 @@ string* AardvarkCareTaker::processMsg(string* msg)
 	list<string*>::iterator currentMsg;
 
 	currentDom = new Document();
-	msgList = json->splitMsg(currentDom, msg);
+	msgList = json->splitMsg(currentDom, msg->getContent());
 	currentMsg = msgList->begin();
 
 
@@ -166,7 +164,7 @@ string* AardvarkCareTaker::processMsg(string* msg)
 					}
 					device->executeFunction((*currentDom)["method"], (*currentDom)["params"], responseValue);
 					result = new string(json->generateResponse((*currentDom)["id"], responseValue));
-					udsworker->transmit(result);
+					workerInterface->transmit(result->c_str(), result->size());
 				}
 
 			}
@@ -186,7 +184,7 @@ string* AardvarkCareTaker::processMsg(string* msg)
 		}
 		catch(Error &e)
 		{
-			udsworker->transmit(e.get(), strlen(e.get()));
+			workerInterface->transmit(e.get(), strlen(e.get()));
 			delete *currentMsg;
 			currentMsg = msgList->erase(currentMsg);
 		}
@@ -194,8 +192,6 @@ string* AardvarkCareTaker::processMsg(string* msg)
 	}
 	delete msgList;
 	delete currentDom;
-
-	return result;
 }
 
 

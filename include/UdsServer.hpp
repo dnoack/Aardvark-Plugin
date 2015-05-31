@@ -10,8 +10,11 @@
 #include <cstdio>
 #include <list>
 #include <pthread.h>
-
 #include "signal.h"
+
+#include "AcceptThread.hpp"
+#include "ComPoint.hpp"
+#include "AardvarkCareTaker.hpp"
 #include "JsonRPC.hpp"
 
 #define MAX_CLIENTS 20
@@ -19,34 +22,34 @@
 class UdsComWorker;
 
 
-class UdsServer{
+class UdsServer : public AcceptThread{
 
 	public:
 
 		UdsServer(const char* udsFile, int nameSize);
 		~UdsServer();
 
-		bool isReady(){return ready;}
+
 		void checkForDeletableWorker();
 
 	private:
 
-		static bool ready;
-		static int connection_socket;
 
-		static list<UdsComWorker*> workerList;
-		static pthread_mutex_t wLmutex;
+		 int connection_socket;
 
-		static struct sockaddr_un address;
-		static socklen_t addrlen;
+		list<ComPoint*> comPointList;
+		pthread_mutex_t wLmutex;
 
-		static void* uds_accept(void*);
-		static void pushWorkerList(UdsComWorker* newWorker);
-		static void deleteWorkerList();
+		struct sockaddr_un address;
+		socklen_t addrlen;
+
+		void pushComPointList(ComPoint* newWorker);
+		void deleteComPointList();
+
+
+		virtual void thread_accept();
 
 		int optionflag;
-		pthread_t accepter;
-
 };
 
 #endif /* AARDVARK_PLUGIN_INCLUDE_UDSSERVER_HPP_ */
