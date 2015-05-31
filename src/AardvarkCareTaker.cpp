@@ -8,6 +8,7 @@
 #include "UdsComWorker.hpp"
 #include "AardvarkCareTaker.hpp"
 #include "Utils.h"
+#include "ProcessInterface.hpp"
 
 
 list<RemoteAardvark*> AardvarkCareTaker::deviceList;

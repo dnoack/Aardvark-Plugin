@@ -13,8 +13,8 @@
 #include "signal.h"
 #include <string>
 
-#include <UdsRegWorker.hpp>
-#include "UdsRegClient.hpp"
+#include "ComPoint.hpp"
+#include "RPCMsg.hpp"
 #include "AardvarkPlugin.hpp"
 #include "JsonRPC.hpp"
 #include "Plugin.hpp"
@@ -31,7 +31,7 @@ using namespace std;
  * of the plugin. If something goes wrong during the registration, the connection_socket will be
  * closed, which results in shutting down the whole plugin.
  */
-class UdsRegClient{
+class RegClient : public ProcessInterface{
 
 
 	public:
@@ -43,12 +43,12 @@ class UdsRegClient{
 		 * \param regPath Path to unix domain socket file for registring a plugin to RSD.
 		 * \param comPath Path to unix domain socket file for communication between RSD and the corresponding plugin.
 		 */
-		UdsRegClient(const char* pluginName, int pluginNumber,const char* regPath, const char* comPath);
+		RegClient(const char* pluginName, int pluginNumber,const char* regPath, const char* comPath);
 
 		/**
 		 * Destructor.
 		 */
-		virtual ~UdsRegClient();
+		virtual ~RegClient();
 
 
 		/**
@@ -76,7 +76,7 @@ class UdsRegClient{
 		 * the state of the registration process. If something goes wrong, the state will be set
 		 * to BROKEn and the connection_socket will be closed.
 		 */
-		void processRegistration(string* msg);
+		void process(RPCMsg* msg);
 
 		/**
 		 * Checks the underlying UdsRegWorker instance if it is deletable.
@@ -84,8 +84,8 @@ class UdsRegClient{
 		 */
 		bool isDeletable()
 		{
-			if(regWorker != NULL)
-				return regWorker->isDeletable();
+			if(workerInterface != NULL)
+				return workerInterface->isDeletable();
 			else
 				return false;
 		}
@@ -102,8 +102,7 @@ class UdsRegClient{
 		/*! Socket fd for unix domain socket for registering.*/
 		int connection_socket;
 
-		/*! Underlying instance of UdsRegWorker, which can be used to receive and send data to RSD.*/
-		UdsRegWorker* regWorker;
+
 		/*! Contains information about the corresponding plugin.*/
 		Plugin* plugin;
 		/*! Instance of json rpc parser, using rapidjson.*/
@@ -133,7 +132,7 @@ class UdsRegClient{
 		 * \return If everything is ok with the announceACK message it returns true, otherwhise a exception is thrown.
 		 * \throws Error exception.
 		 */
-		bool handleAnnounceACKMsg(string* msg);
+		bool handleAnnounceACKMsg();
 
 		/**
 		 * Creates a the register message whithin the register process, which is end to RSD after receiving a announce ACk
@@ -147,7 +146,7 @@ class UdsRegClient{
 		  * \return If everything is ok with the registerACK message it returns true, otherwhise a exception is thrown.
 		 * \throws Error exception.
 		 */
-		bool handleRegisterACKMsg(string* msg);
+		bool handleRegisterACKMsg();
 
 		/**
 		 * Creates a pluginActive message, which completes the registration process and signals RSD that this plugin

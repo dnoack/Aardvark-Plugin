@@ -14,11 +14,12 @@
 #define WAIT_TIME 3
 
 #include "UdsServer.hpp"
-#include "UdsRegClient.hpp"
+#include "RegClient.hpp"
 #include "RemoteAardvark.hpp"
 #include "AardvarkCareTaker.hpp"
 #include "LogUnit.hpp"
 
+class RegClient;
 
 /**
  * \class AardvarkPlugin
@@ -64,7 +65,7 @@ class AardvarkPlugin : LogUnit{
 		/*! Handles incomming json rpc calls from RSD.*/
 		UdsServer* comServer;
 		/*! Handles the registry process to RSD.*/
-		UdsRegClient* regClient;
+		RegClient* regClient;
 
 		sigset_t sigmask;
 		sigset_t origmask;
