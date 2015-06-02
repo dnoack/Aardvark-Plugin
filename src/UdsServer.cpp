@@ -1,6 +1,5 @@
 #include <UdsServer.hpp>
 #include "JsonRPC.hpp"
-#include "Utils.h"
 
 
 
@@ -48,7 +47,7 @@ void UdsServer::thread_accept()
 	AardvarkCareTaker* paard = NULL;
 	listen(connection_socket, MAX_CLIENTS);
 
-	dyn_print("Accepter created\n");
+	//dyn_print("Accepter created\n");
 	while(true)
 	{
 		new_socket = accept(connection_socket, (struct sockaddr*)&address, &addrlen);
@@ -56,7 +55,7 @@ void UdsServer::thread_accept()
 		{
 			paard = new AardvarkCareTaker();
 			comPoint = new ComPoint(new_socket, paard, 1); //TODO: enter plugin id instead of just 1
-			dyn_print("Uds---> sNew UdsWorker with socket: %d \n", new_socket);
+			//dyn_print("Uds---> sNew UdsWorker with socket: %d \n", new_socket);
 			pushComPointList(comPoint);
 		}
 	}
@@ -79,7 +78,7 @@ void UdsServer::pushComPointList(ComPoint* comPoint)
 {
 	pthread_mutex_lock(&wLmutex);
 	comPointList.push_back(comPoint);
-	dyn_print("Uds---> Number of UdsWorker: %d \n", comPointList.size());
+	//dyn_print("Uds---> Number of UdsWorker: %d \n", comPointList.size());
 	pthread_mutex_unlock(&wLmutex);
 }
 
@@ -93,7 +92,7 @@ void UdsServer::checkForDeletableWorker()
 	{
 		if((*i)->isDeletable())
 		{
-			dyn_print("Uds---> Deleting UdsWorker. %d still left.\n", comPointList.size()-1);
+			//dyn_print("Uds---> Deleting UdsWorker. %d still left.\n", comPointList.size()-1);
 			delete *i;
 			i = comPointList.erase(i);
 		}

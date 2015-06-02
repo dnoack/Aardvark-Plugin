@@ -5,8 +5,8 @@
  *      Author: dnoack
  */
 
+
 #include "AardvarkCareTaker.hpp"
-#include "Utils.h"
 #include "ProcessInterface.hpp"
 
 
@@ -83,14 +83,14 @@ RemoteAardvark* AardvarkCareTaker::getDevice(int value, int valueType)
 	{
 		if(device->getContextNumber() == 0 || device->getContextNumber() == contextNumber)
 		{
-			dyn_print("Found device and got access to it. context: %d \n", contextNumber);
+			//dyn_print("Found device and got access to it. context: %d \n", contextNumber);
 			if(device->getContextNumber() == 0)
 				device->setContextNumber(contextNumber);
 		}
 		else
 		{
 			pthread_mutex_unlock(&dLmutex);
-			dyn_print("Requesting context %d.  using context: %d \n", contextNumber, device->getContextNumber());
+			//dyn_print("Requesting context %d.  using context: %d \n", contextNumber, device->getContextNumber());
 			error = json->generateResponseError(*(json->getId(currentDom)), -99998, "Another user is using the requested hardware.");
 			throw Error(error);
 		}
@@ -143,7 +143,7 @@ void AardvarkCareTaker::process(RPCMsg* msg)
 			{
 				if(json->hasParams(currentDom))
 				{
-					dyn_print("Request incomming, gettin device...\n");
+					//dyn_print("Request incomming, gettin device...\n");
 
 					if((*currentDom)["params"].HasMember("port"))
 					{
@@ -172,7 +172,7 @@ void AardvarkCareTaker::process(RPCMsg* msg)
 			{
 				paramValue = json->tryTogetParam(currentDom, "contextNumber");
 				contextNumber = paramValue->GetInt();
-				dyn_print("Received Notification for context: %d", contextNumber);
+				//dyn_print("Received Notification for context: %d", contextNumber);
 			}
 			else
 			{

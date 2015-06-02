@@ -3,7 +3,6 @@
 
 
 list<string*>* AardvarkPlugin::funcList;
-int LogUnit::globalLogLevel = 4;
 
 
 AardvarkPlugin::AardvarkPlugin()
