@@ -21,3 +21,11 @@ environment/project/cdt.managedbuild.config.gnu.exe.debug.721159017.411245810/LD
 environment/project/cdt.managedbuild.config.gnu.exe.debug.721159017.411245810/LDFLAGS/value=-L../aardvark/lib -L${HOME}/libs/cpputest-3.6/lib
 environment/project/cdt.managedbuild.config.gnu.exe.debug.721159017.411245810/append=true
 environment/project/cdt.managedbuild.config.gnu.exe.debug.721159017.411245810/appendContributed=true
+environment/project/cdt.managedbuild.config.gnu.exe.debug.721159017/CFLAGS/delimiter=\:
+environment/project/cdt.managedbuild.config.gnu.exe.debug.721159017/CFLAGS/operation=append
+environment/project/cdt.managedbuild.config.gnu.exe.debug.721159017/CFLAGS/value=-I ../include -I ${HOME}/git/rapidjson/include/rapidjson
+environment/project/cdt.managedbuild.config.gnu.exe.debug.721159017/CXXFLAGS/delimiter=\:
+environment/project/cdt.managedbuild.config.gnu.exe.debug.721159017/CXXFLAGS/operation=append
+environment/project/cdt.managedbuild.config.gnu.exe.debug.721159017/CXXFLAGS/value=${CFLAGS}
+environment/project/cdt.managedbuild.config.gnu.exe.debug.721159017/append=true
+environment/project/cdt.managedbuild.config.gnu.exe.debug.721159017/appendContributed=true
