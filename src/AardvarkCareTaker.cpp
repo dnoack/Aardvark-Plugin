@@ -19,6 +19,8 @@ AardvarkCareTaker::AardvarkCareTaker()
 {
 	msgList = NULL;
 	json = new JsonRPC();
+	id = NULL;
+	error = NULL;
 	currentDom = NULL;
 	contextNumber = 0;
 	result = NULL;
@@ -141,6 +143,7 @@ void AardvarkCareTaker::process(RPCMsg* msg)
 
 			if(json->isRequest(currentDom))
 			{
+				id = json->getId(currentDom);
 				if(json->hasParams(currentDom))
 				{
 					//dyn_print("Request incomming, gettin device...\n");
@@ -184,7 +187,8 @@ void AardvarkCareTaker::process(RPCMsg* msg)
 		}
 		catch(Error &e)
 		{
-			workerInterface->transmit(e.get(), strlen(e.get()));
+			error = json->generateResponseError(*id, e.getErrorCode(), e.get());
+			workerInterface->transmit(error, strlen(error));
 			delete *currentMsg;
 			currentMsg = msgList->erase(currentMsg);
 		}

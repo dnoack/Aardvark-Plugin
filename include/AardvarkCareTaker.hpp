@@ -35,7 +35,11 @@ class AardvarkCareTaker : public ProcessInterface{
 	private:
 
 		JsonRPC* json;
+		//for generating json rpc error responses
+		const char* error;
 		Document* currentDom;
+		//saving json rpc id of incomming msg
+		Value* id;
 		string* result;
 		int contextNumber;
 		list<string*>* msgList;
