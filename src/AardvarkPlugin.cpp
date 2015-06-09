@@ -24,7 +24,7 @@ AardvarkPlugin::AardvarkPlugin()
 	AardvarkCareTaker::init();
 
 	regClient = new RegClient(PLUGIN_NAME, PLUGIN_NUMBER, REG_PATH, COM_PATH);
-	comServer = new UdsServer(COM_PATH, sizeof(COM_PATH));
+	comServer = new ComServer(COM_PATH, sizeof(COM_PATH), PLUGIN_NUMBER);
 }
 
 

@@ -8,12 +8,14 @@ socklen_t RegClient::addrlen;
 RegClient::RegClient(const char* pluginName, int pluginNumber, const char* regPath, const char* comPath)
 {
 	this->regPath = regPath;
-	dom = NULL;
+	globalDom = NULL;
 	comPoint = NULL;
 	optionflag = 1;
 	currentMsgId = NULL;
 	state = NOT_ACTIVE;
 	address.sun_family = AF_UNIX;
+	globalDom = new Document();
+
 	strncpy(address.sun_path, regPath, strlen(regPath));
 	addrlen = sizeof(address);
 
@@ -35,6 +37,7 @@ RegClient::~RegClient()
 
 	delete plugin;
 	delete json;
+	delete globalDom;
 }
 
 
@@ -55,16 +58,14 @@ void RegClient::unregisterFromRSD()
 
 void RegClient::process(RPCMsg* msg)
 {
-
 	const char* response = NULL;
 
 	try
 	{
-		dom = new Document();
-		json->parse(dom, msg->getContent());
-		currentMsgId = json->tryTogetId(dom);
+		json->parse(globalDom, msg->getContent());
+		currentMsgId = json->tryTogetId(globalDom);
 
-		if(json->isError(dom))
+		if(json->isError(globalDom))
 			throw Error(-1102, "Received json rpc error response.");
 
 		switch(state)
@@ -83,8 +84,6 @@ void RegClient::process(RPCMsg* msg)
 				if(handleRegisterACKMsg())
 				{
 					state = REGISTERED;
-					//TODO: check if Plugin com part is ready, if yes -> state = active
-					//create pluginActive msg
 					response = createPluginActiveMsg();
 					comPoint->transmit(response, strlen(response));
 				}
@@ -119,15 +118,15 @@ void RegClient::sendAnnounceMsg()
 	Value params;
 	Value id;
 	const char* announceMsg = NULL;
-	Document* dom = json->getRequestDOM();
+	Document* requestDOM = json->getRequestDOM();
 
 	try
 	{
 		method.SetString("announce");
 		params.SetObject();
-		params.AddMember("pluginName", StringRef(plugin->getName()->c_str()), dom->GetAllocator());
-		params.AddMember("pluginNumber", plugin->getPluginNumber(), dom->GetAllocator());
-		params.AddMember("udsFilePath", StringRef(plugin->getUdsFilePath()->c_str()), dom->GetAllocator());
+		params.AddMember("pluginName", StringRef(plugin->getName()->c_str()), requestDOM->GetAllocator());
+		params.AddMember("pluginNumber", plugin->getPluginNumber(), requestDOM->GetAllocator());
+		params.AddMember("udsFilePath", StringRef(plugin->getUdsFilePath()->c_str()), requestDOM->GetAllocator());
 		id.SetInt(1);
 
 		announceMsg = json->generateRequest(method, params, id);
@@ -149,7 +148,7 @@ bool RegClient::handleAnnounceACKMsg()
 
 	try
 	{
-		resultValue = json->tryTogetResult(dom);
+		resultValue = json->tryTogetResult(globalDom);
 		if(resultValue->IsString())
 		{
 			resultString = resultValue->GetString();
@@ -171,15 +170,13 @@ bool RegClient::handleAnnounceACKMsg()
 
 const char* RegClient::createRegisterMsg()
 {
-	Document dom;
 	Value method;
 	Value params;
 	Value functionArray;
 
-
 	list<string*>* funcList;
 	string* functionName;
-
+	Document* requestDOM = json->getRequestDOM();
 
 	//get methods from plugin
 	funcList = AardvarkPlugin::getFuncList();
@@ -190,11 +187,11 @@ const char* RegClient::createRegisterMsg()
 	for(list<string*>::iterator ifName = funcList->begin(); ifName != funcList->end(); )
 	{
 		functionName = *ifName;
-		functionArray.PushBack(StringRef(functionName->c_str()), dom.GetAllocator());
+		functionArray.PushBack(StringRef(functionName->c_str()), requestDOM->GetAllocator());
 		ifName = funcList->erase(ifName);
 	}
 
-	params.AddMember("functions", functionArray, dom.GetAllocator());
+	params.AddMember("functions", functionArray, requestDOM->GetAllocator());
 
 	return json->generateRequest(method, params, *currentMsgId);
 }
@@ -208,7 +205,7 @@ bool RegClient::handleRegisterACKMsg()
 
 	try
 	{
-		resultValue = json->tryTogetResult(dom);
+		resultValue = json->tryTogetResult(globalDom);
 		if(resultValue->IsString())
 		{
 			resultString = resultValue->GetString();

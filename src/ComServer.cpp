@@ -1,15 +1,22 @@
-#include <UdsServer.hpp>
+#include <ComServer.hpp>
 #include "JsonRPC.hpp"
 
 
 
-UdsServer::UdsServer( const char* udsFile, int nameSize)
+ComServer::ComServer( const char* udsFile, int nameSize, int pluginNumber)
 {
 	optionflag = 1;
+	this->pluginNumber = pluginNumber;
 	connection_socket = socket(AF_UNIX, SOCK_STREAM, 0);
 	address.sun_family = AF_UNIX;
 	strncpy(address.sun_path, udsFile, nameSize);
 	addrlen = sizeof(address);
+	infoIn.logLevel = LOG_INPUT;
+	infoIn.logName = "IPC IN:";
+	infoOut.logLevel = LOG_OUTPUT;
+	infoOut.logName = "IPC OUT:";
+	info.logLevel = LOG_INFO;
+	info.logName = "ComPoint for RPC:";
 
 	pthread_mutex_init(&wLmutex, NULL);
 
@@ -26,7 +33,7 @@ UdsServer::UdsServer( const char* udsFile, int nameSize)
 }
 
 
-UdsServer::~UdsServer()
+ComServer::~ComServer()
 {
 	pthread_t accepter = getAccepter();
 	if(accepter != 0)
@@ -40,11 +47,11 @@ UdsServer::~UdsServer()
 }
 
 
-void UdsServer::thread_accept()
+void ComServer::thread_accept()
 {
 	int new_socket = 0;
 	ComPoint* comPoint = NULL;
-	AardvarkCareTaker* paard = NULL;
+	AardvarkCareTaker* aardC = NULL;
 	listen(connection_socket, MAX_CLIENTS);
 
 	//dyn_print("Accepter created\n");
@@ -53,8 +60,9 @@ void UdsServer::thread_accept()
 		new_socket = accept(connection_socket, (struct sockaddr*)&address, &addrlen);
 		if(new_socket > 0)
 		{
-			paard = new AardvarkCareTaker();
-			comPoint = new ComPoint(new_socket, paard, 1); //TODO: enter plugin id instead of just 1
+			aardC = new AardvarkCareTaker();
+			comPoint = new ComPoint(new_socket, aardC, pluginNumber);
+			comPoint->configureLogInfo(&infoIn, &infoOut, &info);
 			//dyn_print("Uds---> sNew UdsWorker with socket: %d \n", new_socket);
 			pushComPointList(comPoint);
 		}
@@ -62,7 +70,7 @@ void UdsServer::thread_accept()
 }
 
 
-void UdsServer::deleteComPointList()
+void ComServer::deleteComPointList()
 {
 	list<ComPoint*>::iterator worker= comPointList.begin();
 
@@ -74,7 +82,7 @@ void UdsServer::deleteComPointList()
 }
 
 
-void UdsServer::pushComPointList(ComPoint* comPoint)
+void ComServer::pushComPointList(ComPoint* comPoint)
 {
 	pthread_mutex_lock(&wLmutex);
 	comPointList.push_back(comPoint);
@@ -83,7 +91,7 @@ void UdsServer::pushComPointList(ComPoint* comPoint)
 }
 
 
-void UdsServer::checkForDeletableWorker()
+void ComServer::checkForDeletableWorker()
 {
 	pthread_mutex_lock(&wLmutex);
 

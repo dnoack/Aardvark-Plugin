@@ -13,7 +13,7 @@
 /*! Wait time in seconds for main poll loop.*/
 #define WAIT_TIME 3
 
-#include "UdsServer.hpp"
+#include <ComServer.hpp>
 #include "RegClient.hpp"
 #include "RemoteAardvark.hpp"
 #include "AardvarkCareTaker.hpp"
@@ -63,7 +63,7 @@ class AardvarkPlugin : LogUnit{
 		static list<string*>* funcList;
 
 		/*! Handles incomming json rpc calls from RSD.*/
-		UdsServer* comServer;
+		ComServer* comServer;
 		/*! Handles the registry process to RSD.*/
 		RegClient* regClient;
 

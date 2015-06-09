@@ -23,6 +23,7 @@
 using namespace std;
 
 
+
 /**
  * \class UdsRegClient
  * UdsRegClient handles the registration of the corresponding plugin to RSD.
@@ -108,7 +109,7 @@ class RegClient : public ProcessInterface{
 		/*! Instance of json rpc parser, using rapidjson.*/
 		JsonRPC* json;
 
-		Document* dom;
+		Document* globalDom;
 
 		/*! Path to unix domain socket file for registering the plugin to RSD.*/
 		const char* regPath;
