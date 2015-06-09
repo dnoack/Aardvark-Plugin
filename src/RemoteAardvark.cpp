@@ -321,7 +321,7 @@ bool RemoteAardvark::aa_find_devices(Value &params, Value &result)
 	const char* paramsName = _aa_find_devices.paramArray[0]._name;
 	Type paramType = _aa_find_devices.paramArray[0]._type;
 
-	if(findObjectMember(params, paramsName, paramType))
+	if(json->findObjectMember(params, paramsName, paramType))
 	{
 		num_devices = params[paramsName].GetInt();
 
@@ -369,7 +369,7 @@ bool RemoteAardvark::aa_find_devices_ext(Value &params, Value &result)
 	const char* paramsName = _aa_find_devices_ext.paramArray[0]._name;
 	Type paramType = _aa_find_devices_ext.paramArray[0]._type;
 
-	if(findObjectMember(params, paramsName, paramType))
+	if(json->findObjectMember(params, paramsName, paramType))
 	{
 		num_devices = params[paramsName].GetInt();
 		num_ids = num_devices;
@@ -422,7 +422,7 @@ bool RemoteAardvark::aa_open(rapidjson::Value &params , rapidjson::Value &result
 	int newHandle = 0;
 	int res = 0;
 
-	if(findObjectMember(params, "port"))
+	if(json->findObjectMember(params, "port"))
 	{
 		if(params["port"].IsInt())
 		{
@@ -458,7 +458,7 @@ bool RemoteAardvark::aa_open_ext(rapidjson::Value &params , rapidjson::Value &re
 	int res = 0;
 
 
-		if(findObjectMember(params, "port"))
+		if(json->findObjectMember(params, "port"))
 		{
 			if(params["port"].IsInt())
 			{
@@ -511,7 +511,7 @@ bool RemoteAardvark::aa_close(rapidjson::Value &params , rapidjson::Value &resul
 	int returnValue = 0;
 	int res = 0;
 
-	if(findObjectMember(params, "Aardvark"))
+	if(json->findObjectMember(params, "Aardvark"))
 	{
 		if(params["Aardvark"].IsInt())
 		{
@@ -546,7 +546,7 @@ bool RemoteAardvark::aa_port(Value &params, Value &result)
 	const char* paramsName = _aa_port.paramArray[0]._name;
 	Type paramType = _aa_port.paramArray[0]._type;
 
-	if(findObjectMember(params, paramsName, paramType))
+	if(json->findObjectMember(params, paramsName, paramType))
 	{
 
 		tempHandle = params[paramsName].GetInt();
@@ -576,7 +576,7 @@ bool RemoteAardvark::aa_features(Value &params, Value &result)
 	const char* paramsName = _aa_features.paramArray[0]._name;
 	Type paramType = _aa_features.paramArray[0]._type;
 
-	if(findObjectMember(params, paramsName, paramType))
+	if(json->findObjectMember(params, paramsName, paramType))
 	{
 
 		tempHandle = params[paramsName].GetInt();
@@ -609,7 +609,7 @@ bool RemoteAardvark::aa_unique_id(Value &params , Value &result)
 	const char* paramsName = _aa_unique_id.paramArray[0]._name;
 	Type paramType = _aa_unique_id.paramArray[0]._type;
 
-	if(findObjectMember(params, paramsName, paramType))
+	if(json->findObjectMember(params, paramsName, paramType))
 	{
 		aardvark = params[paramsName].GetInt();
 		if (!(c_aa_unique_id = reinterpret_cast<u32(*)(Aardvark)>(_loadFunction("c_aa_unique_id", &res))))
@@ -637,7 +637,7 @@ bool RemoteAardvark::aa_status_string(Value &params, Value &result)
 	const char* paramsName = _aa_status_string.paramArray[0]._name;
 	Type paramType = _aa_status_string.paramArray[0]._type;
 
-	if(findObjectMember(params, paramsName, paramType))
+	if(json->findObjectMember(params, paramsName, paramType))
 	{
 		status = params[paramsName].GetInt();
 		if (!(c_aa_status_string = reinterpret_cast<const char*(*)(Aardvark)>(_loadFunction("c_aa_status_string", &res))))
@@ -668,7 +668,7 @@ bool RemoteAardvark::aa_version(Value &params, Value &result)
 	const char* paramsName = _aa_version.paramArray[0]._name;
 	Type paramType = _aa_version.paramArray[0]._type;
 
-	if(findObjectMember(params, paramsName, paramType))
+	if(json->findObjectMember(params, paramsName, paramType))
 	{
 
 		tempHandle = params[paramsName].GetInt();
@@ -713,13 +713,13 @@ bool RemoteAardvark::aa_target_power(Value &params , Value &result)
 	const char* paramsName = _aa_target_power.paramArray[0]._name;
 	Type paramType = _aa_target_power.paramArray[0]._type;
 
-	findObjectMember(params, paramsName, paramType);
+	json->findObjectMember(params, paramsName, paramType);
 
 	aardvark = params[paramsName].GetInt();
 
 	paramsName = _aa_target_power.paramArray[1]._name;
 	paramType = _aa_target_power.paramArray[1]._type;
-	findObjectMember(params, paramsName, paramType);
+	json->findObjectMember(params, paramsName, paramType);
 	power_mask = params[paramsName].GetInt();
 
 	if (!(c_aa_target_power = reinterpret_cast<int(*)(Aardvark, u08)>(_loadFunction("c_aa_target_power", &res))))
@@ -756,25 +756,25 @@ bool RemoteAardvark::aa_i2c_write(Value &params, Value &result)
 	//get handle
 	const char* paramName = _aa_i2c_write.paramArray[0]._name;
 	Type paramType = _aa_i2c_write.paramArray[0]._type;
-	tempValue = findObjectMember(params, paramName, paramType);
+	tempValue = json->findObjectMember(params, paramName, paramType);
 	aardvark = tempValue->GetInt();
 
 	//get slave addr
 	paramName = _aa_i2c_write.paramArray[1]._name;
 	paramType = _aa_i2c_write.paramArray[1]._type;
-	tempValue = findObjectMember(params, paramName, paramType);
+	tempValue = json->findObjectMember(params, paramName, paramType);
 	slaveAddress = tempValue->GetUint();
 
 	//get flags
 	paramName = _aa_i2c_write.paramArray[2]._name;
 	paramType = _aa_i2c_write.paramArray[2]._type;
-	tempValue = findObjectMember(params, paramName, paramType);
+	tempValue = json->findObjectMember(params, paramName, paramType);
 	flags = (AardvarkI2cFlags)(tempValue->GetUint());
 
 	//get num bytes through data_out size, then get data_out
 	paramName = _aa_i2c_write.paramArray[3]._name;
 	paramType = _aa_i2c_write.paramArray[3]._type;
-	tempValue = findObjectMember(params, paramName, paramType);
+	tempValue = json->findObjectMember(params, paramName, paramType);
 	numberOfBytes = tempValue->Size();
 	data = new u08[numberOfBytes];
 	for(int i = 0; i < numberOfBytes; i++)
@@ -817,25 +817,25 @@ bool RemoteAardvark::aa_i2c_read(Value &params, Value &result)
 	//get handle
 	const char* paramName = _aa_i2c_read.paramArray[0]._name;
 	Type paramType = _aa_i2c_read.paramArray[0]._type;
-	tempValue = findObjectMember(params, paramName, paramType);
+	tempValue = json->findObjectMember(params, paramName, paramType);
 	aardvark = tempValue->GetInt();
 
 	//get slave addr
 	paramName = _aa_i2c_read.paramArray[1]._name;
 	paramType = _aa_i2c_read.paramArray[1]._type;
-	tempValue = findObjectMember(params, paramName, paramType);
+	tempValue = json->findObjectMember(params, paramName, paramType);
 	slaveAddress = tempValue->GetUint();
 
 	//get flags
 	paramName = _aa_i2c_read.paramArray[2]._name;
 	paramType = _aa_i2c_read.paramArray[2]._type;
-	tempValue = findObjectMember(params, paramName, paramType);
+	tempValue = json->findObjectMember(params, paramName, paramType);
 	flags = (AardvarkI2cFlags)(tempValue->GetUint());
 
 	//get num bytes
 	paramName = _aa_i2c_read.paramArray[3]._name;
 	paramType = _aa_i2c_read.paramArray[3]._type;
-	tempValue = findObjectMember(params, paramName, paramType);
+	tempValue = json->findObjectMember(params, paramName, paramType);
 	numberOfBytes = tempValue->GetUint();
 	data = new u08[numberOfBytes];
 
@@ -876,13 +876,13 @@ bool RemoteAardvark::aa_configure(Value &params, Value &result)
 	//get handle
 	const char* paramName = _aa_configure.paramArray[0]._name;
 	Type paramType = _aa_configure.paramArray[0]._type;
-	tempValue = findObjectMember(params, paramName, paramType);
+	tempValue = json->findObjectMember(params, paramName, paramType);
 	aardvark = tempValue->GetInt();
 
 	//get config
 	paramName = _aa_configure.paramArray[1]._name;
 	paramType = _aa_configure.paramArray[1]._type;
-	tempValue = findObjectMember(params, paramName, paramType);
+	tempValue = json->findObjectMember(params, paramName, paramType);
 	config = (AardvarkConfig)(tempValue->GetUint());
 
 	if (!(c_aa_configure = reinterpret_cast<int(*)(Aardvark, AardvarkConfig)>(_loadFunction("c_aa_configure", &res))))
@@ -912,13 +912,13 @@ bool RemoteAardvark::aa_i2c_bitrate(Value &params, Value &result)
 	//get handle
 	const char* paramName = _aa_i2c_bitrate.paramArray[0]._name;
 	Type paramType = _aa_i2c_bitrate.paramArray[0]._type;
-	tempValue = findObjectMember(params, paramName, paramType);
+	tempValue = json->findObjectMember(params, paramName, paramType);
 	aardvark = tempValue->GetInt();
 
 	//get bitrate
 	paramName = _aa_i2c_bitrate.paramArray[1]._name;
 	paramType = _aa_i2c_bitrate.paramArray[1]._type;
-	tempValue = findObjectMember(params, paramName, paramType);
+	tempValue = json->findObjectMember(params, paramName, paramType);
 	bitrate = tempValue->GetUint();
 
 
@@ -950,13 +950,13 @@ bool RemoteAardvark::aa_i2c_pullup(Value &params, Value &result)
 	//get handle
 	const char* paramName = _aa_i2c_pullup.paramArray[0]._name;
 	Type paramType = _aa_i2c_pullup.paramArray[0]._type;
-	tempValue = findObjectMember(params, paramName, paramType);
+	tempValue = json->findObjectMember(params, paramName, paramType);
 	aardvark = tempValue->GetInt();
 
 	//get pullup mask
 	paramName = _aa_i2c_pullup.paramArray[1]._name;
 	paramType = _aa_i2c_pullup.paramArray[1]._type;
-	tempValue = findObjectMember(params, paramName, paramType);
+	tempValue = json->findObjectMember(params, paramName, paramType);
 	pullup_mask = tempValue->GetUint();
 
 
@@ -990,25 +990,25 @@ bool RemoteAardvark::aa_i2c_slave_enable(Value &params, Value &result)
 	//get handle
 	const char* paramName = _aa_i2c_slave_enable.paramArray[0]._name;
 	Type paramType = _aa_i2c_slave_enable.paramArray[0]._type;
-	tempValue = findObjectMember(params, paramName, paramType);
+	tempValue = json->findObjectMember(params, paramName, paramType);
 	aardvark = tempValue->GetInt();
 
 	//get slave address for device
 	paramName = _aa_i2c_slave_enable.paramArray[1]._name;
 	paramType = _aa_i2c_slave_enable.paramArray[1]._type;
-	tempValue = findObjectMember(params, paramName, paramType);
+	tempValue = json->findObjectMember(params, paramName, paramType);
 	address = tempValue->GetUint();
 
 	//maxTxBytes
 	paramName = _aa_i2c_slave_enable.paramArray[2]._name;
 	paramType = _aa_i2c_slave_enable.paramArray[2]._type;
-	tempValue = findObjectMember(params, paramName, paramType);
+	tempValue = json->findObjectMember(params, paramName, paramType);
 	maxTxBytes = tempValue->GetUint();
 
 	//maxRxBytes
 	paramName = _aa_i2c_slave_enable.paramArray[3]._name;
 	paramType = _aa_i2c_slave_enable.paramArray[3]._type;
-	tempValue = findObjectMember(params, paramName, paramType);
+	tempValue = json->findObjectMember(params, paramName, paramType);
 	maxRxBytes = tempValue->GetUint();
 
 
@@ -1044,14 +1044,14 @@ bool RemoteAardvark::aa_i2c_slave_read(Value &params, Value &result)
 	//get handle
 	const char* paramName = _aa_i2c_slave_read.paramArray[0]._name;
 	Type paramType = _aa_i2c_slave_read.paramArray[0]._type;
-	tempValue = findObjectMember(params, paramName, paramType);
+	tempValue = json->findObjectMember(params, paramName, paramType);
 	aardvark = tempValue->GetInt();
 
 
 	//get num bytes
 	paramName = _aa_i2c_slave_read.paramArray[2]._name;
 	paramType = _aa_i2c_slave_read.paramArray[2]._type;
-	tempValue = findObjectMember(params, paramName, paramType);
+	tempValue = json->findObjectMember(params, paramName, paramType);
 	numberOfBytes = tempValue->GetUint();
 	data = new u08[numberOfBytes];
 
@@ -1093,13 +1093,13 @@ bool RemoteAardvark::aa_async_poll(Value &params, Value &result)
 	//get handle
 	const char* paramName = _aa_async_poll.paramArray[0]._name;
 	Type paramType = _aa_async_poll.paramArray[0]._type;
-	tempValue = findObjectMember(params, paramName, paramType);
+	tempValue = json->findObjectMember(params, paramName, paramType);
 	aardvark = tempValue->GetInt();
 
 	//get timeout
 	paramName = _aa_async_poll.paramArray[1]._name;
 	paramType = _aa_async_poll.paramArray[1]._type;
-	tempValue = findObjectMember(params, paramName, paramType);
+	tempValue = json->findObjectMember(params, paramName, paramType);
 	timeout = tempValue->GetUint();
 
 
@@ -1131,13 +1131,13 @@ bool RemoteAardvark::aa_spi_bitrate(Value &params, Value &result)
 	//get handle
 	const char* paramName = _aa_spi_bitrate.paramArray[0]._name;
 	Type paramType = _aa_spi_bitrate.paramArray[0]._type;
-	tempValue = findObjectMember(params, paramName, paramType);
+	tempValue = json->findObjectMember(params, paramName, paramType);
 	aardvark = tempValue->GetInt();
 
 	//get bitrate
 	paramName = _aa_spi_bitrate.paramArray[1]._name;
 	paramType = _aa_spi_bitrate.paramArray[1]._type;
-	tempValue = findObjectMember(params, paramName, paramType);
+	tempValue = json->findObjectMember(params, paramName, paramType);
 	bitrate = tempValue->GetUint();
 
 
@@ -1171,25 +1171,25 @@ bool RemoteAardvark::aa_spi_configure(Value &params, Value &result)
 	//get handle
 	const char* paramName = _aa_spi_configure.paramArray[0]._name;
 	Type paramType = _aa_spi_configure.paramArray[0]._type;
-	tempValue = findObjectMember(params, paramName, paramType);
+	tempValue = json->findObjectMember(params, paramName, paramType);
 	aardvark = tempValue->GetInt();
 
 	//get polarity
 	paramName = _aa_spi_configure.paramArray[1]._name;
 	paramType = _aa_spi_configure.paramArray[1]._type;
-	tempValue = findObjectMember(params, paramName, paramType);
+	tempValue = json->findObjectMember(params, paramName, paramType);
 	polarity = (AardvarkSpiPolarity)tempValue->GetInt();
 
 	//get polarity
 	paramName = _aa_spi_configure.paramArray[2]._name;
 	paramType = _aa_spi_configure.paramArray[2]._type;
-	tempValue = findObjectMember(params, paramName, paramType);
+	tempValue = json->findObjectMember(params, paramName, paramType);
 	phase = (AardvarkSpiPhase)tempValue->GetInt();
 
 	//get polarity
 	paramName = _aa_spi_configure.paramArray[3]._name;
 	paramType = _aa_spi_configure.paramArray[3]._type;
-	tempValue = findObjectMember(params, paramName, paramType);
+	tempValue = json->findObjectMember(params, paramName, paramType);
 	bitorder = (AardvarkSpiBitorder)tempValue->GetInt();
 
 
@@ -1228,13 +1228,13 @@ bool RemoteAardvark::aa_spi_write(Value &params, Value &result)
 	//get handle
 	const char* paramName = _aa_spi_write.paramArray[0]._name;
 	Type paramType = _aa_spi_write.paramArray[0]._type;
-	tempValue = findObjectMember(params, paramName, paramType);
+	tempValue = json->findObjectMember(params, paramName, paramType);
 	aardvark = tempValue->GetInt();
 
 	//get out_num_bytes
 	paramName = _aa_spi_write.paramArray[1]._name;
 	paramType = _aa_spi_write.paramArray[1]._type;
-	tempValue = findObjectMember(params, paramName, paramType);
+	tempValue = json->findObjectMember(params, paramName, paramType);
 	out_num_bytes = tempValue->Size();
 
 
@@ -1247,7 +1247,7 @@ bool RemoteAardvark::aa_spi_write(Value &params, Value &result)
 	//get in_num_bytes and alloc memory
 	paramName = _aa_spi_write.paramArray[2]._name;
 	paramType = _aa_spi_write.paramArray[2]._type;
-	tempValue = findObjectMember(params, paramName, paramType);
+	tempValue = json->findObjectMember(params, paramName, paramType);
 	in_num_bytes = tempValue->GetInt();
 	data_in = new u08[in_num_bytes];
 
@@ -1292,13 +1292,13 @@ bool RemoteAardvark::aa_spi_master_ss_polarity(Value &params, Value &result)
 	//get handle
 	const char* paramName = _aa_spi_master_ss_polarity.paramArray[0]._name;
 	Type paramType = _aa_spi_master_ss_polarity.paramArray[0]._type;
-	tempValue = findObjectMember(params, paramName, paramType);
+	tempValue = json->findObjectMember(params, paramName, paramType);
 	aardvark = tempValue->GetInt();
 
 	//get bitrate
 	paramName = _aa_spi_master_ss_polarity.paramArray[1]._name;
 	paramType = _aa_spi_master_ss_polarity.paramArray[1]._type;
-	tempValue = findObjectMember(params, paramName, paramType);
+	tempValue = json->findObjectMember(params, paramName, paramType);
 	polarity = (AardvarkSpiSSPolarity)tempValue->GetUint();
 
 

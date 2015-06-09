@@ -53,8 +53,8 @@
 
 #include <stdio.h>
 
-#include "document.h"
-#include "writer.h"
+
+#include "JsonRPC.hpp"
 #include "DriverInterface.h"
 
 
@@ -625,6 +625,7 @@ class RemoteAardvark : public DriverInterface<RemoteAardvark*, afptr>{
 			uniqueId = 0;
 			handle = 0;
 			contextNumber = 0;
+			json = new JsonRPC();
 
 			//get relativ address of function
 			_aa_find_devices._funcPtr = &RemoteAardvark::aa_find_devices;
@@ -704,7 +705,10 @@ class RemoteAardvark : public DriverInterface<RemoteAardvark*, afptr>{
 
 
 
-		~RemoteAardvark(){};
+		~RemoteAardvark()
+		{
+			delete json;
+		};
 
 
 		//impelemt the driver functions !
@@ -742,6 +746,7 @@ class RemoteAardvark : public DriverInterface<RemoteAardvark*, afptr>{
 	private:
 
 		Document dom;
+		JsonRPC* json;
 		int port;
 		unsigned int uniqueId;
 		int handle;
