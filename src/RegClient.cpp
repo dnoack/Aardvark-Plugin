@@ -9,7 +9,7 @@ RegClient::RegClient(const char* pluginName, int pluginNumber, const char* regPa
 {
 	this->regPath = regPath;
 	dom = NULL;
-	workerInterface = NULL;
+	comPoint = NULL;
 	optionflag = 1;
 	currentMsgId = NULL;
 	state = NOT_ACTIVE;
@@ -30,8 +30,8 @@ RegClient::RegClient(const char* pluginName, int pluginNumber, const char* regPa
 
 RegClient::~RegClient()
 {
-	if(workerInterface != NULL)
-		delete workerInterface;
+	if(comPoint != NULL)
+		delete comPoint;
 
 	delete plugin;
 	delete json;
@@ -43,7 +43,7 @@ void RegClient::connectToRSD()
 	if( connect(connection_socket, (struct sockaddr*)&address, addrlen) != 0 )
 		throw Error(-1101, "Could not connect to RSD.\n");
 	else
-		workerInterface = new ComPoint(connection_socket, this, plugin->getPluginNumber());
+		comPoint = new ComPoint(connection_socket, this, plugin->getPluginNumber());
 }
 
 
@@ -76,7 +76,7 @@ void RegClient::process(RPCMsg* msg)
 				{
 					state = ANNOUNCED;
 					response = createRegisterMsg();
-					workerInterface->transmit(response, strlen(response));
+					comPoint->transmit(response, strlen(response));
 				}
 				break;
 			case ANNOUNCED:
@@ -86,7 +86,7 @@ void RegClient::process(RPCMsg* msg)
 					//TODO: check if Plugin com part is ready, if yes -> state = active
 					//create pluginActive msg
 					response = createPluginActiveMsg();
-					workerInterface->transmit(response, strlen(response));
+					comPoint->transmit(response, strlen(response));
 				}
 				//check for register ack then switch state to active
 				break;
@@ -131,7 +131,7 @@ void RegClient::sendAnnounceMsg()
 		id.SetInt(1);
 
 		announceMsg = json->generateRequest(method, params, id);
-		workerInterface->transmit(announceMsg, strlen(announceMsg));
+		comPoint->transmit(announceMsg, strlen(announceMsg));
 	}
 	catch(Error &e)
 	{

@@ -167,7 +167,7 @@ void AardvarkCareTaker::process(RPCMsg* msg)
 					}
 					device->executeFunction((*currentDom)["method"], (*currentDom)["params"], responseValue);
 					result = new string(json->generateResponse((*currentDom)["id"], responseValue));
-					workerInterface->transmit(result->c_str(), result->size());
+					comPoint->transmit(result->c_str(), result->size());
 				}
 
 			}
@@ -188,7 +188,7 @@ void AardvarkCareTaker::process(RPCMsg* msg)
 		catch(Error &e)
 		{
 			error = json->generateResponseError(*id, e.getErrorCode(), e.get());
-			workerInterface->transmit(error, strlen(error));
+			comPoint->transmit(error, strlen(error));
 			delete *currentMsg;
 			currentMsg = msgList->erase(currentMsg);
 		}

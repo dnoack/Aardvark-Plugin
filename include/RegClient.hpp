@@ -84,8 +84,8 @@ class RegClient : public ProcessInterface{
 		 */
 		bool isDeletable()
 		{
-			if(workerInterface != NULL)
-				return workerInterface->isDeletable();
+			if(comPoint != NULL)
+				return comPoint->isDeletable();
 			else
 				return false;
 		}
