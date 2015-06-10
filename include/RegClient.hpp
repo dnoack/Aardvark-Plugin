@@ -17,6 +17,7 @@
 #include "RPCMsg.hpp"
 #include "AardvarkPlugin.hpp"
 #include "JsonRPC.hpp"
+#include "OutgoingMsg.hpp"
 #include "Plugin.hpp"
 #include "Error.hpp"
 
@@ -77,7 +78,7 @@ class RegClient : public ProcessInterface{
 		 * the state of the registration process. If something goes wrong, the state will be set
 		 * to BROKEn and the connection_socket will be closed.
 		 */
-		void process(RPCMsg* msg);
+		OutgoingMsg* process(RPCMsg* msg);
 
 		/**
 		 * Checks the underlying UdsRegWorker instance if it is deletable.
@@ -140,7 +141,7 @@ class RegClient : public ProcessInterface{
 		 * message. The register message contains all known functions of the corresponding plugin.
 		 * \return A valid json rpc message which contains a the register message.
 		 */
-		const char* createRegisterMsg();
+		OutgoingMsg* createRegisterMsg(RPCMsg* input);
 
 		/**
 		 * Handles the registerACK message, which we await from RSD after we send a register message to RSD:
@@ -153,7 +154,7 @@ class RegClient : public ProcessInterface{
 		 * Creates a pluginActive message, which completes the registration process and signals RSD that this plugin
 		 * is ready to work.
 		 */
-		const char* createPluginActiveMsg();
+		OutgoingMsg* createPluginActiveMsg(RPCMsg* input);
 };
 
 #endif /* _INCLUDE_UDSREGCLIENT_HPP_ */

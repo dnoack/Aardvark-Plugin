@@ -121,18 +121,19 @@ RemoteAardvark* AardvarkCareTaker::getDevice(int value, int valueType)
 
 
 //main method for processing new json rpc msgs
-void AardvarkCareTaker::process(RPCMsg* msg)
+OutgoingMsg* AardvarkCareTaker::process(RPCMsg* input)
 {
 
 	Value responseValue;
-	Value* paramValue;
-	RemoteAardvark* device;
+	Value* paramValue = NULL;
+	RemoteAardvark* device = NULL;
+	OutgoingMsg* output = NULL;
 
 	currentDom = new Document();
 
 	try
 	{
-		json->parse(currentDom, msg->getContent());
+		json->parse(currentDom, input->getContent());
 
 		if(json->isRequest(currentDom))
 		{
@@ -159,8 +160,8 @@ void AardvarkCareTaker::process(RPCMsg* msg)
 					device = deviceLessFunctions;
 				}
 				device->executeFunction((*currentDom)["method"], (*currentDom)["params"], responseValue);
-				result = new string(json->generateResponse((*currentDom)["id"], responseValue));
-				comPoint->transmit(result->c_str(), result->size());
+				result = json->generateResponse((*currentDom)["id"], responseValue);
+				output = new OutgoingMsg(result, input->getSender());
 			}
 
 		}
@@ -178,9 +179,12 @@ void AardvarkCareTaker::process(RPCMsg* msg)
 	catch(Error &e)
 	{
 		error = json->generateResponseError(*id, e.getErrorCode(), e.get());
-		comPoint->transmit(error, strlen(error));
+		output = new OutgoingMsg(error, input->getSender());
 	}
 	delete currentDom;
+	delete input;
+
+	return output;
 }
 
 

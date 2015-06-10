@@ -56,13 +56,13 @@ void RegClient::unregisterFromRSD()
 }
 
 
-void RegClient::process(RPCMsg* msg)
+OutgoingMsg* RegClient::process(RPCMsg* input)
 {
 	const char* response = NULL;
-
+	OutgoingMsg* output = NULL;
 	try
 	{
-		json->parse(globalDom, msg->getContent());
+		json->parse(globalDom, input->getContent());
 		currentMsgId = json->tryTogetId(globalDom);
 
 		if(json->isError(globalDom))
@@ -76,16 +76,14 @@ void RegClient::process(RPCMsg* msg)
 				if(handleAnnounceACKMsg())
 				{
 					state = ANNOUNCED;
-					response = createRegisterMsg();
-					comPoint->transmit(response, strlen(response));
+					output = createRegisterMsg(input);
 				}
 				break;
 			case ANNOUNCED:
 				if(handleRegisterACKMsg())
 				{
 					state = REGISTERED;
-					response = createPluginActiveMsg();
-					comPoint->transmit(response, strlen(response));
+					output = createPluginActiveMsg(input);
 				}
 				//check for register ack then switch state to active
 				break;
@@ -101,14 +99,15 @@ void RegClient::process(RPCMsg* msg)
 				state = BROKEN;
 				break;
 		}
-		delete msg;
 	}
 	catch(Error &e)
 	{
-		delete msg;
 		state = BROKEN;
 		close(connection_socket);
 	}
+	delete input;
+
+	return output;
 }
 
 
@@ -168,7 +167,7 @@ bool RegClient::handleAnnounceACKMsg()
 }
 
 
-const char* RegClient::createRegisterMsg()
+OutgoingMsg* RegClient::createRegisterMsg(RPCMsg* input)
 {
 	Value method;
 	Value params;
@@ -177,6 +176,8 @@ const char* RegClient::createRegisterMsg()
 	list<string*>* funcList;
 	string* functionName;
 	Document* requestDOM = json->getRequestDOM();
+	OutgoingMsg* output = NULL;
+	const char* request = NULL;
 
 	//get methods from plugin
 	funcList = AardvarkPlugin::getFuncList();
@@ -192,8 +193,9 @@ const char* RegClient::createRegisterMsg()
 	}
 
 	params.AddMember("functions", functionArray, requestDOM->GetAllocator());
-
-	return json->generateRequest(method, params, *currentMsgId);
+	request = json->generateRequest(method, params, *currentMsgId);
+	output = new OutgoingMsg(request, input->getSender());
+	return output;
 }
 
 
@@ -225,16 +227,18 @@ bool RegClient::handleRegisterACKMsg()
 }
 
 
-const char* RegClient::createPluginActiveMsg()
+OutgoingMsg* RegClient::createPluginActiveMsg(RPCMsg* input)
 {
 	Value method;
 	Value* params = NULL;
 	Value* id = NULL;
-	const char* msg = NULL;
+	const char* request = NULL;
+	OutgoingMsg* output = NULL;
 
 	method.SetString("pluginActive");
-	msg = json->generateRequest(method, *params, *id);
+	request = json->generateRequest(method, *params, *id);
+	output = new OutgoingMsg(request, input->getSender());
 
-	return msg;
+	return output;
 }
 
