@@ -15,6 +15,7 @@
 #include <vector>
 #include "ProcessInterface.hpp"
 #include "JsonRPC.hpp"
+#include "OutgoingMsg.hpp"
 #include "RemoteAardvark.hpp"
 
 class UdsComWorker;
@@ -30,7 +31,7 @@ class AardvarkCareTaker : public ProcessInterface{
 		//valueType can be PORT or HANDLE
 		RemoteAardvark* getDevice(int value, int valueType);
 
-		void process(RPCMsg* msg);
+		OutgoingMsg* process(RPCMsg* msg);
 
 	private:
 
@@ -40,7 +41,7 @@ class AardvarkCareTaker : public ProcessInterface{
 		Document* currentDom;
 		//saving json rpc id of incomming msg
 		Value* id;
-		string* result;
+		const char* result;
 		int contextNumber;
 		RemoteAardvark* deviceLessFunctions;
 
