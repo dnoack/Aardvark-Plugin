@@ -42,7 +42,6 @@ class AardvarkCareTaker : public ProcessInterface{
 		Value* id;
 		string* result;
 		int contextNumber;
-		list<string*>* msgList;
 		RemoteAardvark* deviceLessFunctions;
 
 
