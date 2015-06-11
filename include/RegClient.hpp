@@ -78,7 +78,7 @@ class RegClient : public ProcessInterface{
 		 * the state of the registration process. If something goes wrong, the state will be set
 		 * to BROKEn and the connection_socket will be closed.
 		 */
-		OutgoingMsg* process(RPCMsg* msg);
+		OutgoingMsg* process(IncomingMsg* input);
 
 		/**
 		 * Checks the underlying UdsRegWorker instance if it is deletable.
@@ -141,7 +141,7 @@ class RegClient : public ProcessInterface{
 		 * message. The register message contains all known functions of the corresponding plugin.
 		 * \return A valid json rpc message which contains a the register message.
 		 */
-		OutgoingMsg* createRegisterMsg(RPCMsg* input);
+		OutgoingMsg* createRegisterMsg(IncomingMsg* input);
 
 		/**
 		 * Handles the registerACK message, which we await from RSD after we send a register message to RSD:
@@ -154,7 +154,7 @@ class RegClient : public ProcessInterface{
 		 * Creates a pluginActive message, which completes the registration process and signals RSD that this plugin
 		 * is ready to work.
 		 */
-		OutgoingMsg* createPluginActiveMsg(RPCMsg* input);
+		OutgoingMsg* createPluginActiveMsg(IncomingMsg* input);
 };
 
 #endif /* _INCLUDE_UDSREGCLIENT_HPP_ */

@@ -56,9 +56,8 @@ void RegClient::unregisterFromRSD()
 }
 
 
-OutgoingMsg* RegClient::process(RPCMsg* input)
+OutgoingMsg* RegClient::process(IncomingMsg* input)
 {
-	const char* response = NULL;
 	OutgoingMsg* output = NULL;
 	try
 	{
@@ -167,7 +166,7 @@ bool RegClient::handleAnnounceACKMsg()
 }
 
 
-OutgoingMsg* RegClient::createRegisterMsg(RPCMsg* input)
+OutgoingMsg* RegClient::createRegisterMsg(IncomingMsg* input)
 {
 	Value method;
 	Value params;
@@ -194,7 +193,7 @@ OutgoingMsg* RegClient::createRegisterMsg(RPCMsg* input)
 
 	params.AddMember("functions", functionArray, requestDOM->GetAllocator());
 	request = json->generateRequest(method, params, *currentMsgId);
-	output = new OutgoingMsg(request, input->getSender());
+	output = new OutgoingMsg(input->getOrigin(), request);
 	return output;
 }
 
@@ -227,7 +226,7 @@ bool RegClient::handleRegisterACKMsg()
 }
 
 
-OutgoingMsg* RegClient::createPluginActiveMsg(RPCMsg* input)
+OutgoingMsg* RegClient::createPluginActiveMsg(IncomingMsg* input)
 {
 	Value method;
 	Value* params = NULL;
@@ -237,7 +236,7 @@ OutgoingMsg* RegClient::createPluginActiveMsg(RPCMsg* input)
 
 	method.SetString("pluginActive");
 	request = json->generateRequest(method, *params, *id);
-	output = new OutgoingMsg(request, input->getSender());
+	output = new OutgoingMsg(input->getOrigin(), request);
 
 	return output;
 }
