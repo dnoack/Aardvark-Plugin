@@ -31,7 +31,7 @@ class AardvarkCareTaker : public ProcessInterface{
 		//valueType can be PORT or HANDLE
 		RemoteAardvark* getDevice(int value, int valueType);
 
-		OutgoingMsg* process(RPCMsg* msg);
+		OutgoingMsg* process(IncomingMsg* input);
 
 	private:
 
