@@ -37,6 +37,12 @@ TEST_GROUP(RemoteAardvark)
 
 };
 
+TEST(RemoteAardvark, aa_closeOK)
+{
+	params->AddMember("Aardvark", 1, dom->GetAllocator());
+	CHECK_EQUAL(false, testInterface->aa_close(*params, *result));
+}
+
 
 TEST(RemoteAardvark, aa_openOK)
 {
@@ -57,12 +63,6 @@ TEST(RemoteAardvark, aa_target_powerOK)
 	CHECK_EQUAL(true, testInterface->aa_target_power(*params, *result));
 }
 
-TEST(RemoteAardvark, aa_closeOK)
-{
-
-	params->AddMember("Aardvark", 1, dom->GetAllocator());
-	CHECK_EQUAL(false, testInterface->aa_close(*params, *result));
-}
 
 
 TEST(RemoteAardvark, aa_closeFAIL)

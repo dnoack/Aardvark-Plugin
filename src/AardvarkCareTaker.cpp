@@ -92,8 +92,7 @@ RemoteAardvark* AardvarkCareTaker::getDevice(int value, int valueType)
 		{
 			pthread_mutex_unlock(&dLmutex);
 			//dyn_print("Requesting context %d.  using context: %d \n", contextNumber, device->getContextNumber());
-			error = json->generateResponseError(*(json->getId(currentDom)), -99998, "Another user is using the requested hardware.");
-			throw Error(error);
+			throw Error(-99998, "Another user is using the requested hardware.");
 		}
 	}
 	else //didnt found the device
@@ -107,8 +106,7 @@ RemoteAardvark* AardvarkCareTaker::getDevice(int value, int valueType)
 		else // cant create new devices with handle as value
 		{
 			pthread_mutex_unlock(&dLmutex);
-			error = json->generateResponseError(*(json->getId(currentDom)), -99999, "No device with this handle available.");
-			throw Error(error);
+			throw Error(-99999, "No device with this handle available.");
 		}
 	}
 
@@ -125,6 +123,7 @@ OutgoingMsg* AardvarkCareTaker::process(IncomingMsg* input)
 {
 
 	Value responseValue;
+	Value* params = NULL;
 	Value* paramValue = NULL;
 	RemoteAardvark* device = NULL;
 	OutgoingMsg* output = NULL;
@@ -138,31 +137,29 @@ OutgoingMsg* AardvarkCareTaker::process(IncomingMsg* input)
 		if(json->isRequest(currentDom))
 		{
 			id = json->getId(currentDom);
-			if(json->hasParams(currentDom))
+			params = json->tryTogetParams(currentDom);
+
+
+			if(params->HasMember("port"))
 			{
-				//dyn_print("Request incomming, gettin device...\n");
+				device = getDevice((*params)["port"].GetInt(), PORT);
 
-				if((*currentDom)["params"].HasMember("port"))
-				{
-					device = getDevice((*currentDom)["params"]["port"].GetInt(), PORT);
-
-				}
-				else if((*currentDom)["params"].HasMember("handle") )
-				{
-					device = getDevice((*currentDom)["params"]["handle"].GetInt(), HANDLE);
-				}
-				else if((*currentDom)["params"].HasMember("Aardvark") )
-				{
-					device = getDevice((*currentDom)["params"]["Aardvark"].GetInt(), HANDLE);
-				}
-				else
-				{
-					device = deviceLessFunctions;
-				}
-				device->executeFunction((*currentDom)["method"], (*currentDom)["params"], responseValue);
-				result = json->generateResponse((*currentDom)["id"], responseValue);
-				output = new OutgoingMsg(input->getOrigin(), result);
 			}
+			else if(params->HasMember("handle") )
+			{
+				device = getDevice((*params)["handle"].GetInt(), HANDLE);
+			}
+			else if(params->HasMember("Aardvark") )
+			{
+				device = getDevice((*params)["Aardvark"].GetInt(), HANDLE);
+			}
+			else
+			{
+				device = deviceLessFunctions;
+			}
+			device->executeFunction((*currentDom)["method"], *params, responseValue);
+			result = json->generateResponse((*currentDom)["id"], responseValue);
+			output = new OutgoingMsg(input->getOrigin(), result);
 
 		}
 		else if(json->isNotification(currentDom))
@@ -183,7 +180,6 @@ OutgoingMsg* AardvarkCareTaker::process(IncomingMsg* input)
 	}
 	delete currentDom;
 	delete input;
-
 	return output;
 }
 
