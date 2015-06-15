@@ -101,6 +101,8 @@ void ComServer::checkForDeletableWorker()
 		if((*i)->isDeletable())
 		{
 			//dyn_print("Uds---> Deleting UdsWorker. %d still left.\n", comPointList.size()-1);
+			delete (*i)->getProcessInterface(); //delete AardvarkCareTarker
+			//TODO: find a better way, maybe a more generic way
 			delete *i;
 			i = comPointList.erase(i);
 		}

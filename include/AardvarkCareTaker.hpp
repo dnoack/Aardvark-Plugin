@@ -24,7 +24,7 @@ class AardvarkCareTaker : public ProcessInterface{
 
 	public:
 		AardvarkCareTaker();
-		~AardvarkCareTaker();
+		virtual ~AardvarkCareTaker();
 
 		static void init();
 		static void deInit();
