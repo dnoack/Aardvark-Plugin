@@ -10,6 +10,14 @@ environment/project/cdt.managedbuild.config.gnu.exe.debug.721159017.157011383/LD
 environment/project/cdt.managedbuild.config.gnu.exe.debug.721159017.157011383/LDFLAGS/value=
 environment/project/cdt.managedbuild.config.gnu.exe.debug.721159017.157011383/append=true
 environment/project/cdt.managedbuild.config.gnu.exe.debug.721159017.157011383/appendContributed=true
+environment/project/cdt.managedbuild.config.gnu.exe.debug.721159017.2088375081/CFLAGS/delimiter=\:
+environment/project/cdt.managedbuild.config.gnu.exe.debug.721159017.2088375081/CFLAGS/operation=append
+environment/project/cdt.managedbuild.config.gnu.exe.debug.721159017.2088375081/CFLAGS/value=-I ../include -I ${HOME}/git/rapidjson/include/rapidjson
+environment/project/cdt.managedbuild.config.gnu.exe.debug.721159017.2088375081/CXXFLAGS/delimiter=\:
+environment/project/cdt.managedbuild.config.gnu.exe.debug.721159017.2088375081/CXXFLAGS/operation=append
+environment/project/cdt.managedbuild.config.gnu.exe.debug.721159017.2088375081/CXXFLAGS/value=${CFLAGS}
+environment/project/cdt.managedbuild.config.gnu.exe.debug.721159017.2088375081/append=true
+environment/project/cdt.managedbuild.config.gnu.exe.debug.721159017.2088375081/appendContributed=true
 environment/project/cdt.managedbuild.config.gnu.exe.debug.721159017.411245810/CFLAGS/delimiter=\:
 environment/project/cdt.managedbuild.config.gnu.exe.debug.721159017.411245810/CFLAGS/operation=replace
 environment/project/cdt.managedbuild.config.gnu.exe.debug.721159017.411245810/CFLAGS/value=-I../include -I"${HOME}/git/rapidjson/include/rapidjson" -I"${HOME}/git/cpputest/include/CppUTest" -I"${HOME}/git/cpputest/include/CppUTestExt"

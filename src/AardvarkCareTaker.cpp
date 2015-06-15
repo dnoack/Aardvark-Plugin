@@ -53,7 +53,6 @@ RemoteAardvark* AardvarkCareTaker::getDevice(int value, int valueType)
 
 	RemoteAardvark* device = NULL;
 	bool found = false;
-	const char* error = NULL;
 
 	pthread_mutex_lock(&dLmutex);
 	list<RemoteAardvark*>::iterator tempDevice = deviceList.begin();

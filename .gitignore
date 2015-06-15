@@ -1,6 +1,4 @@
 /Debug/
-/Uds/
-/cpputest/
-/rapidjson/
 /core
-/Test_PluginInterface/
+/Testing/
+/Release/
