@@ -45,11 +45,6 @@ class AardvarkPlugin : LogUnit{
 		virtual ~AardvarkPlugin();
 
 		/**
-		 * \return List of function name, which are the supported rpc functions of this plugin.
-		 */
-		static list<string*>* getFuncList(){return funcList;}
-
-		/**
 		 * Start the plugin. This means, it tries to register to RSD and after that executing a loop
 		 * where it constantly searches for deletable worker.
 		 */
@@ -57,10 +52,6 @@ class AardvarkPlugin : LogUnit{
 
 
 	private:
-
-
-		 /*!Contains all known rpc functionnames of this plugin.*/
-		static list<string*>* funcList;
 
 		/*! Handles incomming json rpc calls from RSD.*/
 		ComServer* comServer;
@@ -72,12 +63,6 @@ class AardvarkPlugin : LogUnit{
 
 		/*! As long as this flag is true, the server will run his mainloop in start().*/
 		bool pluginActive;
-
-		/**
-		 * Deallocates the whole content of funcList, after that is deallocates the list itself.
-		 */
-		void deleteFuncList();
-
 };
 
 #endif /* INCLUDE_AARDVARKPLUGIN_HPP_ */

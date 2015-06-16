@@ -5,9 +5,11 @@ struct sockaddr_un RegClient::address;
 socklen_t RegClient::addrlen;
 
 
-RegClient::RegClient(const char* pluginName, int pluginNumber, const char* regPath, const char* comPath)
+RegClient::RegClient(Plugin* plugin, list<string*>* functionList, const char* regPath)
 {
 	this->regPath = regPath;
+	this->plugin = plugin;
+	this->functionList = functionList;
 	globalDom = NULL;
 	comPoint = NULL;
 	optionflag = 1;
@@ -25,7 +27,6 @@ RegClient::RegClient(const char* pluginName, int pluginNumber, const char* regPa
 		throw Error(-1100, "Could not create connection_socket");
 
 
-	plugin = new Plugin(pluginName, pluginNumber ,comPath);
 	json = new JsonRPC();
 }
 
@@ -35,6 +36,7 @@ RegClient::~RegClient()
 	if(comPoint != NULL)
 		delete comPoint;
 
+	deleteFunctionList();
 	delete plugin;
 	delete json;
 	delete globalDom;
@@ -172,24 +174,24 @@ OutgoingMsg* RegClient::createRegisterMsg(IncomingMsg* input)
 	Value params;
 	Value functionArray;
 
-	list<string*>* funcList;
 	string* functionName;
 	Document* requestDOM = json->getRequestDOM();
 	OutgoingMsg* output = NULL;
 	const char* request = NULL;
+	list<string*>::iterator function = functionList->begin();
 
-	//get methods from plugin
-	funcList = AardvarkPlugin::getFuncList();
+
 	method.SetString("register");
 	params.SetObject();
 	functionArray.SetArray();
 
-	for(list<string*>::iterator ifName = funcList->begin(); ifName != funcList->end(); )
+	while(function != functionList->end())
 	{
-		functionName = *ifName;
+		functionName = *function;
 		functionArray.PushBack(StringRef(functionName->c_str()), requestDOM->GetAllocator());
-		ifName = funcList->erase(ifName);
+		function = functionList->erase(function);
 	}
+
 
 	params.AddMember("functions", functionArray, requestDOM->GetAllocator());
 	request = json->generateRequest(method, params, *currentMsgId);
@@ -239,5 +241,16 @@ OutgoingMsg* RegClient::createPluginActiveMsg(IncomingMsg* input)
 	output = new OutgoingMsg(input->getOrigin(), request);
 
 	return output;
+}
+
+void RegClient::deleteFunctionList()
+{
+	list<string*>::iterator function = functionList->begin();
+	while(function != functionList->end())
+	{
+		delete *function;
+		function = functionList->erase(function);
+	}
+	delete functionList;
 }
 

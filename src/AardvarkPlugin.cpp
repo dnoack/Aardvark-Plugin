@@ -1,8 +1,5 @@
-
 #include "AardvarkPlugin.hpp"
 
-
-list<string*>* AardvarkPlugin::funcList;
 
 
 AardvarkPlugin::AardvarkPlugin()
@@ -18,12 +15,12 @@ AardvarkPlugin::AardvarkPlugin()
 
 	//get List of key, which are supported by the driver
 	RemoteAardvark* tempDriver = new RemoteAardvark(0);
-	funcList = tempDriver->getAllFunctionNames();
+	list<string*>* functionList = tempDriver->getAllFunctionNames();
 	delete tempDriver;
 
 	AardvarkCareTaker::init();
 
-	regClient = new RegClient(PLUGIN_NAME, PLUGIN_NUMBER, REG_PATH, COM_PATH);
+	regClient = new RegClient(new Plugin(PLUGIN_NAME, PLUGIN_NUMBER, COM_PATH), functionList, REG_PATH);
 	comServer = new ComServer(COM_PATH, sizeof(COM_PATH), PLUGIN_NUMBER);
 }
 
@@ -33,7 +30,6 @@ AardvarkPlugin::~AardvarkPlugin()
 	AardvarkCareTaker::deInit();
 	delete comServer;
 	delete regClient;
-	deleteFuncList();
 }
 
 
@@ -58,18 +54,6 @@ void AardvarkPlugin::start()
 		log(logInfo, e.get());
 		pluginActive = false;
 	}
-}
-
-
-void AardvarkPlugin::deleteFuncList()
-{
-	list<string*>::iterator i = funcList->begin();
-	while(i != funcList->end())
-	{
-		delete *i;
-		i = funcList->erase(i);
-	}
-	delete funcList;
 }
 
 

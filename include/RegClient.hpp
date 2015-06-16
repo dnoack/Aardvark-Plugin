@@ -10,13 +10,14 @@
 #include <cstdio>
 #include <list>
 #include <pthread.h>
+#include <RPCInterface.hpp>
 #include "signal.h"
 #include <string>
 
 #include "ComPoint.hpp"
-#include "RPCMsg.hpp"
 #include "AardvarkPlugin.hpp"
 #include "JsonRPC.hpp"
+#include "RPCMsg.hpp"
 #include "OutgoingMsg.hpp"
 #include "Plugin.hpp"
 #include "Error.hpp"
@@ -40,12 +41,11 @@ class RegClient : public ProcessInterface{
 
 		/**
 		 * Constructor.
-		 * \param pluginName Unique name of the plugin.
-		 * \param pluginNumber Unique id of the plugin.
+		 * \param plugin
+		 * \param rpcClass
 		 * \param regPath Path to unix domain socket file for registring a plugin to RSD.
-		 * \param comPath Path to unix domain socket file for communication between RSD and the corresponding plugin.
 		 */
-		RegClient(const char* pluginName, int pluginNumber,const char* regPath, const char* comPath);
+		RegClient(Plugin* plugin, list<string*>* functionList, const char* regPath);
 
 		/**
 		 * Destructor.
@@ -94,6 +94,7 @@ class RegClient : public ProcessInterface{
 
 	private:
 
+		list<string*>* functionList;
 		/*! Unix domain socket address struct.*/
 		static struct sockaddr_un address;
 		/*! Length of address.*/
@@ -155,6 +156,9 @@ class RegClient : public ProcessInterface{
 		 * is ready to work.
 		 */
 		OutgoingMsg* createPluginActiveMsg(IncomingMsg* input);
+
+
+		void deleteFunctionList();
 };
 
 #endif /* _INCLUDE_UDSREGCLIENT_HPP_ */
