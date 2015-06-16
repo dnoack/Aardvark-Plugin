@@ -1,58 +1,49 @@
 #include "AardvarkPlugin.hpp"
+#include "RemoteAardvark.hpp"
+#include "AardvarkCareTaker.hpp"
 
-
-
-AardvarkPlugin::AardvarkPlugin()
+AardvarkPlugin::AardvarkPlugin(PluginInfo* pluginInfo) : PluginInterface(pluginInfo)
 {
-	pluginActive = true;
-	logInfo.logName = "AardvarkPlugin: ";
-
-	sigemptyset(&origmask);
-	sigemptyset(&sigmask);
-	sigaddset(&sigmask, SIGUSR1);
-	sigaddset(&sigmask, SIGUSR2);
-	pthread_sigmask(SIG_BLOCK, &sigmask, &origmask);
-
 	//get List of key, which are supported by the driver
 	RemoteAardvark* tempDriver = new RemoteAardvark(0);
 	list<string*>* functionList = tempDriver->getAllFunctionNames();
 	delete tempDriver;
 
+	StartAcceptThread();
+	if(wait_for_accepter_up() != 0)
+		throw Error("Creation of Listener/worker threads failed.");
+
+	pluginActive = true;
+
 	AardvarkCareTaker::init();
-
-	regClient = new RegClient(new Plugin(PLUGIN_NAME, PLUGIN_NUMBER, COM_PATH), functionList, REG_PATH);
-	comServer = new ComServer(COM_PATH, sizeof(COM_PATH), PLUGIN_NUMBER);
+	regClient = new RegClient(pluginInfo, functionList, REG_PATH);
 }
-
 
 AardvarkPlugin::~AardvarkPlugin()
 {
-	AardvarkCareTaker::deInit();
-	delete comServer;
 	delete regClient;
 }
 
 
-void AardvarkPlugin::start()
+void AardvarkPlugin::thread_accept()
 {
-	try
-	{
-		regClient->connectToRSD();
-		regClient->sendAnnounceMsg();
+	int new_socket = 0;
+	ComPoint* comPoint = NULL;
+	AardvarkCareTaker* aardC = NULL;
+	listen(connection_socket, MAX_CLIENTS);
 
-		pluginActive = true;
-		while(pluginActive)
-		{
-			sleep(3);
-			comServer->checkForDeletableWorker();
-			if(regClient->isDeletable())
-				pluginActive = false;
-		}
-	}
-	catch(Error &e)
+	//dyn_print("Accepter created\n");
+	while(true)
 	{
-		log(logInfo, e.get());
-		pluginActive = false;
+		new_socket = accept(connection_socket, (struct sockaddr*)&address, &addrlen);
+		if(new_socket > 0)
+		{
+			aardC = new AardvarkCareTaker();
+			comPoint = new ComPoint(new_socket, aardC, pluginNumber);
+			comPoint->configureLogInfo(&infoIn, &infoOut, &info);
+			//dyn_print("Uds---> sNew UdsWorker with socket: %d \n", new_socket);
+			pushComPointList(comPoint);
+		}
 	}
 }
 
@@ -60,11 +51,15 @@ void AardvarkPlugin::start()
 #ifndef TESTMODE
 int main(int argc, const char** argv)
 {
+	PluginInfo* pluginInfo = new PluginInfo(PLUGIN_NAME, PLUGIN_NUMBER, COM_PATH);
+	AardvarkPlugin* plugin = new AardvarkPlugin(pluginInfo);
 
-	AardvarkPlugin* plugin = new AardvarkPlugin();
 	plugin->start();
+
 	delete plugin;
+	delete pluginInfo;
 	return 0;
 }
 
 #endif
+
