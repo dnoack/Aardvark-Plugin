@@ -39,9 +39,11 @@ void AardvarkPlugin::thread_accept()
 		if(new_socket > 0)
 		{
 			aardC = new AardvarkCareTaker();
-			comPoint = new ComPoint(new_socket, aardC, pluginNumber);
+			comPoint = new ComPoint(new_socket, aardC, pluginNumber, false);
 			comPoint->configureLogInfo(&infoIn, &infoOut, &info);
-			//dyn_print("Uds---> sNew UdsWorker with socket: %d \n", new_socket);
+			comPoint->setLogMethod(SYSLOG_LOG);
+			comPoint->setSyslogFacility(LOG_LOCAL1);
+			comPoint->startWorking();
 			pushComPointList(comPoint);
 		}
 	}
