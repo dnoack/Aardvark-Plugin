@@ -751,6 +751,8 @@ class RemoteAardvark : public RPCInterface<RemoteAardvark*, afptr>{
 		unsigned int uniqueId;
 		int handle;
 		int contextNumber;
+
+		void closeLibrary();
 };
 
 

@@ -225,6 +225,8 @@ static void _setSearchPath () {
 | SHARED LIBRARY LOADER
  ========================================================================*/
 /* The error conditions can be customized depending on the application. */
+
+
 static void *_loadFunction (const char *name, int *result) {
     static DLL_HANDLE handle = 0;
     void * function = 0;
@@ -299,6 +301,8 @@ static void *_loadFunction (const char *name, int *result) {
     *result  = function ? API_OK : API_UNABLE_TO_LOAD_FUNCTION;
     return function;
 }
+
+
 
 
 /*=========================================================================

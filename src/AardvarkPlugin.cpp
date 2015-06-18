@@ -22,6 +22,7 @@ AardvarkPlugin::AardvarkPlugin(PluginInfo* pluginInfo) : PluginInterface(pluginI
 AardvarkPlugin::~AardvarkPlugin()
 {
 	delete regClient;
+	AardvarkCareTaker::deInit();
 }
 
 
