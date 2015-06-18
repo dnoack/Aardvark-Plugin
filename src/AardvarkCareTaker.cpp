@@ -157,7 +157,7 @@ OutgoingMsg* AardvarkCareTaker::process(IncomingMsg* input)
 				device = deviceLessFunctions;
 			}
 			device->executeFunction((*currentDom)["method"], *params, responseValue);
-			result = json->generateResponse((*currentDom)["id"], responseValue);
+			result = json->generateResponse(*id, responseValue);
 			output = new OutgoingMsg(input->getOrigin(), result);
 
 		}
