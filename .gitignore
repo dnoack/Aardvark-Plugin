@@ -1,6 +1,5 @@
 /Debug/
-/Uds/
-/cpputest/
-/rapidjson/
 /core
-/Test_PluginInterface/
+*.d
+*.o
+
